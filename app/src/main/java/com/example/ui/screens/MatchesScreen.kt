@@ -40,13 +40,17 @@ fun MatchesScreen(
     val matches by viewModel.matches.collectAsState()
     val auth = FirebaseAuth.getInstance()
     val currentUserId = auth.currentUser?.uid ?: ""
+    val currentUserEmail = auth.currentUser?.email ?: ""
 
     var selectedTab by remember { mutableStateOf(0) } // 0 = All Scrims, 1 = My Joined Matches
 
-    val myMatches = remember(matches, currentUserId) {
-        if (currentUserId.isBlank()) emptyList()
+    val myMatches = remember(matches, currentUserId, currentUserEmail) {
+        if (currentUserId.isBlank() && currentUserEmail.isBlank()) emptyList()
         else matches.filter { match ->
-            match.bookedSlots.values.contains(currentUserId)
+            match.bookedSlots.values.any { slotOwner ->
+                (currentUserId.isNotBlank() && slotOwner == currentUserId) ||
+                (currentUserEmail.isNotBlank() && slotOwner.equals(currentUserEmail, ignoreCase = true))
+            }
         }
     }
 
@@ -182,7 +186,10 @@ fun MatchesScreen(
                 } else {
                     items(myMatches) { match ->
                         // Find user's booked slot number
-                        val userSlotEntry = match.bookedSlots.entries.find { it.value == currentUserId }
+                        val userSlotEntry = match.bookedSlots.entries.find { 
+                            (currentUserId.isNotBlank() && it.value == currentUserId) ||
+                            (currentUserEmail.isNotBlank() && it.value.equals(currentUserEmail, ignoreCase = true))
+                        }
                         val slotNumber = userSlotEntry?.key ?: "?"
                         val playerNameOrTeam = match.slotNames[slotNumber] ?: "Registered Player"
                         val inGameUid = match.slotUids[slotNumber] ?: ""

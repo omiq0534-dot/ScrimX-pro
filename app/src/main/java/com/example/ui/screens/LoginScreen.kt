@@ -15,6 +15,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -41,6 +47,11 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
+    var showForgotPasswordDialog by remember { mutableStateOf(false) }
+    var resetEmailInput by remember { mutableStateOf("") }
+    var resetStatusMessage by remember { mutableStateOf<String?>(null) }
+    var isResetLoading by remember { mutableStateOf(false) }
     
     val authState by authViewModel.authState.collectAsState()
 
@@ -123,7 +134,10 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
                         .weight(1f)
                         .clip(CircleShape)
                         .background(if (isLogin) Color.White else Color.Transparent)
-                        .clickable { isLogin = true }
+                        .clickable {
+                            isLogin = true
+                            authViewModel.clearError()
+                        }
                         .padding(vertical = 12.dp),
                     contentAlignment = Alignment.Center
                 ) {
@@ -139,7 +153,10 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
                         .weight(1f)
                         .clip(CircleShape)
                         .background(if (!isLogin) Color.White else Color.Transparent)
-                        .clickable { isLogin = false }
+                        .clickable {
+                            isLogin = false
+                            authViewModel.clearError()
+                        }
                         .padding(vertical = 12.dp),
                     contentAlignment = Alignment.Center
                 ) {
@@ -175,8 +192,10 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
                 TextField(
                     value = name,
                     onValueChange = { name = it },
+                    singleLine = true,
                     placeholder = { Text("Full Name / Gamer Tag", color = Color(0xFF6B7280)) },
                     leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = Color.White) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Next),
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = Color(0xFF1A1D27),
                         unfocusedContainerColor = Color(0xFF1A1D27),
@@ -196,9 +215,14 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
             // Capsule TextField - Email
             TextField(
                 value = email,
-                onValueChange = { email = it },
+                onValueChange = { 
+                    email = it.replace(" ", "").replace("\n", "").lowercase()
+                    authViewModel.clearError()
+                },
+                singleLine = true,
                 placeholder = { Text("Email Address", color = Color(0xFF6B7280)) },
                 leadingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = Color.White) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color(0xFF1A1D27),
                     unfocusedContainerColor = Color(0xFF1A1D27),
@@ -218,10 +242,24 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
             // Capsule TextField - Password
             TextField(
                 value = password,
-                onValueChange = { password = it },
+                onValueChange = { 
+                    password = it.replace("\n", "")
+                    authViewModel.clearError()
+                },
+                singleLine = true,
                 placeholder = { Text("Password", color = Color(0xFF6B7280)) },
                 leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = Color.White) },
-                visualTransformation = PasswordVisualTransformation(),
+                trailingIcon = {
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(
+                            if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                            contentDescription = if (passwordVisible) "Hide password" else "Show password",
+                            tint = Color(0xFF9CA3AF)
+                        )
+                    }
+                },
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color(0xFF1A1D27),
                     unfocusedContainerColor = Color(0xFF1A1D27),
@@ -236,7 +274,29 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
                     .border(1.dp, Color(0xFF2E3346), CircleShape)
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            if (isLogin) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp, end = 4.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    Text(
+                        text = "Forgot Password?",
+                        color = Color(0xFF93C5FD),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .clickable {
+                                resetEmailInput = email
+                                resetStatusMessage = null
+                                showForgotPasswordDialog = true
+                            }
+                            .padding(4.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
 
             // Show Error Message
             if (authState is AuthState.Error) {
@@ -364,6 +424,85 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
                 }
             }
         }
+    }
+
+    if (showForgotPasswordDialog) {
+        AlertDialog(
+            onDismissRequest = { showForgotPasswordDialog = false },
+            title = {
+                Text(
+                    "Reset Password",
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
+                )
+            },
+            text = {
+                Column {
+                    Text(
+                        "Enter your registered email address. We'll send you a link to reset your password.",
+                        color = Color(0xFF9CA3AF),
+                        fontSize = 13.sp
+                    )
+                    Spacer(modifier = Modifier.height(14.dp))
+                    TextField(
+                        value = resetEmailInput,
+                        onValueChange = { resetEmailInput = it.replace(" ", "").replace("\n", "").lowercase() },
+                        singleLine = true,
+                        placeholder = { Text("your-email@gmail.com", color = Color(0xFF6B7280)) },
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color(0xFF1A1D27),
+                            unfocusedContainerColor = Color(0xFF1A1D27),
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White
+                        ),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    if (resetStatusMessage != null) {
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(
+                            text = resetStatusMessage!!,
+                            color = if (resetStatusMessage!!.startsWith("Password reset email sent")) Color(0xFF10B981) else Color(0xFFFF4D4D),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (resetEmailInput.isBlank()) {
+                            resetStatusMessage = "Please enter your email"
+                            return@Button
+                        }
+                        isResetLoading = true
+                        authViewModel.resetPassword(resetEmailInput) { success, msg ->
+                            isResetLoading = false
+                            resetStatusMessage = msg
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.Black),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    if (isResetLoading) {
+                        CircularProgressIndicator(color = Color.Black, modifier = Modifier.size(16.dp))
+                    } else {
+                        Text("Send Link", fontWeight = FontWeight.Bold)
+                    }
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showForgotPasswordDialog = false }) {
+                    Text("Close", color = Color(0xFF9CA3AF))
+                }
+            },
+            containerColor = Color(0xFF161922),
+            shape = RoundedCornerShape(20.dp)
+        )
     }
 }
 

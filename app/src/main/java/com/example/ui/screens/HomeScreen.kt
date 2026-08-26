@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -19,10 +20,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -31,9 +37,65 @@ import androidx.navigation.NavController
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import kotlin.math.cos
+import kotlin.math.sin
 import kotlin.random.Random
 
 import com.example.FirebaseHelper
+
+data class WheelPrize(
+    val coins: Int,
+    val label: String,
+    val color: Color,
+    val textColor: Int = android.graphics.Color.WHITE
+)
+
+@Composable
+fun SpinWheelIcon(modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier) {
+        val radius = size.minDimension / 2f
+        val center = Offset(size.width / 2f, size.height / 2f)
+        val colors = listOf(
+            Color(0xFFEF4444), Color(0xFF3B82F6), Color(0xFF10B981),
+            Color(0xFFF59E0B), Color(0xFF8B5CF6), Color(0xFFFFD700)
+        )
+        val sweep = 360f / colors.size
+        for (i in colors.indices) {
+            drawArc(
+                color = colors[i],
+                startAngle = i * sweep,
+                sweepAngle = sweep,
+                useCenter = true
+            )
+        }
+        // Outer golden ring
+        drawCircle(
+            color = Color(0xFFFFD700),
+            radius = radius,
+            style = Stroke(width = 2.5.dp.toPx())
+        )
+        // Center hub
+        drawCircle(
+            color = Color(0xFF0F1118),
+            radius = radius * 0.38f
+        )
+        drawCircle(
+            color = Color.White,
+            radius = radius * 0.16f
+        )
+        // Pointer needle at top
+        val needlePath = Path().apply {
+            moveTo(center.x, 2.dp.toPx())
+            lineTo(center.x - 3.dp.toPx(), 8.dp.toPx())
+            lineTo(center.x + 3.dp.toPx(), 8.dp.toPx())
+            close()
+        }
+        drawPath(needlePath, color = Color.White)
+    }
+}
 
 @Composable
 fun HomeScreen(
@@ -58,6 +120,34 @@ fun HomeScreen(
     var showSpinDialog by remember { mutableStateOf(false) }
     var isSpinning by remember { mutableStateOf(false) }
     var spinReward by remember { mutableStateOf<Int?>(null) }
+    val spinRotation = remember { Animatable(0f) }
+    val spinPrefs = remember { context.getSharedPreferences("spin_preferences", android.content.Context.MODE_PRIVATE) }
+    val todayDate = remember { SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(Date()) }
+    val maxDailySpins = 2
+
+    var spinsRemaining by remember {
+        val lastDate = spinPrefs.getString("last_spin_date", "") ?: ""
+        if (lastDate != todayDate) {
+            spinPrefs.edit().putString("last_spin_date", todayDate).putInt("spins_count", 0).apply()
+            mutableIntStateOf(maxDailySpins)
+        } else {
+            val used = spinPrefs.getInt("spins_count", 0)
+            mutableIntStateOf((maxDailySpins - used).coerceAtLeast(0))
+        }
+    }
+
+    val wheelPrizes = remember {
+        listOf(
+            WheelPrize(10, "+10", Color(0xFFEF4444)),
+            WheelPrize(25, "+25", Color(0xFF2563EB)),
+            WheelPrize(5, "+5", Color(0xFF10B981)),
+            WheelPrize(50, "+50", Color(0xFFF59E0B)),
+            WheelPrize(15, "+15", Color(0xFF8B5CF6)),
+            WheelPrize(100, "+100", Color(0xFFD946EF)),
+            WheelPrize(20, "+20", Color(0xFF06B6D4)),
+            WheelPrize(200, "👑 200", Color(0xFFFFD700), android.graphics.Color.BLACK)
+        )
+    }
 
     // Video Playing Simulation Effect (Runs smooth, never stuck)
     LaunchedEffect(isWatchingVideo) {
@@ -341,89 +431,187 @@ fun HomeScreen(
 
     // 3. Spin Wheel Dialog
     if (showSpinDialog) {
-        val infiniteTransition = rememberInfiniteTransition()
-        val fastSpinAngle by infiniteTransition.animateFloat(
-            initialValue = 0f,
-            targetValue = 360f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(400, easing = LinearEasing),
-                repeatMode = RepeatMode.Restart
-            )
-        )
-        
-        var wheelRotation by remember { mutableStateOf(0f) }
-
         AlertDialog(
             containerColor = Color(0xFF14161F),
             onDismissRequest = { if (!isSpinning) showSpinDialog = false },
             title = {
-                Text("LUCKY SPIN WHEEL 🎰", fontWeight = FontWeight.Black, color = Color.White, fontSize = 16.sp)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("LUCKY SPIN WHEEL 🎰", fontWeight = FontWeight.Black, color = Color.White, fontSize = 16.sp)
+                    Surface(
+                        color = if (spinsRemaining > 0) Color(0xFF10B981).copy(alpha = 0.2f) else Color(0xFFEF4444).copy(alpha = 0.2f),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(
+                            "Spins: $spinsRemaining/$maxDailySpins",
+                            color = if (spinsRemaining > 0) Color(0xFF10B981) else Color(0xFFEF4444),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 11.sp,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
+                }
             },
             text = {
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(20.dp)
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // Custom Draw Spin Wheel
-                    Box(contentAlignment = Alignment.Center) {
-                        androidx.compose.foundation.Canvas(
-                            modifier = Modifier
-                                .size(160.dp)
-                                .border(4.dp, Color.White, CircleShape)
+                    // Custom Drawn Spin Wheel with Numbers on Slices & Needle
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.padding(top = 14.dp, bottom = 4.dp)
+                    ) {
+                        Canvas(
+                            modifier = Modifier.size(200.dp)
                         ) {
-                            val sliceColors = listOf(Color(0xFF1E212D), Color(0xFF2E3346))
-                            val slices = 6
-                            val sweepAngle = 360f / slices
-                            
-                            val currentAngle = if (isSpinning) fastSpinAngle else wheelRotation
+                            val radius = size.minDimension / 2f
+                            val center = Offset(size.width / 2f, size.height / 2f)
+                            val sweep = 360f / wheelPrizes.size
 
-                            withTransform({ rotate(currentAngle) }) {
-                                for (i in 0 until slices) {
-                                    drawArc(
-                                        color = sliceColors[i % 2],
-                                        startAngle = i * sweepAngle,
-                                        sweepAngle = sweepAngle,
-                                        useCenter = true,
-                                        size = size
-                                    )
+                            withTransform({ rotate(spinRotation.value) }) {
+                                drawIntoCanvas { canvas ->
+                                    val nativeCanvas = canvas.nativeCanvas
+
+                                    // 1. Draw colored arcs
+                                    for (i in wheelPrizes.indices) {
+                                        drawArc(
+                                            color = wheelPrizes[i].color,
+                                            startAngle = i * sweep,
+                                            sweepAngle = sweep,
+                                            useCenter = true
+                                        )
+                                    }
+
+                                    // 2. Draw slice border lines
+                                    for (i in wheelPrizes.indices) {
+                                        val angleRad = Math.toRadians((i * sweep).toDouble())
+                                        val x = (center.x + radius * cos(angleRad)).toFloat()
+                                        val y = (center.y + radius * sin(angleRad)).toFloat()
+                                        drawLine(
+                                            color = Color(0xFF14161F),
+                                            start = center,
+                                            end = Offset(x, y),
+                                            strokeWidth = 2.5.dp.toPx()
+                                        )
+                                    }
+
+                                    // 3. Draw text numbers on each slice
+                                    val paint = android.graphics.Paint().apply {
+                                        isAntiAlias = true
+                                        textAlign = android.graphics.Paint.Align.CENTER
+                                        textSize = 13.sp.toPx()
+                                        typeface = android.graphics.Typeface.DEFAULT_BOLD
+                                    }
+
+                                    for (i in wheelPrizes.indices) {
+                                        val midAngle = (i + 0.5f) * sweep
+                                        val textAngleRad = Math.toRadians(midAngle.toDouble())
+                                        val textDist = radius * 0.65f
+                                        val textX = (center.x + textDist * cos(textAngleRad)).toFloat()
+                                        val textY = (center.y + textDist * sin(textAngleRad)).toFloat()
+
+                                        nativeCanvas.save()
+                                        nativeCanvas.rotate(midAngle + 90f, textX, textY)
+                                        paint.color = wheelPrizes[i].textColor
+                                        if (wheelPrizes[i].textColor == android.graphics.Color.WHITE) {
+                                            paint.setShadowLayer(4f, 0f, 2f, android.graphics.Color.BLACK)
+                                        } else {
+                                            paint.clearShadowLayer()
+                                        }
+                                        nativeCanvas.drawText(wheelPrizes[i].label, textX, textY + paint.textSize / 3f, paint)
+                                        nativeCanvas.restore()
+                                    }
                                 }
-                                
-                                // Draw Inner Ring
+                            }
+
+                            // 4. Outer golden ring
+                            drawCircle(
+                                color = Color(0xFFFFD700),
+                                radius = radius,
+                                style = Stroke(width = 5.dp.toPx())
+                            )
+                            // Decorative studs
+                            val dots = 16
+                            for (d in 0 until dots) {
+                                val dotAngleRad = Math.toRadians((d * (360.0 / dots)))
+                                val dotX = (center.x + (radius - 2.5.dp.toPx()) * cos(dotAngleRad)).toFloat()
+                                val dotY = (center.y + (radius - 2.5.dp.toPx()) * sin(dotAngleRad)).toFloat()
                                 drawCircle(
-                                    color = Color.Black,
-                                    radius = size.width / 4f
-                                )
-                                // Draw Center Dot
-                                drawCircle(
-                                    color = Color.White,
-                                    radius = size.width / 12f
+                                    color = if (d % 2 == 0) Color.White else Color(0xFFFFD700),
+                                    radius = 2.2.dp.toPx(),
+                                    center = Offset(dotX, dotY)
                                 )
                             }
+                            // Center dark hub with gold rim
+                            drawCircle(
+                                color = Color(0xFF0F1118),
+                                radius = radius * 0.28f
+                            )
+                            drawCircle(
+                                color = Color(0xFFFFD700),
+                                radius = radius * 0.28f,
+                                style = Stroke(width = 2.dp.toPx())
+                            )
+                            drawCircle(
+                                color = Color(0xFFFFD700),
+                                radius = radius * 0.12f
+                            )
                         }
-                        
-                        // Wheel Pointer
-                        Icon(
-                            Icons.Default.LocationOn,
-                            contentDescription = null,
-                            tint = Color.White,
+
+                        // Wheel Top Pointer Needle
+                        Canvas(
                             modifier = Modifier
                                 .align(Alignment.TopCenter)
-                                .offset(y = (-10).dp)
-                                .size(32.dp)
-                        )
+                                .offset(y = (-14).dp)
+                                .size(width = 28.dp, height = 32.dp)
+                        ) {
+                            val path = Path().apply {
+                                moveTo(size.width / 2f, size.height) // tip
+                                lineTo(0f, 0f)
+                                lineTo(size.width, 0f)
+                                close()
+                            }
+                            drawPath(path, color = Color(0xFF0F1118))
+
+                            val innerPath = Path().apply {
+                                moveTo(size.width / 2f, size.height - 3.dp.toPx())
+                                lineTo(3.dp.toPx(), 3.dp.toPx())
+                                lineTo(size.width - 3.dp.toPx(), 3.dp.toPx())
+                                close()
+                            }
+                            drawPath(innerPath, color = Color(0xFFFFD700))
+                        }
                     }
 
                     if (spinReward != null) {
+                        Surface(
+                            color = Color(0xFFFFD700).copy(alpha = 0.15f),
+                            shape = RoundedCornerShape(12.dp),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFFFD700).copy(alpha = 0.5f))
+                        ) {
+                            Text(
+                                "🎉 Congratulations! Won +$spinReward Coins!",
+                                color = Color(0xFFFFD700),
+                                fontWeight = FontWeight.Black,
+                                fontSize = 14.sp,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                            )
+                        }
+                    } else if (spinsRemaining == 0) {
                         Text(
-                            "🎉 Won +$spinReward Coins!",
-                            color = Color.White,
-                            fontWeight = FontWeight.Black,
-                            fontSize = 18.sp
+                            "Daily 2 free spins used. Come back tomorrow!",
+                            color = Color(0xFFEF4444),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold
                         )
                     } else {
                         Text(
-                            "Spin the wheel to win coins!",
+                            "Spin the wheel to win up to 200 coins!",
                             color = Color(0xFF9CA3AF),
                             fontSize = 13.sp
                         )
@@ -431,29 +619,53 @@ fun HomeScreen(
 
                     Button(
                         onClick = {
-                            if (!isSpinning) {
+                            if (!isSpinning && spinsRemaining > 0) {
                                 isSpinning = true
                                 spinReward = null
                                 scope.launch {
-                                    delay(2000)
-                                    val won = listOf(10, 20, 25, 30, 50).random()
+                                    val targetPrizeIndex = (0 until wheelPrizes.size).random()
+                                    val sweep = 360f / wheelPrizes.size
+                                    val sliceCenter = (targetPrizeIndex + 0.5f) * sweep
+                                    val targetAngleMod = ((270f - sliceCenter) % 360f + 360f) % 360f
+                                    val currentRot = spinRotation.value
+                                    val currentMod = ((currentRot % 360f) + 360f) % 360f
+                                    val forwardDelta = ((targetAngleMod - currentMod) % 360f + 360f) % 360f
+                                    val totalTargetRotation = currentRot + (360f * 6) + forwardDelta
+
+                                    spinRotation.animateTo(
+                                        targetValue = totalTargetRotation,
+                                        animationSpec = tween(
+                                            durationMillis = 3600,
+                                            easing = FastOutSlowInEasing
+                                        )
+                                    )
+
+                                    val won = wheelPrizes[targetPrizeIndex].coins
                                     spinReward = won
-                                    wheelRotation = (0..360).random().toFloat()
                                     userViewModel.addAppMoney(won)
+                                    spinsRemaining = (spinsRemaining - 1).coerceAtLeast(0)
+                                    val usedCount = maxDailySpins - spinsRemaining
+                                    spinPrefs.edit().putString("last_spin_date", todayDate).putInt("spins_count", usedCount).apply()
+
                                     isSpinning = false
                                     Toast.makeText(context, "🎉 You won +$won Coins!", Toast.LENGTH_SHORT).show()
                                 }
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (spinsRemaining > 0) Color.White else Color(0xFF374151),
+                            disabledContainerColor = Color(0xFF262A38)
+                        ),
                         shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.fillMaxWidth().height(46.dp),
-                        enabled = !isSpinning
+                        modifier = Modifier.fillMaxWidth().height(48.dp),
+                        enabled = !isSpinning && spinsRemaining > 0
                     ) {
                         if (isSpinning) {
-                            Text("SPINNING...", color = Color.Black, fontWeight = FontWeight.Black)
+                            Text("SPINNING WHEEL...", color = Color.Black, fontWeight = FontWeight.Black)
+                        } else if (spinsRemaining == 0) {
+                            Text("NO SPINS LEFT TODAY", color = Color(0xFF9CA3AF), fontWeight = FontWeight.Bold)
                         } else {
-                            Text("SPIN NOW", color = Color.Black, fontWeight = FontWeight.Black)
+                            Text("SPIN NOW ($spinsRemaining LEFT)", color = Color.Black, fontWeight = FontWeight.Black)
                         }
                     }
                 }
@@ -603,22 +815,44 @@ fun EarningZone(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            EarnCard("Daily", Icons.Default.CardGiftcard, Modifier.weight(1f), onClick = onDailyClick)
+            EarnCard(
+                title = "Daily",
+                modifier = Modifier.weight(1f),
+                onClick = onDailyClick
+            ) {
+                Icon(Icons.Default.CardGiftcard, contentDescription = "Daily", tint = Color.White, modifier = Modifier.size(28.dp))
+            }
             Spacer(modifier = Modifier.width(12.dp))
-            EarnCard("Spin", Icons.Default.Refresh, Modifier.weight(1f), onClick = onSpinClick)
+            EarnCard(
+                title = "Spin",
+                modifier = Modifier.weight(1f),
+                onClick = onSpinClick
+            ) {
+                SpinWheelIcon(modifier = Modifier.size(32.dp))
+            }
             Spacer(modifier = Modifier.width(12.dp))
-            EarnCard("Watch", Icons.Default.PlayArrow, Modifier.weight(1f), onClick = onWatchClick)
+            EarnCard(
+                title = "Watch",
+                modifier = Modifier.weight(1f),
+                onClick = onWatchClick
+            ) {
+                Icon(Icons.Default.PlayArrow, contentDescription = "Watch", tint = Color.White, modifier = Modifier.size(28.dp))
+            }
         }
     }
 }
 
 @Composable
-fun EarnCard(title: String, icon: androidx.compose.ui.graphics.vector.ImageVector, modifier: Modifier = Modifier, onClick: () -> Unit = {}) {
+fun EarnCard(
+    title: String,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {},
+    iconContent: @Composable () -> Unit
+) {
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(24.dp))
             .clickable { onClick() }
-            .clip(RoundedCornerShape(24.dp))
             .background(Color(0xFF111319))
             .border(1.dp, Color(0xFF262A38), RoundedCornerShape(24.dp))
             .padding(vertical = 20.dp, horizontal = 8.dp),
@@ -631,7 +865,7 @@ fun EarnCard(title: String, icon: androidx.compose.ui.graphics.vector.ImageVecto
                 .background(Color(0xFF1E212D)),
             contentAlignment = Alignment.Center
         ) {
-            Icon(icon, contentDescription = title, tint = Color.White, modifier = Modifier.size(28.dp))
+            iconContent()
         }
         Spacer(modifier = Modifier.height(12.dp))
         Text(title, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.White)

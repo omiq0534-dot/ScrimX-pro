@@ -80,6 +80,53 @@ class AuthViewModel : ViewModel() {
         }
     }
 
+    private fun formatAuthError(msg: String?): String {
+        val m = msg ?: return "Authentication Failed"
+        return when {
+            m.contains("incorrect", ignoreCase = true) || 
+            m.contains("invalid-credential", ignoreCase = true) || 
+            m.contains("user-not-found", ignoreCase = true) ||
+            m.contains("wrong-password", ignoreCase = true) -> 
+                "Wrong password or Account doesn't exist! If you are new, tap 'Register' tab above."
+            m.contains("email-already-in-use", ignoreCase = true) || m.contains("already in use", ignoreCase = true) ->
+                "This Email is already registered! Please tap 'Login' tab above."
+            m.contains("weak-password", ignoreCase = true) ->
+                "Password must be at least 6 characters."
+            m.contains("badly formatted", ignoreCase = true) || m.contains("invalid-email", ignoreCase = true) ->
+                "Please enter a valid email address."
+            m.contains("network", ignoreCase = true) ->
+                "Network error! Please check your internet connection."
+            else -> m
+        }
+    }
+
+    fun clearError() {
+        if (_authState.value is AuthState.Error) {
+            _authState.value = AuthState.Idle
+        }
+    }
+
+    fun resetPassword(email: String, onResult: (Boolean, String) -> Unit) {
+        val fbAuth = getAuth()
+        val cleanEmail = email.trim()
+        if (cleanEmail.isEmpty()) {
+            onResult(false, "Please enter your email address first")
+            return
+        }
+        if (fbAuth == null) {
+            onResult(false, "Connecting to Firebase... please try again")
+            return
+        }
+        viewModelScope.launch {
+            try {
+                fbAuth.sendPasswordResetEmail(cleanEmail).await()
+                onResult(true, "Password reset email sent to $cleanEmail! Check inbox/spam.")
+            } catch (e: Exception) {
+                onResult(false, e.message ?: "Failed to send reset link")
+            }
+        }
+    }
+
     fun login(email: String, pass: String) {
         val fbAuth = getAuth()
         if (fbAuth == null) {
@@ -101,7 +148,7 @@ class AuthViewModel : ViewModel() {
                     _authState.value = AuthState.Error("Unknown Error")
                 }
             } catch (e: Exception) {
-                _authState.value = AuthState.Error(e.message ?: "Login Failed")
+                _authState.value = AuthState.Error(formatAuthError(e.message))
             }
         }
     }
@@ -143,7 +190,7 @@ class AuthViewModel : ViewModel() {
                     _authState.value = AuthState.Error("Unknown Error")
                 }
             } catch (e: Exception) {
-                _authState.value = AuthState.Error(e.message ?: "Registration Failed")
+                _authState.value = AuthState.Error(formatAuthError(e.message))
             }
         }
     }
