@@ -1,0 +1,681 @@
+package com.example.ui.screens
+
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlin.random.Random
+
+@Composable
+fun HomeScreen(
+    navController: NavController,
+    onNavigateToTab: ((String) -> Unit)? = null,
+    userViewModel: UserViewModel = viewModel()
+) {
+    val profile by userViewModel.profile.collectAsState()
+    val context = LocalContext.current
+    val db = FirebaseFirestore.getInstance()
+    val scope = rememberCoroutineScope()
+
+    // Dialog States
+    var showWatchDialog by remember { mutableStateOf(false) }
+    var isWatchingVideo by remember { mutableStateOf(false) }
+    var videoProgress by remember { mutableStateOf(0f) }
+    var videoRewardClaimed by remember { mutableStateOf(false) }
+
+    var showDailyDialog by remember { mutableStateOf(false) }
+    var dailyClaimed by remember { mutableStateOf(false) }
+
+    var showSpinDialog by remember { mutableStateOf(false) }
+    var isSpinning by remember { mutableStateOf(false) }
+    var spinReward by remember { mutableStateOf<Int?>(null) }
+
+    // Video Playing Simulation Effect (Runs smooth, never stuck)
+    LaunchedEffect(isWatchingVideo) {
+        if (isWatchingVideo) {
+            videoProgress = 0f
+            videoRewardClaimed = false
+            for (i in 1..100) {
+                delay(35) // Total 3.5 seconds
+                videoProgress = i / 100f
+            }
+            userViewModel.addAppMoney(15)
+            videoRewardClaimed = true
+            isWatchingVideo = false
+            Toast.makeText(context, "🎉 +15 Coins Added to Wallet!", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // 1. Watch Video & Live Stream Dialog
+    if (showWatchDialog) {
+        AlertDialog(
+            containerColor = Color(0xFF14161F),
+            onDismissRequest = { 
+                if (!isWatchingVideo) showWatchDialog = false 
+            },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(10.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFFFD700))
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text(
+                        if (isWatchingVideo) "WATCHING VIDEO AD..." else "WATCH & EARN / LIVE",
+                        fontWeight = FontWeight.Black,
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        letterSpacing = 0.5.sp
+                    )
+                }
+            },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(14.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    if (isWatchingVideo) {
+                        // Interactive Video Screen Simulator
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(160.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(Color(0xFF0C0D12))
+                                .border(1.dp, Color(0xFF262938), RoundedCornerShape(16.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.PlayCircleFilled,
+                                    contentDescription = null,
+                                    tint = Color(0xFFFFD700),
+                                    modifier = Modifier.size(44.dp)
+                                )
+                                Text(
+                                    "Playing Sponsor Video...",
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 13.sp
+                                )
+                                Text(
+                                    "Reward unlocks in a moment",
+                                    color = Color(0xFF8E92A4),
+                                    fontSize = 11.sp
+                                )
+                            }
+                        }
+
+                        // Progress Bar
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            LinearProgressIndicator(
+                                progress = { videoProgress },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(8.dp)
+                                    .clip(CircleShape),
+                                color = Color(0xFFFFD700),
+                                trackColor = Color(0xFF262938)
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                "${(videoProgress * 100).toInt()}% completed",
+                                color = Color(0xFF8E92A4),
+                                fontSize = 11.sp,
+                                modifier = Modifier.align(Alignment.End)
+                            )
+                        }
+                    } else {
+                        Text(
+                            "Watch short sponsor videos to earn Coins for entry fees, or tune into live tournament scrims!",
+                            color = Color(0xFFC0C4D6),
+                            fontSize = 13.sp,
+                            lineHeight = 18.sp
+                        )
+
+                        // Option 1: Watch Ad (+15 Coins)
+                        Button(
+                            onClick = {
+                                isWatchingVideo = true
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700)),
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.fillMaxWidth().height(48.dp)
+                        ) {
+                            Icon(Icons.Default.PlayArrow, contentDescription = null, tint = Color.Black, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("WATCH SPONSOR AD (+15 COINS)", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 12.sp)
+                        }
+
+                        // Option 2: Watch Live Scrims (YouTube)
+                        OutlinedButton(
+                            onClick = {
+                                showWatchDialog = false
+                                db.collection("settings").document("live_stream").get().addOnSuccessListener { doc ->
+                                    val streamUrl = doc.getString("url")
+                                    val targetUrl = if (!streamUrl.isNullOrBlank()) streamUrl else "https://www.youtube.com/results?search_query=Free+Fire+Tournament+Live"
+                                    try {
+                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(targetUrl)).apply {
+                                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                        }
+                                        context.startActivity(intent)
+                                    } catch (e: Exception) {
+                                        Toast.makeText(context, "Opening YouTube in browser...", Toast.LENGTH_SHORT).show()
+                                    }
+                                }.addOnFailureListener {
+                                    try {
+                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/results?search_query=Free+Fire+Tournament+Live")).apply {
+                                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                        }
+                                        context.startActivity(intent)
+                                    } catch (e: Exception) {
+                                        Toast.makeText(context, "Could not open stream", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            },
+                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF2C3042)),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.fillMaxWidth().height(48.dp)
+                        ) {
+                            Icon(Icons.Default.LiveTv, contentDescription = null, tint = Color(0xFFFF5252), modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("WATCH TOURNAMENT LIVE (YT)", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                if (!isWatchingVideo) {
+                    TextButton(onClick = { showWatchDialog = false }) {
+                        Text("Close", color = Color(0xFF8E92A4), fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        )
+    }
+
+    // 2. Daily Check-in Dialog
+    var currentStreak by remember { mutableStateOf(3) } // Mock 3-day streak
+    if (showDailyDialog) {
+        AlertDialog(
+            containerColor = Color(0xFF14161F),
+            onDismissRequest = { showDailyDialog = false },
+            title = {
+                Text("DAILY REWARD 🎁", fontWeight = FontWeight.Black, color = Color.White, fontSize = 16.sp)
+            },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Text(
+                        if (dailyClaimed) "Already claimed today! Come back tomorrow." else "Claim your free +25 daily login bonus coins!",
+                        color = Color(0xFFC0C4D6),
+                        fontSize = 13.sp,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                    
+                    // 7-Day Streak UI
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        for (day in 1..7) {
+                            val status = when {
+                                day <= currentStreak && dailyClaimed -> "claimed"
+                                day < currentStreak && !dailyClaimed -> "claimed"
+                                day == currentStreak && !dailyClaimed -> "today"
+                                day == currentStreak + 1 && dailyClaimed -> "today"
+                                else -> "upcoming"
+                            }
+                            
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .clip(CircleShape)
+                                        .background(
+                                            when (status) {
+                                                "claimed" -> Color(0xFF2E3346)
+                                                "today" -> Color.White
+                                                else -> Color(0xFF1A1D27)
+                                            }
+                                        )
+                                        .border(
+                                            1.dp,
+                                            if (status == "today") Color.White else Color(0xFF2E3346),
+                                            CircleShape
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (status == "claimed") {
+                                        Icon(Icons.Default.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                                    } else {
+                                        Text(
+                                            "$day",
+                                            fontWeight = FontWeight.Bold,
+                                            color = if (status == "today") Color.Black else Color(0xFF9CA3AF),
+                                            fontSize = 12.sp
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (!dailyClaimed) {
+                            dailyClaimed = true
+                            currentStreak++
+                            userViewModel.addAppMoney(25)
+                            Toast.makeText(context, "🎁 +25 Daily Coins Claimed!", Toast.LENGTH_SHORT).show()
+                        } else {
+                            showDailyDialog = false
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text(if (dailyClaimed) "Done" else "CLAIM +25 COINS", color = Color.Black, fontWeight = FontWeight.Black)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDailyDialog = false }) {
+                    Text("Close", color = Color(0xFF8E92A4))
+                }
+            }
+        )
+    }
+
+    // 3. Spin Wheel Dialog
+    if (showSpinDialog) {
+        val infiniteTransition = rememberInfiniteTransition()
+        val fastSpinAngle by infiniteTransition.animateFloat(
+            initialValue = 0f,
+            targetValue = 360f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(400, easing = LinearEasing),
+                repeatMode = RepeatMode.Restart
+            )
+        )
+        
+        var wheelRotation by remember { mutableStateOf(0f) }
+
+        AlertDialog(
+            containerColor = Color(0xFF14161F),
+            onDismissRequest = { if (!isSpinning) showSpinDialog = false },
+            title = {
+                Text("LUCKY SPIN WHEEL 🎰", fontWeight = FontWeight.Black, color = Color.White, fontSize = 16.sp)
+            },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(20.dp)
+                ) {
+                    // Custom Draw Spin Wheel
+                    Box(contentAlignment = Alignment.Center) {
+                        androidx.compose.foundation.Canvas(
+                            modifier = Modifier
+                                .size(160.dp)
+                                .border(4.dp, Color.White, CircleShape)
+                        ) {
+                            val sliceColors = listOf(Color(0xFF1E212D), Color(0xFF2E3346))
+                            val slices = 6
+                            val sweepAngle = 360f / slices
+                            
+                            val currentAngle = if (isSpinning) fastSpinAngle else wheelRotation
+
+                            withTransform({ rotate(currentAngle) }) {
+                                for (i in 0 until slices) {
+                                    drawArc(
+                                        color = sliceColors[i % 2],
+                                        startAngle = i * sweepAngle,
+                                        sweepAngle = sweepAngle,
+                                        useCenter = true,
+                                        size = size
+                                    )
+                                }
+                                
+                                // Draw Inner Ring
+                                drawCircle(
+                                    color = Color.Black,
+                                    radius = size.width / 4f
+                                )
+                                // Draw Center Dot
+                                drawCircle(
+                                    color = Color.White,
+                                    radius = size.width / 12f
+                                )
+                            }
+                        }
+                        
+                        // Wheel Pointer
+                        Icon(
+                            Icons.Default.LocationOn,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier
+                                .align(Alignment.TopCenter)
+                                .offset(y = (-10).dp)
+                                .size(32.dp)
+                        )
+                    }
+
+                    if (spinReward != null) {
+                        Text(
+                            "🎉 Won +$spinReward Coins!",
+                            color = Color.White,
+                            fontWeight = FontWeight.Black,
+                            fontSize = 18.sp
+                        )
+                    } else {
+                        Text(
+                            "Spin the wheel to win coins!",
+                            color = Color(0xFF9CA3AF),
+                            fontSize = 13.sp
+                        )
+                    }
+
+                    Button(
+                        onClick = {
+                            if (!isSpinning) {
+                                isSpinning = true
+                                spinReward = null
+                                scope.launch {
+                                    delay(2000)
+                                    val won = listOf(10, 20, 25, 30, 50).random()
+                                    spinReward = won
+                                    wheelRotation = (0..360).random().toFloat()
+                                    userViewModel.addAppMoney(won)
+                                    isSpinning = false
+                                    Toast.makeText(context, "🎉 You won +$won Coins!", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth().height(46.dp),
+                        enabled = !isSpinning
+                    ) {
+                        if (isSpinning) {
+                            Text("SPINNING...", color = Color.Black, fontWeight = FontWeight.Black)
+                        } else {
+                            Text("SPIN NOW", color = Color.Black, fontWeight = FontWeight.Black)
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                if (!isSpinning) {
+                    TextButton(onClick = { showSpinDialog = false }) {
+                        Text("Close", color = Color(0xFF8E92A4))
+                    }
+                }
+            }
+        )
+    }
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFFAFAFA))
+            .padding(horizontal = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(32.dp)
+    ) {
+        item { Spacer(modifier = Modifier.height(8.dp)) }
+        item { 
+            TopWalletBar(
+                userName = profile?.name?.ifBlank { "Player" } ?: "Player",
+                appMoney = profile?.appMoney ?: 0,
+                realMoney = profile?.realMoney ?: 0,
+                onProfileClick = { onNavigateToTab?.invoke("profile_tab") },
+                onWalletClick = { onNavigateToTab?.invoke("wallet_tab") }
+            ) 
+        }
+        item { 
+            EarningZone(
+                onDailyClick = { showDailyDialog = true },
+                onSpinClick = { showSpinDialog = true },
+                onWatchClick = { showWatchDialog = true }
+            ) 
+        }
+        item { UpcomingMatches(navController) }
+        item { Spacer(modifier = Modifier.height(24.dp)) }
+    }
+}
+
+@Composable
+fun TopWalletBar(
+    userName: String = "Player",
+    appMoney: Int = 0,
+    realMoney: Int = 0,
+    onProfileClick: () -> Unit = {},
+    onWalletClick: () -> Unit = {}
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // User Profile & Gamer Tag
+        Row(
+            modifier = Modifier
+                .clip(RoundedCornerShape(20.dp))
+                .clickable { onProfileClick() }
+                .padding(vertical = 4.dp, horizontal = 2.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Profile Avatar with dynamic initial
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(Color.Black)
+                    .border(2.dp, Color(0xFFFFD700), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                val initial = userName.trim().firstOrNull()?.toString()?.uppercase() ?: "P"
+                Text(initial, color = Color.White, fontWeight = FontWeight.Black, fontSize = 20.sp)
+            }
+
+            Spacer(modifier = Modifier.width(10.dp))
+
+            Column {
+                Text(
+                    "GAMER",
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Black,
+                    color = Color(0xFF8E92A4),
+                    letterSpacing = 0.5.sp
+                )
+                Text(
+                    userName,
+                    fontWeight = FontWeight.Black,
+                    fontSize = 16.sp,
+                    color = Color.Black,
+                    maxLines = 1
+                )
+            }
+        }
+
+        // Dual Wallet Pill (Click opens Wallet)
+        Row(
+            modifier = Modifier
+                .clip(RoundedCornerShape(32.dp))
+                .background(Color(0xFF111319))
+                .border(1.dp, Color(0xFF262A38), RoundedCornerShape(32.dp))
+                .clickable { onWalletClick() }
+                .padding(3.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // App Money / Coins
+            Row(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(Color(0xFF1E212D))
+                    .padding(horizontal = 10.dp, vertical = 7.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(Icons.Default.Star, contentDescription = "Coins", tint = Color.White, modifier = Modifier.size(16.dp))
+                Spacer(modifier = Modifier.width(4.dp))
+                Text("$appMoney", fontWeight = FontWeight.Black, fontSize = 13.sp, color = Color.White)
+            }
+            Spacer(modifier = Modifier.width(3.dp))
+            // Real Cash
+            Row(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(Color.Black)
+                    .padding(horizontal = 12.dp, vertical = 7.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(Icons.Default.AccountBalanceWallet, contentDescription = "Cash", tint = Color(0xFFFFD700), modifier = Modifier.size(15.dp))
+                Spacer(modifier = Modifier.width(4.dp))
+                Text("₹$realMoney", fontWeight = FontWeight.Black, fontSize = 13.sp, color = Color.White)
+            }
+        }
+    }
+}
+
+@Composable
+fun EarningZone(
+    onDailyClick: () -> Unit = {},
+    onSpinClick: () -> Unit = {},
+    onWatchClick: () -> Unit = {}
+) {
+    Column {
+        Text("Earning Zone", fontSize = 22.sp, fontWeight = FontWeight.Black, color = Color.Black)
+        Spacer(modifier = Modifier.height(16.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            EarnCard("Daily", Icons.Default.CardGiftcard, Modifier.weight(1f), onClick = onDailyClick)
+            Spacer(modifier = Modifier.width(12.dp))
+            EarnCard("Spin", Icons.Default.Refresh, Modifier.weight(1f), onClick = onSpinClick)
+            Spacer(modifier = Modifier.width(12.dp))
+            EarnCard("Watch", Icons.Default.PlayArrow, Modifier.weight(1f), onClick = onWatchClick)
+        }
+    }
+}
+
+@Composable
+fun EarnCard(title: String, icon: androidx.compose.ui.graphics.vector.ImageVector, modifier: Modifier = Modifier, onClick: () -> Unit = {}) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(24.dp))
+            .clickable { onClick() }
+            .clip(RoundedCornerShape(24.dp))
+            .background(Color(0xFF111319))
+            .border(1.dp, Color(0xFF262A38), RoundedCornerShape(24.dp))
+            .padding(vertical = 20.dp, horizontal = 8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = Modifier
+                .size(56.dp)
+                .clip(CircleShape)
+                .background(Color(0xFF1E212D)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(icon, contentDescription = title, tint = Color.White, modifier = Modifier.size(28.dp))
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        Text(title, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.White)
+    }
+}
+
+@Composable
+fun UpcomingMatches(navController: NavController, viewModel: MatchesViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
+    val matches by viewModel.matches.collectAsState()
+
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text("Upcoming Scrims", fontSize = 22.sp, fontWeight = FontWeight.Black, color = Color.Black)
+            Text("See All", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        if (matches.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(26.dp))
+                    .background(Color(0xFF111319))
+                    .border(1.5.dp, Color(0xFF262A38), RoundedCornerShape(26.dp))
+                    .padding(36.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    "No upcoming scrims right now.\nCheck back shortly or create one from Admin!",
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+            }
+        } else {
+            matches.forEach { match ->
+                val totalSlots = if (match.totalSlots > 0) match.totalSlots else if (match.mode == "Solo") 48 else if (match.mode == "Duo") 24 else 12
+                com.example.ui.components.PremiumMatchCard(
+                    title = match.title,
+                    time = match.time,
+                    prize = match.prize,
+                    entry = match.entry,
+                    badge = match.badge,
+                    status = match.status,
+                    map = match.map,
+                    slotsBooked = match.bookedSlots.size,
+                    totalSlots = totalSlots,
+                    liveUrl = match.liveUrl,
+                    onClick = { navController.navigate("match_details/${android.net.Uri.encode(match.id)}") }
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+        }
+    }
+}

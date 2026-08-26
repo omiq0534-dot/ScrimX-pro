@@ -1,0 +1,6 @@
+{
+  "name": "SCRIM X",
+  "description": "An eSports scrim and tournament app.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
