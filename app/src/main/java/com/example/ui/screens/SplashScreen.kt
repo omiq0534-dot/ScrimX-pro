@@ -51,12 +51,20 @@ fun SplashScreen(navController: NavController) {
 
         delay(600)
 
-        // Check if user is logged in
-        val user = FirebaseAuth.getInstance().currentUser
-        val destination = if (user != null) "home" else "login"
+        // Check if user is logged in safely
+        val destination = try {
+            val user = FirebaseAuth.getInstance().currentUser
+            if (user != null) "home" else "login"
+        } catch (e: Exception) {
+            "login"
+        }
         
-        navController.navigate(destination) {
-            popUpTo("splash") { inclusive = true }
+        try {
+            navController.navigate(destination) {
+                popUpTo("splash") { inclusive = true }
+            }
+        } catch (e: Exception) {
+            // fallback navigation if needed
         }
     }
 

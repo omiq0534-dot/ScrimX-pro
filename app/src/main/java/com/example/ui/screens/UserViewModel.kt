@@ -30,42 +30,50 @@ class UserViewModel : ViewModel() {
     }
     
     private fun listenToUser() {
-        val currentUser = auth.currentUser ?: return
-        val docRef = db.collection("users").document(currentUser.uid)
-        
-        listener = docRef.addSnapshotListener { snapshot, e ->
-            if (e != null) return@addSnapshotListener
-            if (snapshot != null && snapshot.exists()) {
-                val p = snapshot.toObject(UserProfile::class.java)?.copy(uid = snapshot.id)
-                if (p != null) {
-                    if (p.name.isBlank() || p.name.equals("New Player", ignoreCase = true)) {
+        try {
+            val currentUser = auth.currentUser ?: return
+            val docRef = db.collection("users").document(currentUser.uid)
+            
+            listener = docRef.addSnapshotListener { snapshot, e ->
+                if (e != null) return@addSnapshotListener
+                try {
+                    if (snapshot != null && snapshot.exists()) {
+                        val p = snapshot.toObject(UserProfile::class.java)?.copy(uid = snapshot.id)
+                        if (p != null) {
+                            if (p.name.isBlank() || p.name.equals("New Player", ignoreCase = true)) {
+                                val derivedName = when {
+                                    !currentUser.displayName.isNullOrBlank() -> currentUser.displayName!!
+                                    !currentUser.email.isNullOrBlank() -> currentUser.email!!.substringBefore("@").replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+                                    else -> "Player"
+                                }
+                                _profile.value = p.copy(name = derivedName)
+                                docRef.update("name", derivedName)
+                            } else {
+                                _profile.value = p
+                            }
+                        }
+                    } else {
                         val derivedName = when {
                             !currentUser.displayName.isNullOrBlank() -> currentUser.displayName!!
                             !currentUser.email.isNullOrBlank() -> currentUser.email!!.substringBefore("@").replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
                             else -> "Player"
                         }
-                        _profile.value = p.copy(name = derivedName)
-                        docRef.update("name", derivedName)
-                    } else {
-                        _profile.value = p
-                    }
-                }
-            } else {
-                val derivedName = when {
-                    !currentUser.displayName.isNullOrBlank() -> currentUser.displayName!!
-                    !currentUser.email.isNullOrBlank() -> currentUser.email!!.substringBefore("@").replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
-                    else -> "Player"
-                }
 
-                val newUser = UserProfile(
-                    uid = currentUser.uid,
-                    email = currentUser.email ?: "",
-                    name = derivedName,
-                    realMoney = 100,
-                    appMoney = 0
-                )
-                docRef.set(newUser)
+                        val newUser = UserProfile(
+                            uid = currentUser.uid,
+                            email = currentUser.email ?: "",
+                            name = derivedName,
+                            realMoney = 100,
+                            appMoney = 0
+                        )
+                        docRef.set(newUser)
+                    }
+                } catch (ex: Exception) {
+                    // Safe catch
+                }
             }
+        } catch (e: Exception) {
+            // Firebase safety catch
         }
     }
     

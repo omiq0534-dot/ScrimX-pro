@@ -47,10 +47,18 @@ class MatchesViewModel : ViewModel() {
     }
     
     private fun listenToMatches() {
-        matchesListener = db.collection("matches").addSnapshotListener { snapshot, e ->
-            if (e != null || snapshot == null) return@addSnapshotListener
-            val list = snapshot.documents.mapNotNull { it.toObject(MatchData::class.java)?.copy(id = it.id) }
-            _matches.value = list
+        try {
+            matchesListener = db.collection("matches").addSnapshotListener { snapshot, e ->
+                if (e != null || snapshot == null) return@addSnapshotListener
+                try {
+                    val list = snapshot.documents.mapNotNull { it.toObject(MatchData::class.java)?.copy(id = it.id) }
+                    _matches.value = list
+                } catch (ex: Exception) {
+                    // Safe
+                }
+            }
+        } catch (e: Exception) {
+            // Safe
         }
     }
     
