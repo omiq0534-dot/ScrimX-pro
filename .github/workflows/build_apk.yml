@@ -20,20 +20,23 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-        cache: gradle
 
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
+    - name: Accept Android SDK Licenses
+      run: |
+        yes | sdkmanager --licenses || true
+
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v4
+      with:
+        gradle-version: '9.3.1'
 
     - name: Prepare Keystore and Environment
       run: |
-        # Create .env if missing
-        if [ ! -f ".env" ]; then
-          touch .env
-        fi
+        # Create .env and .env.example if missing
+        touch .env .env.example
 
         # Restore debug.keystore from base64 if present, else generate fresh debug keystore
         if [ -f "debug.keystore.base64" ]; then
@@ -43,13 +46,6 @@ jobs:
           keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
         fi
 
-    - name: Ensure Gradle Wrapper or Install Gradle
-      run: |
-        if [ ! -f "gradlew" ]; then
-          if command -v gradle &> /dev/null; then
-            gradle wrapper
-          fi
-        fi
         if [ -f "gradlew" ]; then
           chmod +x gradlew
         fi
@@ -64,9 +60,12 @@ jobs:
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
+      if: always()
       with:
         name: ScrimX-Tournament-App-Debug-APK
         path: app/build/outputs/apk/**/*.apk
+        if-no-files-found: warn
         retention-days: 14
+
 
 
