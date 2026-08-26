@@ -72,8 +72,8 @@ data class PaymentSettings(
 )
 
 class WalletViewModel : ViewModel() {
-    private val db = FirebaseFirestore.getInstance()
-    private val auth = FirebaseAuth.getInstance()
+    private val db: FirebaseFirestore? = try { FirebaseFirestore.getInstance() } catch (e: Exception) { null }
+    private val auth: FirebaseAuth? = try { FirebaseAuth.getInstance() } catch (e: Exception) { null }
 
     private val _transactions = MutableStateFlow<List<TransactionRecord>>(emptyList())
     val transactions: StateFlow<List<TransactionRecord>> = _transactions
@@ -89,40 +89,51 @@ class WalletViewModel : ViewModel() {
     }
 
     private fun listenToPaymentSettings() {
-        db.collection("settings").document("payment").addSnapshotListener { doc, _ ->
-            if (doc != null && doc.exists()) {
-                _paymentSettings.value = PaymentSettings(
-                    upiId = doc.getString("upiId") ?: "6375615586@fam",
-                    upiName = doc.getString("upiName") ?: "Tournament Esports Official",
-                    minDeposit = (doc.getLong("minDeposit") ?: 10L).toInt(),
-                    minWithdraw = (doc.getLong("minWithdraw") ?: 50L).toInt(),
-                    coinConversionRate = (doc.getLong("coinConversionRate") ?: 10L).toInt()
-                )
-            } else {
-                // Initialize default with Om's UPI & safe business brand
-                val defaultSettings = PaymentSettings(
-                    upiId = "6375615586@fam",
-                    upiName = "Tournament Esports Official",
-                    minDeposit = 10,
-                    minWithdraw = 50,
-                    coinConversionRate = 10
-                )
-                db.collection("settings").document("payment").set(defaultSettings)
+        try {
+            val currentDb = db ?: return
+            currentDb.collection("settings").document("payment").addSnapshotListener { doc, _ ->
+                if (doc != null && doc.exists()) {
+                    _paymentSettings.value = PaymentSettings(
+                        upiId = doc.getString("upiId") ?: "6375615586@fam",
+                        upiName = doc.getString("upiName") ?: "Tournament Esports Official",
+                        minDeposit = (doc.getLong("minDeposit") ?: 10L).toInt(),
+                        minWithdraw = (doc.getLong("minWithdraw") ?: 50L).toInt(),
+                        coinConversionRate = (doc.getLong("coinConversionRate") ?: 10L).toInt()
+                    )
+                } else {
+                    // Initialize default with Om's UPI & safe business brand
+                    val defaultSettings = PaymentSettings(
+                        upiId = "6375615586@fam",
+                        upiName = "Tournament Esports Official",
+                        minDeposit = 10,
+                        minWithdraw = 50,
+                        coinConversionRate = 10
+                    )
+                    currentDb.collection("settings").document("payment").set(defaultSettings)
+                }
             }
+        } catch (e: Exception) {
+            // safe catch
         }
     }
 
     private fun listenToTransactions() {
-        val user = auth.currentUser ?: return
-        txListener = db.collection("transactions")
-            .whereEqualTo("userId", user.uid)
-            .addSnapshotListener { snap, _ ->
-                if (snap != null) {
-                    val list = snap.documents.mapNotNull { it.toObject(TransactionRecord::class.java)?.copy(id = it.id) }
-                        .sortedByDescending { it.timestamp }
-                    _transactions.value = list
+        try {
+            val currentAuth = auth ?: return
+            val currentDb = db ?: return
+            val user = currentAuth.currentUser ?: return
+            txListener = currentDb.collection("transactions")
+                .whereEqualTo("userId", user.uid)
+                .addSnapshotListener { snap, _ ->
+                    if (snap != null) {
+                        val list = snap.documents.mapNotNull { it.toObject(TransactionRecord::class.java)?.copy(id = it.id) }
+                            .sortedByDescending { it.timestamp }
+                        _transactions.value = list
+                    }
                 }
-            }
+        } catch (e: Exception) {
+            // safe catch
+        }
     }
 
     fun submitDepositRequest(
@@ -131,7 +142,8 @@ class WalletViewModel : ViewModel() {
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
-        val user = auth.currentUser ?: return onError("Please login first")
+        val user = auth?.currentUser ?: return onError("Please login first")
+        val currentDb = db ?: return onError("Database not available")
         if (utr.isBlank() || utr.length < 6) return onError("Please enter valid 12-digit UTR / Ref Number")
         if (amount < _paymentSettings.value.minDeposit) return onError("Minimum deposit is ₹${_paymentSettings.value.minDeposit}")
 
@@ -148,7 +160,7 @@ class WalletViewModel : ViewModel() {
             note = "UPI Deposit Request (Pending Admin Approval)"
         )
 
-        db.collection("transactions").document(recordId).set(record)
+        currentDb.collection("transactions").document(recordId).set(record)
             .addOnSuccessListener { onSuccess() }
             .addOnFailureListener { onError(it.message ?: "Failed to submit deposit") }
     }
@@ -160,16 +172,17 @@ class WalletViewModel : ViewModel() {
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
-        val user = auth.currentUser ?: return onError("Please login first")
+        val user = auth?.currentUser ?: return onError("Please login first")
+        val currentDb = db ?: return onError("Database not available")
         if (upiId.isBlank() || !upiId.contains("@")) return onError("Please enter valid UPI ID (e.g. mobile@upi or name@okaxis)")
         if (amount < _paymentSettings.value.minWithdraw) return onError("Minimum withdrawal is ₹${_paymentSettings.value.minWithdraw}")
         if (currentRealBalance < amount) return onError("Insufficient balance! You have ₹$currentRealBalance")
 
         val recordId = UUID.randomUUID().toString()
-        val userRef = db.collection("users").document(user.uid)
-        val txRef = db.collection("transactions").document(recordId)
+        val userRef = currentDb.collection("users").document(user.uid)
+        val txRef = currentDb.collection("transactions").document(recordId)
 
-        db.runTransaction { transaction ->
+        currentDb.runTransaction { transaction ->
             val userSnap = transaction.get(userRef)
             val realMoney = (userSnap.getLong("realMoney") ?: 0L).toInt()
             if (realMoney < amount) {
@@ -202,7 +215,8 @@ class WalletViewModel : ViewModel() {
         onSuccess: (Int) -> Unit,
         onError: (String) -> Unit
     ) {
-        val user = auth.currentUser ?: return onError("Please login first")
+        val user = auth?.currentUser ?: return onError("Please login first")
+        val currentDb = db ?: return onError("Database not available")
         val rate = _paymentSettings.value.coinConversionRate
         if (coinsToConvert < rate) {
             return onError("Minimum $rate Coins required to convert to ₹1 Real Cash")
@@ -210,10 +224,10 @@ class WalletViewModel : ViewModel() {
         val cashGained = coinsToConvert / rate
         val coinsDeducted = cashGained * rate
 
-        val userRef = db.collection("users").document(user.uid)
+        val userRef = currentDb.collection("users").document(user.uid)
         val recordId = UUID.randomUUID().toString()
 
-        db.runTransaction { transaction ->
+        currentDb.runTransaction { transaction ->
             val userSnap = transaction.get(userRef)
             val appMoney = (userSnap.getLong("appMoney") ?: 0L).toInt()
             val realMoney = (userSnap.getLong("realMoney") ?: 0L).toInt()

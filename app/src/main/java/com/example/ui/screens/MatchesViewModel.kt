@@ -30,8 +30,8 @@ data class MatchData(
 )
 
 class MatchesViewModel : ViewModel() {
-    private val db = FirebaseFirestore.getInstance()
-    private val auth = FirebaseAuth.getInstance()
+    private val db: FirebaseFirestore? = try { FirebaseFirestore.getInstance() } catch (e: Exception) { null }
+    private val auth: FirebaseAuth? = try { FirebaseAuth.getInstance() } catch (e: Exception) { null }
     
     private val _matches = MutableStateFlow<List<MatchData>>(emptyList())
     val matches: StateFlow<List<MatchData>> = _matches
@@ -48,7 +48,8 @@ class MatchesViewModel : ViewModel() {
     
     private fun listenToMatches() {
         try {
-            matchesListener = db.collection("matches").addSnapshotListener { snapshot, e ->
+            val currentDb = db ?: return
+            matchesListener = currentDb.collection("matches").addSnapshotListener { snapshot, e ->
                 if (e != null || snapshot == null) return@addSnapshotListener
                 try {
                     val list = snapshot.documents.mapNotNull { it.toObject(MatchData::class.java)?.copy(id = it.id) }
@@ -64,7 +65,8 @@ class MatchesViewModel : ViewModel() {
     
     fun listenToMatchDetails(matchId: String) {
         currentMatchListener?.remove()
-        currentMatchListener = db.collection("matches").document(matchId).addSnapshotListener { snapshot, e ->
+        val currentDb = db ?: return
+        currentMatchListener = currentDb.collection("matches").document(matchId).addSnapshotListener { snapshot, e ->
             if (e != null || snapshot == null) return@addSnapshotListener
             _currentMatch.value = snapshot.toObject(MatchData::class.java)?.copy(id = snapshot.id)
         }
@@ -83,16 +85,22 @@ class MatchesViewModel : ViewModel() {
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
-        val user = auth.currentUser
+        val user = auth?.currentUser
         if (user == null) {
             onError("Please login first!")
             return
         }
         
-        val docRef = db.collection("matches").document(matchId)
-        val userRef = db.collection("users").document(user.uid)
+        val currentDb = db
+        if (currentDb == null) {
+            onError("Database not initialized")
+            return
+        }
         
-        db.runTransaction { transaction ->
+        val docRef = currentDb.collection("matches").document(matchId)
+        val userRef = currentDb.collection("users").document(user.uid)
+        
+        currentDb.runTransaction { transaction ->
             // Check Match
             val snapshot = transaction.get(docRef)
             var match = snapshot.toObject(MatchData::class.java)

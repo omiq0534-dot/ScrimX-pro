@@ -41,7 +41,7 @@ fun HomeScreen(
 ) {
     val profile by userViewModel.profile.collectAsState()
     val context = LocalContext.current
-    val db = FirebaseFirestore.getInstance()
+    val db = remember { try { FirebaseFirestore.getInstance() } catch (e: Exception) { null } }
     val scope = rememberCoroutineScope()
 
     // Dialog States
@@ -184,18 +184,29 @@ fun HomeScreen(
                         OutlinedButton(
                             onClick = {
                                 showWatchDialog = false
-                                db.collection("settings").document("live_stream").get().addOnSuccessListener { doc ->
-                                    val streamUrl = doc.getString("url")
-                                    val targetUrl = if (!streamUrl.isNullOrBlank()) streamUrl else "https://www.youtube.com/results?search_query=Free+Fire+Tournament+Live"
-                                    try {
-                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(targetUrl)).apply {
-                                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                if (db != null) {
+                                    db.collection("settings").document("live_stream").get().addOnSuccessListener { doc ->
+                                        val streamUrl = doc.getString("url")
+                                        val targetUrl = if (!streamUrl.isNullOrBlank()) streamUrl else "https://www.youtube.com/results?search_query=Free+Fire+Tournament+Live"
+                                        try {
+                                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(targetUrl)).apply {
+                                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                            }
+                                            context.startActivity(intent)
+                                        } catch (e: Exception) {
+                                            Toast.makeText(context, "Opening YouTube in browser...", Toast.LENGTH_SHORT).show()
                                         }
-                                        context.startActivity(intent)
-                                    } catch (e: Exception) {
-                                        Toast.makeText(context, "Opening YouTube in browser...", Toast.LENGTH_SHORT).show()
+                                    }.addOnFailureListener {
+                                        try {
+                                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/results?search_query=Free+Fire+Tournament+Live")).apply {
+                                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                            }
+                                            context.startActivity(intent)
+                                        } catch (e: Exception) {
+                                            Toast.makeText(context, "Could not open stream", Toast.LENGTH_SHORT).show()
+                                        }
                                     }
-                                }.addOnFailureListener {
+                                } else {
                                     try {
                                         val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/results?search_query=Free+Fire+Tournament+Live")).apply {
                                             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

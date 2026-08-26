@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
 class AuthViewModel : ViewModel() {
-    private val auth = FirebaseAuth.getInstance()
+    private val auth: FirebaseAuth? = try { FirebaseAuth.getInstance() } catch (e: Exception) { null }
     
     // The Web Client ID from your google-services.json
     private val WEB_CLIENT_ID = "404122407805-k4h30v9led3gb20et1ih9nes7ohb79a2.apps.googleusercontent.com"
@@ -25,12 +25,21 @@ class AuthViewModel : ViewModel() {
 
     init {
         // Check if user is already logged in
-        if (auth.currentUser != null) {
-            _authState.value = AuthState.Success(auth.currentUser!!.uid)
+        try {
+            if (auth?.currentUser != null) {
+                _authState.value = AuthState.Success(auth.currentUser!!.uid)
+            }
+        } catch (e: Exception) {
+            // Ignored safely
         }
     }
 
     fun loginWithGoogle(context: Context) {
+        val fbAuth = auth
+        if (fbAuth == null) {
+            _authState.value = AuthState.Error("Firebase not initialized")
+            return
+        }
         viewModelScope.launch {
             _authState.value = AuthState.Loading
             try {
@@ -53,7 +62,7 @@ class AuthViewModel : ViewModel() {
                     val idToken = credential.idToken
                     val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
                     
-                    val authResult = auth.signInWithCredential(firebaseCredential).await()
+                    val authResult = fbAuth.signInWithCredential(firebaseCredential).await()
                     if (authResult.user != null) {
                         _authState.value = AuthState.Success(authResult.user!!.uid)
                     } else {
@@ -69,6 +78,11 @@ class AuthViewModel : ViewModel() {
     }
 
     fun login(email: String, pass: String) {
+        val fbAuth = auth
+        if (fbAuth == null) {
+            _authState.value = AuthState.Error("Firebase not initialized")
+            return
+        }
         viewModelScope.launch {
             _authState.value = AuthState.Loading
             try {
@@ -77,7 +91,7 @@ class AuthViewModel : ViewModel() {
                     _authState.value = AuthState.Error("Email/Password cannot be empty")
                     return@launch
                 }
-                val result = auth.signInWithEmailAndPassword(cleanEmail, pass).await()
+                val result = fbAuth.signInWithEmailAndPassword(cleanEmail, pass).await()
                 if (result.user != null) {
                     _authState.value = AuthState.Success(result.user!!.uid)
                 } else {
@@ -90,6 +104,11 @@ class AuthViewModel : ViewModel() {
     }
 
     fun register(name: String, email: String, pass: String) {
+        val fbAuth = auth
+        if (fbAuth == null) {
+            _authState.value = AuthState.Error("Firebase not initialized")
+            return
+        }
         viewModelScope.launch {
             _authState.value = AuthState.Loading
             try {
@@ -98,9 +117,8 @@ class AuthViewModel : ViewModel() {
                     _authState.value = AuthState.Error("Email/Password cannot be empty")
                     return@launch
                 }
-                val result = auth.createUserWithEmailAndPassword(cleanEmail, pass).await()
+                val result = fbAuth.createUserWithEmailAndPassword(cleanEmail, pass).await()
                 if (result.user != null) {
-                    // Could save name to firestore here
                     _authState.value = AuthState.Success(result.user!!.uid)
                 } else {
                     _authState.value = AuthState.Error("Unknown Error")
