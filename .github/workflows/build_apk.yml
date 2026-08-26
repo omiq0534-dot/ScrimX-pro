@@ -3,6 +3,8 @@ name: Build Android APK
 on:
   push:
     branches: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
   workflow_dispatch:
 
 jobs:
@@ -20,23 +22,51 @@ jobs:
         distribution: 'temurin'
         cache: gradle
 
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v3
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
 
-    - name: Ensure Gradle Wrapper Exists
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v4
+
+    - name: Prepare Keystore and Environment
+      run: |
+        # Create .env if missing
+        if [ ! -f ".env" ]; then
+          touch .env
+        fi
+
+        # Restore debug.keystore from base64 if present, else generate fresh debug keystore
+        if [ -f "debug.keystore.base64" ]; then
+          base64 -d debug.keystore.base64 > debug.keystore || true
+        fi
+        if [ ! -f "debug.keystore" ]; then
+          keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+        fi
+
+    - name: Ensure Gradle Wrapper or Install Gradle
       run: |
         if [ ! -f "gradlew" ]; then
-          gradle wrapper
+          if command -v gradle &> /dev/null; then
+            gradle wrapper
+          fi
         fi
-        chmod +x gradlew
+        if [ -f "gradlew" ]; then
+          chmod +x gradlew
+        fi
 
     - name: Build Debug APK
-      run: ./gradlew assembleDebug --stacktrace
+      run: |
+        if [ -f "./gradlew" ]; then
+          ./gradlew assembleDebug --no-daemon --stacktrace
+        else
+          gradle assembleDebug --no-daemon --stacktrace
+        fi
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: ScrimX-Tournament-App
-        path: app/build/outputs/apk/debug/app-debug.apk
+        name: ScrimX-Tournament-App-Debug-APK
+        path: app/build/outputs/apk/**/*.apk
         retention-days: 14
+
 
