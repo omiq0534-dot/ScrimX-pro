@@ -29,6 +29,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
+import com.example.FirebaseHelper
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminLiveStreamScreen(
@@ -36,7 +38,7 @@ fun AdminLiveStreamScreen(
     matchesViewModel: MatchesViewModel = viewModel()
 ) {
     val context = LocalContext.current
-    val db = FirebaseFirestore.getInstance()
+    val db = remember { FirebaseHelper.getFirestore() }
     val scope = rememberCoroutineScope()
     val matches by matchesViewModel.matches.collectAsState()
 
@@ -53,8 +55,8 @@ fun AdminLiveStreamScreen(
 
     LaunchedEffect(Unit) {
         try {
-            val doc = db.collection("settings").document("live_stream").get().await()
-            if (doc.exists()) {
+            val doc = db?.collection("settings")?.document("live_stream")?.get()?.await()
+            if (doc != null && doc.exists()) {
                 globalLiveUrl = doc.getString("url") ?: ""
                 streamTitle = doc.getString("title") ?: ""
                 isLiveBroadcastActive = doc.getBoolean("isActive") ?: false
@@ -120,11 +122,11 @@ fun AdminLiveStreamScreen(
                         isUpdatingMatchStream = true
                         scope.launch {
                             try {
-                                db.collection("matches").document(matchId)
-                                    .update(
+                                db?.collection("matches")?.document(matchId)
+                                    ?.update(
                                         "liveUrl", matchStreamUrl.trim(),
                                         "status", if (matchStreamUrl.isNotBlank()) "Live" else selectedMatchForStream!!.status
-                                    ).await()
+                                    )?.await()
                                 selectedMatchForStream = null
                                 statusMessage = "Match stream link updated!"
                             } catch (e: Exception) {
@@ -285,15 +287,15 @@ fun AdminLiveStreamScreen(
                                 isSavingGlobal = true
                                 scope.launch {
                                     try {
-                                        db.collection("settings").document("live_stream")
-                                            .set(
+                                        db?.collection("settings")?.document("live_stream")
+                                            ?.set(
                                                 mapOf(
                                                     "url" to globalLiveUrl.trim(),
                                                     "title" to streamTitle.trim(),
                                                     "isActive" to isLiveBroadcastActive,
                                                     "updatedAt" to System.currentTimeMillis()
                                                 )
-                                            ).await()
+                                            )?.await()
                                         statusMessage = "Global Stream Link Saved Successfully!"
                                     } catch (e: Exception) {
                                         statusMessage = "Error saving stream settings"

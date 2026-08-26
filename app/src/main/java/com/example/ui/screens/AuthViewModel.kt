@@ -14,8 +14,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
+import com.example.FirebaseHelper
+
 class AuthViewModel : ViewModel() {
-    private val auth: FirebaseAuth? = try { FirebaseAuth.getInstance() } catch (e: Exception) { null }
+    private fun getAuth(): FirebaseAuth? = FirebaseHelper.getAuth()
     
     // The Web Client ID from your google-services.json
     private val WEB_CLIENT_ID = "404122407805-k4h30v9led3gb20et1ih9nes7ohb79a2.apps.googleusercontent.com"
@@ -26,6 +28,7 @@ class AuthViewModel : ViewModel() {
     init {
         // Check if user is already logged in
         try {
+            val auth = getAuth()
             if (auth?.currentUser != null) {
                 _authState.value = AuthState.Success(auth.currentUser!!.uid)
             }
@@ -35,9 +38,9 @@ class AuthViewModel : ViewModel() {
     }
 
     fun loginWithGoogle(context: Context) {
-        val fbAuth = auth
+        val fbAuth = getAuth()
         if (fbAuth == null) {
-            _authState.value = AuthState.Error("Firebase not initialized")
+            _authState.value = AuthState.Error("Connecting to Firebase... please try again.")
             return
         }
         viewModelScope.launch {
@@ -78,9 +81,9 @@ class AuthViewModel : ViewModel() {
     }
 
     fun login(email: String, pass: String) {
-        val fbAuth = auth
+        val fbAuth = getAuth()
         if (fbAuth == null) {
-            _authState.value = AuthState.Error("Firebase not initialized")
+            _authState.value = AuthState.Error("Connecting to Firebase... please try again.")
             return
         }
         viewModelScope.launch {
@@ -104,9 +107,9 @@ class AuthViewModel : ViewModel() {
     }
 
     fun register(name: String, email: String, pass: String) {
-        val fbAuth = auth
+        val fbAuth = getAuth()
         if (fbAuth == null) {
-            _authState.value = AuthState.Error("Firebase not initialized")
+            _authState.value = AuthState.Error("Connecting to Firebase... please try again.")
             return
         }
         viewModelScope.launch {
@@ -119,7 +122,23 @@ class AuthViewModel : ViewModel() {
                 }
                 val result = fbAuth.createUserWithEmailAndPassword(cleanEmail, pass).await()
                 if (result.user != null) {
-                    _authState.value = AuthState.Success(result.user!!.uid)
+                    val uid = result.user!!.uid
+                    val cleanName = name.trim().ifBlank { cleanEmail.substringBefore("@").replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() } }
+                    try {
+                        val db = FirebaseHelper.getFirestore()
+                        db?.collection("users")?.document(uid)?.set(
+                            mapOf(
+                                "uid" to uid,
+                                "email" to cleanEmail,
+                                "name" to cleanName,
+                                "realMoney" to 100,
+                                "appMoney" to 0
+                            )
+                        )
+                    } catch (ex: Exception) {
+                        // ignore
+                    }
+                    _authState.value = AuthState.Success(uid)
                 } else {
                     _authState.value = AuthState.Error("Unknown Error")
                 }

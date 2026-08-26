@@ -30,6 +30,8 @@ import androidx.navigation.NavController
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
 
+import com.example.FirebaseHelper
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminManageMatchesScreen(
@@ -37,7 +39,7 @@ fun AdminManageMatchesScreen(
     matchesViewModel: MatchesViewModel = viewModel()
 ) {
     val matches by matchesViewModel.matches.collectAsState()
-    val db = FirebaseFirestore.getInstance()
+    val db = remember { FirebaseHelper.getFirestore() }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
@@ -132,8 +134,8 @@ fun AdminManageMatchesScreen(
                 Button(
                     onClick = {
                         scope.launch {
-                            db.collection("matches").document(selectedMatchForEdit!!.id)
-                                .update(
+                            db?.collection("matches")?.document(selectedMatchForEdit!!.id)
+                                ?.update(
                                     "map", editMap.trim().ifBlank { "Bermuda" },
                                     "roomId", roomId.trim(),
                                     "roomPass", roomPass.trim(),
@@ -502,7 +504,7 @@ fun AdminManageMatchesScreen(
                             IconButton(
                                 onClick = {
                                     scope.launch {
-                                        db.collection("matches").document(match.id).delete()
+                                        db?.collection("matches")?.document(match.id)?.delete()
                                     }
                                 },
                                 modifier = Modifier

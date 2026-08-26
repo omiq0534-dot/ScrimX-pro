@@ -34,10 +34,12 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+import com.example.FirebaseHelper
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminManageWalletsScreen(navController: NavController) {
-    val db = FirebaseFirestore.getInstance()
+    val db = remember { FirebaseHelper.getFirestore() }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
@@ -62,24 +64,26 @@ fun AdminManageWalletsScreen(navController: NavController) {
 
     // Listen to real-time transactions
     LaunchedEffect(Unit) {
-        db.collection("transactions").addSnapshotListener { snap, _ ->
-            if (snap != null) {
-                val allTx = snap.documents.mapNotNull { it.toObject(TransactionRecord::class.java)?.copy(id = it.id) }
-                pendingDeposits = allTx.filter { it.type == "DEPOSIT" && it.status == "PENDING" }
-                    .sortedByDescending { it.timestamp }
-                pendingWithdraws = allTx.filter { it.type == "WITHDRAW" && it.status == "PENDING" }
-                    .sortedByDescending { it.timestamp }
+        if (db != null) {
+            db.collection("transactions").addSnapshotListener { snap, _ ->
+                if (snap != null) {
+                    val allTx = snap.documents.mapNotNull { it.toObject(TransactionRecord::class.java)?.copy(id = it.id) }
+                    pendingDeposits = allTx.filter { it.type == "DEPOSIT" && it.status == "PENDING" }
+                        .sortedByDescending { it.timestamp }
+                    pendingWithdraws = allTx.filter { it.type == "WITHDRAW" && it.status == "PENDING" }
+                        .sortedByDescending { it.timestamp }
+                }
             }
-        }
 
-        // Fetch settings
-        db.collection("settings").document("payment").get().addOnSuccessListener { doc ->
-            if (doc != null && doc.exists()) {
-                upiIdInput = doc.getString("upiId") ?: "6375615586@fam"
-                upiNameInput = doc.getString("upiName") ?: "Tournament Esports Official"
-                minDepositInput = (doc.getLong("minDeposit") ?: 10L).toString()
-                minWithdrawInput = (doc.getLong("minWithdraw") ?: 50L).toString()
-                coinRateInput = (doc.getLong("coinConversionRate") ?: 10L).toString()
+            // Fetch settings
+            db.collection("settings").document("payment").get().addOnSuccessListener { doc ->
+                if (doc != null && doc.exists()) {
+                    upiIdInput = doc.getString("upiId") ?: "6375615586@fam"
+                    upiNameInput = doc.getString("upiName") ?: "Tournament Esports Official"
+                    minDepositInput = (doc.getLong("minDeposit") ?: 10L).toString()
+                    minWithdrawInput = (doc.getLong("minWithdraw") ?: 50L).toString()
+                    coinRateInput = (doc.getLong("coinConversionRate") ?: 10L).toString()
+                }
             }
         }
     }
@@ -166,11 +170,11 @@ fun AdminManageWalletsScreen(navController: NavController) {
                                         scope.launch {
                                             try {
                                                 // 1. Update user balance
-                                                db.collection("users").document(tx.userId)
-                                                    .update("realMoney", FieldValue.increment(tx.amount.toLong())).await()
+                                                db?.collection("users")?.document(tx.userId)
+                                                    ?.update("realMoney", FieldValue.increment(tx.amount.toLong()))?.await()
                                                 // 2. Mark TX success
-                                                db.collection("transactions").document(tx.id)
-                                                    .update("status", "SUCCESS").await()
+                                                db?.collection("transactions")?.document(tx.id)
+                                                    ?.update("status", "SUCCESS")?.await()
                                                 Toast.makeText(context, "✅ Approved ₹${tx.amount} to user!", Toast.LENGTH_SHORT).show()
                                             } catch (e: Exception) {
                                                 Toast.makeText(context, "Approval error: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -179,7 +183,7 @@ fun AdminManageWalletsScreen(navController: NavController) {
                                     },
                                     onReject = {
                                         scope.launch {
-                                            db.collection("transactions").document(tx.id).update("status", "REJECTED").await()
+                                            db?.collection("transactions")?.document(tx.id)?.update("status", "REJECTED")?.await()
                                             Toast.makeText(context, "❌ Rejected deposit request", Toast.LENGTH_SHORT).show()
                                         }
                                     }
@@ -203,17 +207,17 @@ fun AdminManageWalletsScreen(navController: NavController) {
                                     tx = tx,
                                     onComplete = {
                                         scope.launch {
-                                            db.collection("transactions").document(tx.id).update("status", "SUCCESS").await()
+                                            db?.collection("transactions")?.document(tx.id)?.update("status", "SUCCESS")?.await()
                                             Toast.makeText(context, "✅ Marked withdrawal as Paid!", Toast.LENGTH_SHORT).show()
                                         }
                                     },
                                     onReject = {
                                         scope.launch {
                                             // Refund user balance
-                                            db.collection("users").document(tx.userId)
-                                                .update("realMoney", FieldValue.increment(tx.amount.toLong())).await()
-                                            db.collection("transactions").document(tx.id)
-                                                .update("status", "REJECTED").await()
+                                            db?.collection("users")?.document(tx.userId)
+                                                ?.update("realMoney", FieldValue.increment(tx.amount.toLong()))?.await()
+                                            db?.collection("transactions")?.document(tx.id)
+                                                ?.update("status", "REJECTED")?.await()
                                             Toast.makeText(context, "❌ Rejected & refunded ₹${tx.amount} to user", Toast.LENGTH_SHORT).show()
                                         }
                                     }
@@ -249,8 +253,8 @@ fun AdminManageWalletsScreen(navController: NavController) {
                                             searchMessage = ""
                                             scope.launch {
                                                 try {
-                                                    val snapshot = db.collection("users").whereEqualTo("email", searchEmail.trim()).get().await()
-                                                    if (snapshot.isEmpty) {
+                                                    val snapshot = db?.collection("users")?.whereEqualTo("email", searchEmail.trim())?.get()?.await()
+                                                    if (snapshot == null || snapshot.isEmpty) {
                                                         searchMessage = "No player found with this email!"
                                                         foundUser = null
                                                     } else {
@@ -313,7 +317,7 @@ fun AdminManageWalletsScreen(navController: NavController) {
                                                 val amt = amountToAdd.toIntOrNull() ?: return@Button
                                                 scope.launch {
                                                     val newBal = foundUser!!.realMoney + amt
-                                                    db.collection("users").document(foundUser!!.uid).update("realMoney", newBal).await()
+                                                    db?.collection("users")?.document(foundUser!!.uid)?.update("realMoney", newBal)?.await()
                                                     foundUser = foundUser!!.copy(realMoney = newBal)
                                                     amountToAdd = ""
                                                     Toast.makeText(context, "Balance updated to ₹$newBal", Toast.LENGTH_SHORT).show()
@@ -396,8 +400,8 @@ fun AdminManageWalletsScreen(navController: NavController) {
                                                 "minWithdraw" to (minWithdrawInput.toIntOrNull() ?: 50),
                                                 "coinConversionRate" to (coinRateInput.toIntOrNull() ?: 10)
                                             )
-                                            db.collection("settings").document("payment").set(data)
-                                                .addOnSuccessListener {
+                                            db?.collection("settings")?.document("payment")?.set(data)
+                                                ?.addOnSuccessListener {
                                                     Toast.makeText(context, "✅ Payment Settings Saved!", Toast.LENGTH_SHORT).show()
                                                 }
                                         },

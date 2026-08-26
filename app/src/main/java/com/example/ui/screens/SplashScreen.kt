@@ -20,8 +20,11 @@ import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
 
+import com.example.FirebaseHelper
+
 @Composable
 fun SplashScreen(navController: NavController) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     // Animation states
     val slideAnimation = remember { Animatable(500f) } // Slide from right
     val alphaAnimation = remember { Animatable(0f) }
@@ -29,6 +32,7 @@ fun SplashScreen(navController: NavController) {
     val flashAmount = remember { Animatable(0f) }
 
     LaunchedEffect(key1 = true) {
+        FirebaseHelper.init(context)
         // Fade in "SCRIM"
         alphaAnimation.animateTo(
             targetValue = 1f,
@@ -53,7 +57,7 @@ fun SplashScreen(navController: NavController) {
 
         // Check if user is logged in safely
         val destination = try {
-            val user = FirebaseAuth.getInstance().currentUser
+            val user = FirebaseHelper.getAuth()?.currentUser
             if (user != null) "home" else "login"
         } catch (e: Exception) {
             "login"

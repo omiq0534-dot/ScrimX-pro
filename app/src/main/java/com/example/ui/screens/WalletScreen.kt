@@ -49,6 +49,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
+import com.example.FirebaseHelper
 
 data class TransactionRecord(
     val id: String = "",
@@ -72,8 +73,8 @@ data class PaymentSettings(
 )
 
 class WalletViewModel : ViewModel() {
-    private val db: FirebaseFirestore? = try { FirebaseFirestore.getInstance() } catch (e: Exception) { null }
-    private val auth: FirebaseAuth? = try { FirebaseAuth.getInstance() } catch (e: Exception) { null }
+    private fun getDb(): FirebaseFirestore? = FirebaseHelper.getFirestore()
+    private fun getAuth(): FirebaseAuth? = FirebaseHelper.getAuth()
 
     private val _transactions = MutableStateFlow<List<TransactionRecord>>(emptyList())
     val transactions: StateFlow<List<TransactionRecord>> = _transactions
@@ -90,7 +91,7 @@ class WalletViewModel : ViewModel() {
 
     private fun listenToPaymentSettings() {
         try {
-            val currentDb = db ?: return
+            val currentDb = getDb() ?: return
             currentDb.collection("settings").document("payment").addSnapshotListener { doc, _ ->
                 if (doc != null && doc.exists()) {
                     _paymentSettings.value = PaymentSettings(
@@ -119,8 +120,8 @@ class WalletViewModel : ViewModel() {
 
     private fun listenToTransactions() {
         try {
-            val currentAuth = auth ?: return
-            val currentDb = db ?: return
+            val currentAuth = getAuth() ?: return
+            val currentDb = getDb() ?: return
             val user = currentAuth.currentUser ?: return
             txListener = currentDb.collection("transactions")
                 .whereEqualTo("userId", user.uid)
@@ -142,8 +143,8 @@ class WalletViewModel : ViewModel() {
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
-        val user = auth?.currentUser ?: return onError("Please login first")
-        val currentDb = db ?: return onError("Database not available")
+        val user = getAuth()?.currentUser ?: return onError("Please login first")
+        val currentDb = getDb() ?: return onError("Database not available")
         if (utr.isBlank() || utr.length < 6) return onError("Please enter valid 12-digit UTR / Ref Number")
         if (amount < _paymentSettings.value.minDeposit) return onError("Minimum deposit is ₹${_paymentSettings.value.minDeposit}")
 
@@ -172,8 +173,8 @@ class WalletViewModel : ViewModel() {
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
-        val user = auth?.currentUser ?: return onError("Please login first")
-        val currentDb = db ?: return onError("Database not available")
+        val user = getAuth()?.currentUser ?: return onError("Please login first")
+        val currentDb = getDb() ?: return onError("Database not available")
         if (upiId.isBlank() || !upiId.contains("@")) return onError("Please enter valid UPI ID (e.g. mobile@upi or name@okaxis)")
         if (amount < _paymentSettings.value.minWithdraw) return onError("Minimum withdrawal is ₹${_paymentSettings.value.minWithdraw}")
         if (currentRealBalance < amount) return onError("Insufficient balance! You have ₹$currentRealBalance")
@@ -215,8 +216,8 @@ class WalletViewModel : ViewModel() {
         onSuccess: (Int) -> Unit,
         onError: (String) -> Unit
     ) {
-        val user = auth?.currentUser ?: return onError("Please login first")
-        val currentDb = db ?: return onError("Database not available")
+        val user = getAuth()?.currentUser ?: return onError("Please login first")
+        val currentDb = getDb() ?: return onError("Database not available")
         val rate = _paymentSettings.value.coinConversionRate
         if (coinsToConvert < rate) {
             return onError("Minimum $rate Coins required to convert to ₹1 Real Cash")
@@ -249,7 +250,7 @@ class WalletViewModel : ViewModel() {
                 timestamp = System.currentTimeMillis(),
                 note = "Converted $coinsDeducted Coins -> ₹$cashGained Cash"
             )
-            transaction.set(db.collection("transactions").document(recordId), record)
+            transaction.set(currentDb.collection("transactions").document(recordId), record)
         }.addOnSuccessListener {
             onSuccess(cashGained)
         }.addOnFailureListener {

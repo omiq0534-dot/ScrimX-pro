@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
+import com.example.FirebaseHelper
+
 data class MatchData(
     val id: String = "",
     val title: String = "",
@@ -30,8 +32,8 @@ data class MatchData(
 )
 
 class MatchesViewModel : ViewModel() {
-    private val db: FirebaseFirestore? = try { FirebaseFirestore.getInstance() } catch (e: Exception) { null }
-    private val auth: FirebaseAuth? = try { FirebaseAuth.getInstance() } catch (e: Exception) { null }
+    private fun getDb(): FirebaseFirestore? = FirebaseHelper.getFirestore()
+    private fun getAuth(): FirebaseAuth? = FirebaseHelper.getAuth()
     
     private val _matches = MutableStateFlow<List<MatchData>>(emptyList())
     val matches: StateFlow<List<MatchData>> = _matches
@@ -48,7 +50,7 @@ class MatchesViewModel : ViewModel() {
     
     private fun listenToMatches() {
         try {
-            val currentDb = db ?: return
+            val currentDb = getDb() ?: return
             matchesListener = currentDb.collection("matches").addSnapshotListener { snapshot, e ->
                 if (e != null || snapshot == null) return@addSnapshotListener
                 try {
@@ -65,7 +67,7 @@ class MatchesViewModel : ViewModel() {
     
     fun listenToMatchDetails(matchId: String) {
         currentMatchListener?.remove()
-        val currentDb = db ?: return
+        val currentDb = getDb() ?: return
         currentMatchListener = currentDb.collection("matches").document(matchId).addSnapshotListener { snapshot, e ->
             if (e != null || snapshot == null) return@addSnapshotListener
             _currentMatch.value = snapshot.toObject(MatchData::class.java)?.copy(id = snapshot.id)
@@ -85,13 +87,13 @@ class MatchesViewModel : ViewModel() {
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
-        val user = auth?.currentUser
+        val user = getAuth()?.currentUser
         if (user == null) {
             onError("Please login first!")
             return
         }
         
-        val currentDb = db
+        val currentDb = getDb()
         if (currentDb == null) {
             onError("Database not initialized")
             return

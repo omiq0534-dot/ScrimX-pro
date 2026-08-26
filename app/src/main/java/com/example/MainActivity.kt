@@ -23,11 +23,7 @@ class MainActivity : ComponentActivity() {
   // Force emulator refresh
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    try {
-      com.google.firebase.FirebaseApp.initializeApp(this)
-    } catch (e: Exception) {
-      // safe fallback
-    }
+    FirebaseHelper.init(this)
     enableEdgeToEdge()
     setContent {
       MyApplicationTheme {

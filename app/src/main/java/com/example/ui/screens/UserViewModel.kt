@@ -8,6 +8,8 @@ import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
+import com.example.FirebaseHelper
+
 data class UserProfile(
     val uid: String = "",
     val email: String = "",
@@ -17,8 +19,8 @@ data class UserProfile(
 )
 
 class UserViewModel : ViewModel() {
-    private val db: FirebaseFirestore? = try { FirebaseFirestore.getInstance() } catch (e: Exception) { null }
-    private val auth: FirebaseAuth? = try { FirebaseAuth.getInstance() } catch (e: Exception) { null }
+    private fun getDb(): FirebaseFirestore? = FirebaseHelper.getFirestore()
+    private fun getAuth(): FirebaseAuth? = FirebaseHelper.getAuth()
     
     private val _profile = MutableStateFlow<UserProfile?>(null)
     val profile: StateFlow<UserProfile?> = _profile
@@ -31,8 +33,8 @@ class UserViewModel : ViewModel() {
     
     private fun listenToUser() {
         try {
-            val currentAuth = auth ?: return
-            val currentDb = db ?: return
+            val currentAuth = getAuth() ?: return
+            val currentDb = getDb() ?: return
             val currentUser = currentAuth.currentUser ?: return
             val docRef = currentDb.collection("users").document(currentUser.uid)
             
@@ -80,22 +82,22 @@ class UserViewModel : ViewModel() {
     }
     
     fun updateName(newName: String) {
-        val currentUser = auth?.currentUser ?: return
-        db?.collection("users")?.document(currentUser.uid)?.update("name", newName)
+        val currentUser = getAuth()?.currentUser ?: return
+        getDb()?.collection("users")?.document(currentUser.uid)?.update("name", newName)
     }
 
     fun addAppMoney(amount: Int) {
-        val currentUser = auth?.currentUser ?: return
-        db?.collection("users")?.document(currentUser.uid)?.update("appMoney", FieldValue.increment(amount.toLong()))
+        val currentUser = getAuth()?.currentUser ?: return
+        getDb()?.collection("users")?.document(currentUser.uid)?.update("appMoney", FieldValue.increment(amount.toLong()))
     }
 
     fun addRealMoney(amount: Int) {
-        val currentUser = auth?.currentUser ?: return
-        db?.collection("users")?.document(currentUser.uid)?.update("realMoney", FieldValue.increment(amount.toLong()))
+        val currentUser = getAuth()?.currentUser ?: return
+        getDb()?.collection("users")?.document(currentUser.uid)?.update("realMoney", FieldValue.increment(amount.toLong()))
     }
     
     fun logout() {
-        auth?.signOut()
+        getAuth()?.signOut()
         _profile.value = null
     }
     

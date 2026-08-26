@@ -33,6 +33,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
+import com.example.FirebaseHelper
+
 @Composable
 fun HomeScreen(
     navController: NavController,
@@ -41,7 +43,7 @@ fun HomeScreen(
 ) {
     val profile by userViewModel.profile.collectAsState()
     val context = LocalContext.current
-    val db = remember { try { FirebaseFirestore.getInstance() } catch (e: Exception) { null } }
+    val db = remember { FirebaseHelper.getFirestore() }
     val scope = rememberCoroutineScope()
 
     // Dialog States

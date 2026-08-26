@@ -24,10 +24,12 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
 import java.util.UUID
 
+import com.example.FirebaseHelper
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminCreateMatchScreen(navController: NavController) {
-    val db = FirebaseFirestore.getInstance()
+    val db = remember { FirebaseHelper.getFirestore() }
     val scope = rememberCoroutineScope()
 
     var title by remember { mutableStateOf("") }
@@ -307,6 +309,10 @@ fun AdminCreateMatchScreen(navController: NavController) {
                             slotUids = emptyMap()
                         )
 
+                        if (db == null) {
+                            isLoading = false
+                            return@launch
+                        }
                         db.collection("matches").document(newId).set(newMatch)
                             .addOnSuccessListener {
                                 isLoading = false

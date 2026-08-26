@@ -24,32 +24,36 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.google.firebase.firestore.FirebaseFirestore
 
+import com.example.FirebaseHelper
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminScreen(navController: NavController) {
-    val db = FirebaseFirestore.getInstance()
+    val db = remember { FirebaseHelper.getFirestore() }
     var totalMatches by remember { mutableStateOf(0) }
     var liveMatches by remember { mutableStateOf(0) }
     var totalUsers by remember { mutableStateOf(0) }
     var isLiveStreamActive by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        db.collection("matches").addSnapshotListener { snap, _ ->
-            if (snap != null) {
-                totalMatches = snap.size()
-                liveMatches = snap.documents.count { 
-                    it.getString("status") == "Live" || it.getString("status") == "Ongoing" 
+        if (db != null) {
+            db.collection("matches").addSnapshotListener { snap, _ ->
+                if (snap != null) {
+                    totalMatches = snap.size()
+                    liveMatches = snap.documents.count { 
+                        it.getString("status") == "Live" || it.getString("status") == "Ongoing" 
+                    }
                 }
             }
-        }
-        db.collection("users").addSnapshotListener { snap, _ ->
-            if (snap != null) {
-                totalUsers = snap.size()
+            db.collection("users").addSnapshotListener { snap, _ ->
+                if (snap != null) {
+                    totalUsers = snap.size()
+                }
             }
-        }
-        db.collection("settings").document("live_stream").addSnapshotListener { doc, _ ->
-            if (doc != null && doc.exists()) {
-                isLiveStreamActive = doc.getBoolean("isActive") == true
+            db.collection("settings").document("live_stream").addSnapshotListener { doc, _ ->
+                if (doc != null && doc.exists()) {
+                    isLiveStreamActive = doc.getBoolean("isActive") == true
+                }
             }
         }
     }
