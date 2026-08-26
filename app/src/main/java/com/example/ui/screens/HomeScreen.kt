@@ -118,14 +118,30 @@ fun HomeScreen(
     var videoRewardClaimed by remember { mutableStateOf(false) }
 
     var showDailyDialog by remember { mutableStateOf(false) }
-    var dailyClaimed by remember { mutableStateOf(false) }
+    val dailyPrefs = remember { context.getSharedPreferences("daily_reward_prefs", android.content.Context.MODE_PRIVATE) }
+    val todayDate = remember { SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(Date()) }
+    val lastDailyDate = dailyPrefs.getString("last_claim_date", "") ?: ""
+    val savedStreak = dailyPrefs.getInt("streak_count", 0)
+
+    var dailyClaimed by remember(todayDate, lastDailyDate) {
+        mutableStateOf(lastDailyDate == todayDate)
+    }
+
+    var currentStreak by remember(todayDate, lastDailyDate, savedStreak) {
+        val yesterdayDate = SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(Date(System.currentTimeMillis() - 86400000L))
+        val validStreak = when {
+            lastDailyDate == todayDate -> savedStreak
+            lastDailyDate == yesterdayDate -> savedStreak
+            else -> 0
+        }
+        mutableIntStateOf(validStreak)
+    }
 
     var showSpinDialog by remember { mutableStateOf(false) }
     var isSpinning by remember { mutableStateOf(false) }
     var spinReward by remember { mutableStateOf<Int?>(null) }
     val spinRotation = remember { Animatable(0f) }
     val spinPrefs = remember { context.getSharedPreferences("spin_preferences", android.content.Context.MODE_PRIVATE) }
-    val todayDate = remember { SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(Date()) }
     val maxDailySpins = appConfig.dailyFreeSpins
 
     var spinsRemaining by remember(maxDailySpins) {
@@ -337,13 +353,28 @@ fun HomeScreen(
     }
 
     // 2. Daily Check-in Dialog
-    var currentStreak by remember { mutableStateOf(3) } // Mock 3-day streak
     if (showDailyDialog) {
         AlertDialog(
             containerColor = Color(0xFF14161F),
             onDismissRequest = { showDailyDialog = false },
             title = {
-                Text("DAILY REWARD 🎁", fontWeight = FontWeight.Black, color = Color.White, fontSize = 16.sp)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("DAILY REWARD 🎁", fontWeight = FontWeight.Black, color = Color.White, fontSize = 16.sp)
+                    Spacer(modifier = Modifier.weight(1f))
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color(0xFF00E676).copy(alpha = 0.15f))
+                            .padding(horizontal = 8.dp, vertical = 3.dp)
+                    ) {
+                        Text(
+                            "Streak: $currentStreak/7 Days",
+                            color = Color(0xFF00E676),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 11.sp
+                        )
+                    }
+                }
             },
             text = {
                 Column(
@@ -352,7 +383,7 @@ fun HomeScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Text(
-                        if (dailyClaimed) "Already claimed today! Come back tomorrow." else "Claim your free +${appConfig.dailyRewardCoins} daily login bonus coins!",
+                        if (dailyClaimed) "Already claimed today! Come back tomorrow for Day ${if (currentStreak >= 7) 1 else currentStreak + 1}." else "Claim your free +${appConfig.dailyRewardCoins} coins today!",
                         color = Color(0xFFC0C4D6),
                         fontSize = 13.sp,
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -366,38 +397,47 @@ fun HomeScreen(
                     ) {
                         for (day in 1..7) {
                             val status = when {
-                                day <= currentStreak && dailyClaimed -> "claimed"
-                                day < currentStreak && !dailyClaimed -> "claimed"
-                                day == currentStreak && !dailyClaimed -> "today"
-                                day == currentStreak + 1 && dailyClaimed -> "today"
+                                day <= currentStreak -> "claimed"
+                                day == currentStreak + 1 && !dailyClaimed -> "today"
                                 else -> "upcoming"
                             }
                             
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    "D$day",
+                                    color = if (status == "today") Color(0xFFFFD700) else Color(0xFF8E92A4),
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
                                 Box(
                                     modifier = Modifier
-                                        .size(32.dp)
+                                        .size(36.dp)
                                         .clip(CircleShape)
                                         .background(
                                             when (status) {
-                                                "claimed" -> Color(0xFF2E3346)
-                                                "today" -> Color.White
+                                                "claimed" -> Color(0xFF00E676).copy(alpha = 0.2f)
+                                                "today" -> Color(0xFFFFD700)
                                                 else -> Color(0xFF1A1D27)
                                             }
                                         )
                                         .border(
-                                            1.dp,
-                                            if (status == "today") Color.White else Color(0xFF2E3346),
+                                            1.5.dp,
+                                            when (status) {
+                                                "claimed" -> Color(0xFF00E676)
+                                                "today" -> Color(0xFFFFD700)
+                                                else -> Color(0xFF2E3346)
+                                            },
                                             CircleShape
                                         ),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     if (status == "claimed") {
-                                        Icon(Icons.Default.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                                        Icon(Icons.Default.Check, contentDescription = "Claimed", tint = Color(0xFF00E676), modifier = Modifier.size(18.dp))
                                     } else {
                                         Text(
                                             "$day",
-                                            fontWeight = FontWeight.Bold,
+                                            fontWeight = FontWeight.Black,
                                             color = if (status == "today") Color.Black else Color(0xFF9CA3AF),
                                             fontSize = 12.sp
                                         )
@@ -412,19 +452,29 @@ fun HomeScreen(
                 Button(
                     onClick = {
                         if (!dailyClaimed) {
-                            val reward = appConfig.dailyRewardCoins
+                            val nextStreak = if (currentStreak >= 7) 1 else currentStreak + 1
+                            currentStreak = nextStreak
                             dailyClaimed = true
-                            currentStreak++
+                            dailyPrefs.edit()
+                                .putString("last_claim_date", todayDate)
+                                .putInt("streak_count", nextStreak)
+                                .apply()
+
+                            val reward = appConfig.dailyRewardCoins
                             userViewModel.addAppMoney(reward)
-                            Toast.makeText(context, "🎁 +$reward Daily Coins Claimed!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "🎁 +$reward Daily Coins Claimed! (Day $nextStreak/7)", Toast.LENGTH_SHORT).show()
                         } else {
                             showDailyDialog = false
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                    colors = ButtonDefaults.buttonColors(containerColor = if (dailyClaimed) Color(0xFF2E3346) else Color(0xFFFFD700)),
                     shape = RoundedCornerShape(10.dp)
                 ) {
-                    Text(if (dailyClaimed) "Done" else "CLAIM +${appConfig.dailyRewardCoins} COINS", color = Color.Black, fontWeight = FontWeight.Black)
+                    Text(
+                        if (dailyClaimed) "CLAIMED TODAY" else "CLAIM +${appConfig.dailyRewardCoins} COINS",
+                        color = Color.Black,
+                        fontWeight = FontWeight.Black
+                    )
                 }
             },
             dismissButton = {

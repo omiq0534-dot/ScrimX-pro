@@ -209,7 +209,7 @@ fun AdminUserSecurityScreen(navController: NavController) {
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
-                label = { Text("Search by player name or email...") },
+                label = { Text("Search by user Gmail or name...") },
                 singleLine = true,
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color(0xFF8E92A4)) },
                 modifier = Modifier.fillMaxWidth(),
@@ -260,10 +260,11 @@ fun AdminUserSecurityScreen(navController: NavController) {
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
+                                        // Primary Identifier: GMAIL
                                         Text(
-                                            user.name,
+                                            user.email.ifBlank { "User UID: ${user.uid.take(10)}..." },
                                             color = Color.White,
-                                            fontWeight = FontWeight.Bold,
+                                            fontWeight = FontWeight.Black,
                                             fontSize = 14.sp
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
@@ -299,9 +300,10 @@ fun AdminUserSecurityScreen(navController: NavController) {
                                     }
                                     Spacer(modifier = Modifier.height(3.dp))
                                     Text(
-                                        user.email.ifBlank { "No email (${user.uid.take(8)}...)" },
-                                        color = Color(0xFF8E92A4),
-                                        fontSize = 11.sp
+                                        "Player Name: ${user.name.ifBlank { "Player" }}",
+                                        color = Color(0xFF94A3B8),
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Medium
                                     )
                                     if (isUserBanned && user.banReason.isNotBlank()) {
                                         Spacer(modifier = Modifier.height(2.dp))
@@ -353,7 +355,19 @@ fun AdminUserSecurityScreen(navController: NavController) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.Security, contentDescription = null, tint = Color(0xFFFF3366))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("BAN PLAYER: ${target.name}", color = Color.White, fontWeight = FontWeight.Black, fontSize = 15.sp)
+                    Column {
+                        Text(
+                            "BAN GMAIL: ${target.email.ifBlank { target.uid.take(10) }}",
+                            color = Color.White,
+                            fontWeight = FontWeight.Black,
+                            fontSize = 14.sp
+                        )
+                        Text(
+                            "Current Name: ${target.name}",
+                            color = Color(0xFF94A3B8),
+                            fontSize = 11.sp
+                        )
+                    }
                 }
             },
             text = {

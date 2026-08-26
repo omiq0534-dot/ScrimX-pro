@@ -1,5 +1,10 @@
 package com.example.ui.screens
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -19,7 +24,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -28,9 +35,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(navController: NavController, userViewModel: UserViewModel = viewModel()) {
+    val context = LocalContext.current
     val profile by userViewModel.profile.collectAsState()
     var showEditDialog by remember { mutableStateOf(false) }
     var showLogoutDialog by remember { mutableStateOf(false) }
+    var showReferDialog by remember { mutableStateOf(false) }
     var editNameText by remember { mutableStateOf("") }
     
     if (showLogoutDialog) {
@@ -94,6 +103,18 @@ fun ProfileScreen(navController: NavController, userViewModel: UserViewModel = v
         )
     }
 
+    if (showReferDialog) {
+        ReferAndEarnDialog(
+            profile = profile,
+            onDismiss = { showReferDialog = false },
+            onClaimCode = { code ->
+                userViewModel.claimReferralCode(code, bonusCoins = 50) { success, msg ->
+                    Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
+                }
+            }
+        )
+    }
+
     Scaffold(
         containerColor = Color(0xFFFAFAFA),
         topBar = {
@@ -112,15 +133,25 @@ fun ProfileScreen(navController: NavController, userViewModel: UserViewModel = v
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp))
             ProfileHeader(profile?.name ?: "Loading...", profile?.email ?: "loading...")
+            
+            // Refer & Earn Banner Button
+            ReferBannerCard(
+                referralCode = profile?.referralCode ?: "LOADING...",
+                onClick = { showReferDialog = true }
+            )
+
             StatsCard()
             SettingsList(
                 isAdmin = profile?.email == "omiq0534@gmail.com",
                 onAdminClick = {
                     navController.navigate("admin_dashboard")
+                },
+                onReferClick = {
+                    showReferDialog = true
                 },
                 onEditProfileClick = {
                     editNameText = profile?.name ?: ""
@@ -136,6 +167,224 @@ fun ProfileScreen(navController: NavController, userViewModel: UserViewModel = v
 }
 
 @Composable
+fun ReferBannerCard(referralCode: String, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF0F172A))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(18.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(46.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(Color(0xFFFFD700).copy(alpha = 0.15f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(Icons.Default.CardGiftcard, contentDescription = "Gift", tint = Color(0xFFFFD700), modifier = Modifier.size(26.dp))
+            }
+            Spacer(modifier = Modifier.width(14.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("REFER & EARN", color = Color.White, fontWeight = FontWeight.Black, fontSize = 15.sp)
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(Color(0xFF00E676))
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text("+50 COINS", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 9.sp)
+                    }
+                }
+                Spacer(modifier = Modifier.height(2.dp))
+                Text("Invite friends or claim friend's code!", color = Color(0xFF94A3B8), fontSize = 12.sp)
+            }
+            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = Color(0xFFFFD700))
+        }
+    }
+}
+
+@Composable
+fun ReferAndEarnDialog(
+    profile: UserProfile?,
+    onDismiss: () -> Unit,
+    onClaimCode: (String) -> Unit
+) {
+    val context = LocalContext.current
+    var claimCodeInput by remember { mutableStateOf("") }
+    val myReferCode = profile?.referralCode?.ifBlank { "GENERATING..." } ?: "REF9999"
+    val isAlreadyReferred = !profile?.referredBy.isNullOrBlank()
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = Color(0xFF10131E),
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.CardGiftcard, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(26.dp))
+                Spacer(modifier = Modifier.width(10.dp))
+                Text("REFER & EARN 🎁", color = Color.White, fontWeight = FontWeight.Black, fontSize = 18.sp)
+            }
+        },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    "Share your code with friends. Both you and your friend get +50 Free Coins instantly!",
+                    color = Color(0xFF94A3B8),
+                    fontSize = 12.sp
+                )
+
+                // Stats Row
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFF1E2235))
+                        .padding(12.dp),
+                    horizontalArrangement = Arrangement.SpaceAround
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("${profile?.referralCount ?: 0}", color = Color(0xFF00E5FF), fontWeight = FontWeight.Black, fontSize = 18.sp)
+                        Text("Friends Invited", color = Color(0xFF8E92A4), fontSize = 11.sp)
+                    }
+                    Box(modifier = Modifier.width(1.dp).height(30.dp).background(Color(0xFF2E334D)))
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("${profile?.referralEarnings ?: 0} 🪙", color = Color(0xFFFFD700), fontWeight = FontWeight.Black, fontSize = 18.sp)
+                        Text("Total Earned", color = Color(0xFF8E92A4), fontSize = 11.sp)
+                    }
+                }
+
+                // 1. BHEJNE WALA SECTION (Your Code)
+                Text("1. YOUR UNIQUE REFERRAL CODE", color = Color(0xFF00E5FF), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                Card(
+                    shape = RoundedCornerShape(14.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF161A29)),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF00E5FF).copy(alpha = 0.3f)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(14.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                myReferCode,
+                                color = Color.White,
+                                fontWeight = FontWeight.Black,
+                                fontSize = 20.sp,
+                                letterSpacing = 2.sp
+                            )
+                            IconButton(
+                                onClick = {
+                                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                    val clip = ClipData.newPlainText("Referral Code", myReferCode)
+                                    clipboard.setPrimaryClip(clip)
+                                    Toast.makeText(context, "📋 Code Copied: $myReferCode", Toast.LENGTH_SHORT).show()
+                                }
+                            ) {
+                                Icon(Icons.Default.ContentCopy, contentDescription = "Copy Code", tint = Color(0xFF00E5FF))
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(
+                            onClick = {
+                                val sendIntent: Intent = Intent().apply {
+                                    action = Intent.ACTION_SEND
+                                    putExtra(
+                                        Intent.EXTRA_TEXT,
+                                        "🎮 Hey! Join me on this awesome Esports Tournament App! Download the app and enter my Referral Code in Profile to get 50 FREE Coins: $myReferCode 🚀"
+                                    )
+                                    type = "text/plain"
+                                }
+                                val shareIntent = Intent.createChooser(sendIntent, "Share Referral Code")
+                                context.startActivity(shareIntent)
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF25D366)),
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Icon(Icons.Default.Share, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("SHARE WITH FRIENDS", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        }
+                    }
+                }
+
+                // 2. CLAIM WALA SECTION (Enter Friend's Code)
+                Text("2. CLAIM FRIEND'S REFERRAL CODE", color = Color(0xFFFFD700), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                Card(
+                    shape = RoundedCornerShape(14.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF161A29)),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, if (isAlreadyReferred) Color(0xFF00E676).copy(alpha = 0.4f) else Color(0xFF2E334D)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(14.dp)) {
+                        if (isAlreadyReferred) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF00E676), modifier = Modifier.size(20.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Column {
+                                    Text("Bonus Already Claimed! 🎉", color = Color(0xFF00E676), fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                    Text("Referred by: ${profile?.referredBy}", color = Color(0xFF94A3B8), fontSize = 11.sp)
+                                }
+                            }
+                        } else {
+                            OutlinedTextField(
+                                value = claimCodeInput,
+                                onValueChange = { claimCodeInput = it.uppercase() },
+                                label = { Text("Enter Friend's Code", color = Color(0xFF8E92A4)) },
+                                placeholder = { Text("e.g. REF1234", color = Color(0xFF555B70)) },
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedTextColor = Color.White,
+                                    unfocusedTextColor = Color.White,
+                                    focusedBorderColor = Color(0xFFFFD700),
+                                    unfocusedBorderColor = Color(0xFF2E334D)
+                                )
+                            )
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Button(
+                                onClick = {
+                                    if (claimCodeInput.isNotBlank()) {
+                                        onClaimCode(claimCodeInput)
+                                    } else {
+                                        Toast.makeText(context, "Please enter a referral code", Toast.LENGTH_SHORT).show()
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700)),
+                                shape = RoundedCornerShape(10.dp)
+                            ) {
+                                Text("CLAIM +50 BONUS COINS", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 12.sp)
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Close", color = Color.White, fontWeight = FontWeight.Bold)
+            }
+        }
+    )
+}
+
+@Composable
 fun ProfileHeader(name: String, email: String) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -143,18 +392,18 @@ fun ProfileHeader(name: String, email: String) {
     ) {
         Box(
             modifier = Modifier
-                .size(80.dp)
+                .size(72.dp)
                 .clip(CircleShape)
                 .background(Color.Black),
             contentAlignment = Alignment.Center
         ) {
-            Icon(Icons.Default.Person, contentDescription = "Avatar", tint = Color.White, modifier = Modifier.size(40.dp))
+            Icon(Icons.Default.Person, contentDescription = "Avatar", tint = Color.White, modifier = Modifier.size(36.dp))
         }
         Spacer(modifier = Modifier.width(16.dp))
         Column {
-            Text(name, fontSize = 24.sp, fontWeight = FontWeight.Black, color = Color.Black)
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(email, fontSize = 14.sp, color = Color.Black, fontWeight = FontWeight.Medium)
+            Text(name, fontSize = 22.sp, fontWeight = FontWeight.Black, color = Color.Black)
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(email, fontSize = 13.sp, color = Color.DarkGray, fontWeight = FontWeight.Medium)
         }
     }
 }
@@ -164,16 +413,16 @@ fun StatsCard() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp))
+            .clip(RoundedCornerShape(20.dp))
             .background(Color.Black)
-            .padding(24.dp),
+            .padding(20.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         StatItem(title = "Matches", value = "42")
-        HorizontalDivider(color = Color.Black, modifier = Modifier.height(40.dp).width(1.dp))
+        HorizontalDivider(color = Color(0xFF333333), modifier = Modifier.height(35.dp).width(1.dp))
         StatItem(title = "Wins", value = "15")
-        HorizontalDivider(color = Color.Black, modifier = Modifier.height(40.dp).width(1.dp))
+        HorizontalDivider(color = Color(0xFF333333), modifier = Modifier.height(35.dp).width(1.dp))
         StatItem(title = "Kills", value = "120")
     }
 }
@@ -181,69 +430,98 @@ fun StatsCard() {
 @Composable
 fun StatItem(title: String, value: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(value, fontWeight = FontWeight.Black, fontSize = 24.sp, color = Color.White)
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(title, color = Color.Black, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        Text(value, fontWeight = FontWeight.Black, fontSize = 22.sp, color = Color.White)
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(title, color = Color(0xFFB0B0B0), fontSize = 12.sp, fontWeight = FontWeight.Bold)
     }
 }
 
 @Composable
-fun SettingsList(isAdmin: Boolean, onAdminClick: () -> Unit, onEditProfileClick: () -> Unit, onLogoutClick: () -> Unit) {
+fun SettingsList(
+    isAdmin: Boolean,
+    onAdminClick: () -> Unit,
+    onReferClick: () -> Unit,
+    onEditProfileClick: () -> Unit,
+    onLogoutClick: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(28.dp))
+            .clip(RoundedCornerShape(24.dp))
             .background(Color.White)
-            .border(1.dp, Color.Black, RoundedCornerShape(28.dp))
-            .padding(16.dp)
+            .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(24.dp))
+            .padding(12.dp)
     ) {
         if (isAdmin) {
-            SettingsRow(icon = Icons.Default.Security, title = "Admin Panel (Owner)", onClick = onAdminClick)
-            HorizontalDivider(color = Color(0xFFF5F5F5), modifier = Modifier.padding(horizontal = 16.dp))
+            SettingsRow(icon = Icons.Default.Security, title = "Admin HQ Panel", badge = "Owner", onClick = onAdminClick)
+            HorizontalDivider(color = Color(0xFFF3F4F6), modifier = Modifier.padding(horizontal = 12.dp))
         }
-        SettingsRow(icon = Icons.Default.Edit, title = "Edit Profile", onClick = onEditProfileClick)
-        HorizontalDivider(color = Color(0xFFF5F5F5), modifier = Modifier.padding(horizontal = 16.dp))
-        SettingsRow(icon = Icons.Default.Settings, title = "App Settings", onClick = { /* TODO */ })
-        HorizontalDivider(color = Color(0xFFF5F5F5), modifier = Modifier.padding(horizontal = 16.dp))
+        SettingsRow(icon = Icons.Default.CardGiftcard, title = "Refer & Earn", badge = "+50 🪙", onClick = onReferClick)
+        HorizontalDivider(color = Color(0xFFF3F4F6), modifier = Modifier.padding(horizontal = 12.dp))
+        SettingsRow(icon = Icons.Default.Edit, title = "Edit Profile Name", onClick = onEditProfileClick)
+        HorizontalDivider(color = Color(0xFFF3F4F6), modifier = Modifier.padding(horizontal = 12.dp))
         SettingsRow(icon = Icons.Default.Help, title = "Help & Support", onClick = { /* TODO */ })
-        HorizontalDivider(color = Color(0xFFF5F5F5), modifier = Modifier.padding(horizontal = 16.dp))
+        HorizontalDivider(color = Color(0xFFF3F4F6), modifier = Modifier.padding(horizontal = 12.dp))
         SettingsRow(icon = Icons.AutoMirrored.Filled.Logout, title = "Log Out", isDestructive = true, onClick = onLogoutClick)
     }
 }
 
 @Composable
-fun SettingsRow(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, isDestructive: Boolean = false, onClick: () -> Unit) {
+fun SettingsRow(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    badge: String? = null,
+    isDestructive: Boolean = false,
+    onClick: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
-            .padding(horizontal = 16.dp, vertical = 20.dp),
+            .padding(horizontal = 12.dp, vertical = 16.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
                 modifier = Modifier
-                    .size(40.dp)
+                    .size(38.dp)
                     .clip(CircleShape)
-                    .background(if (isDestructive) Color(0xFFFFEBEE) else Color(0xFFF5F5F5)),
+                    .background(if (isDestructive) Color(0xFFFFEBEE) else Color(0xFFF3F4F6)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     icon, 
                     contentDescription = null, 
                     tint = if (isDestructive) Color(0xFFF44336) else Color.Black, 
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(18.dp)
                 )
             }
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(14.dp))
             Text(
                 title, 
                 fontWeight = FontWeight.Bold, 
-                fontSize = 16.sp, 
+                fontSize = 15.sp, 
                 color = if (isDestructive) Color(0xFFF44336) else Color.Black
             )
+            if (badge != null) {
+                Spacer(modifier = Modifier.width(8.dp))
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(if (badge == "Owner") Color(0xFFFF3366) else Color(0xFFFFD700))
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        badge,
+                        color = if (badge == "Owner") Color.White else Color.Black,
+                        fontWeight = FontWeight.Black,
+                        fontSize = 10.sp
+                    )
+                }
+            }
         }
-        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = Color.Black)
+        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = Color.DarkGray)
     }
 }
+

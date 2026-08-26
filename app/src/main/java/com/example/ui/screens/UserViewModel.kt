@@ -16,6 +16,10 @@ data class UserProfile(
     val name: String = "",
     val realMoney: Int = 100, // Free joining bonus for testing
     val appMoney: Int = 0,
+    val referralCode: String = "",
+    val referredBy: String = "",
+    val referralCount: Int = 0,
+    val referralEarnings: Int = 0,
     val isBanned: Boolean = false,
     val banType: String = "none", // "none", "temporary", "permanent"
     val banReason: String = "",
@@ -46,19 +50,33 @@ class UserViewModel : ViewModel() {
                 if (e != null) return@addSnapshotListener
                 try {
                     if (snapshot != null && snapshot.exists()) {
-                        val p = snapshot.toObject(UserProfile::class.java)?.copy(uid = snapshot.id)
+                        var p = snapshot.toObject(UserProfile::class.java)?.copy(uid = snapshot.id)
                         if (p != null) {
+                            var needsUpdate = false
+                            val updates = mutableMapOf<String, Any>()
+
                             if (p.name.isBlank() || p.name.equals("New Player", ignoreCase = true)) {
                                 val derivedName = when {
                                     !currentUser.displayName.isNullOrBlank() -> currentUser.displayName!!
                                     !currentUser.email.isNullOrBlank() -> currentUser.email!!.substringBefore("@").replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
                                     else -> "Player"
                                 }
-                                _profile.value = p.copy(name = derivedName)
-                                docRef.update("name", derivedName)
-                            } else {
-                                _profile.value = p
+                                p = p.copy(name = derivedName)
+                                updates["name"] = derivedName
+                                needsUpdate = true
                             }
+
+                            if (p.referralCode.isBlank()) {
+                                val genCode = "REF" + (currentUser.uid.take(4) + (1000..9999).random().toString()).uppercase()
+                                p = p.copy(referralCode = genCode)
+                                updates["referralCode"] = genCode
+                                needsUpdate = true
+                            }
+
+                            if (needsUpdate) {
+                                docRef.update(updates)
+                            }
+                            _profile.value = p
                         }
                     } else {
                         val derivedName = when {
@@ -66,13 +84,18 @@ class UserViewModel : ViewModel() {
                             !currentUser.email.isNullOrBlank() -> currentUser.email!!.substringBefore("@").replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
                             else -> "Player"
                         }
+                        val genCode = "REF" + (currentUser.uid.take(4) + (1000..9999).random().toString()).uppercase()
 
                         val newUser = UserProfile(
                             uid = currentUser.uid,
                             email = currentUser.email ?: "",
                             name = derivedName,
                             realMoney = 100,
-                            appMoney = 0
+                            appMoney = 0,
+                            referralCode = genCode,
+                            referredBy = "",
+                            referralCount = 0,
+                            referralEarnings = 0
                         )
                         docRef.set(newUser)
                     }
@@ -98,6 +121,78 @@ class UserViewModel : ViewModel() {
     fun addRealMoney(amount: Int) {
         val currentUser = getAuth()?.currentUser ?: return
         getDb()?.collection("users")?.document(currentUser.uid)?.update("realMoney", FieldValue.increment(amount.toLong()))
+    }
+
+    fun claimReferralCode(enteredCode: String, bonusCoins: Int = 50, onResult: (Boolean, String) -> Unit) {
+        val currentUser = getAuth()?.currentUser ?: run {
+            onResult(false, "Please log in first")
+            return
+        }
+        val db = getDb() ?: run {
+            onResult(false, "Database connection unavailable")
+            return
+        }
+        val cleanCode = enteredCode.trim().uppercase()
+        if (cleanCode.isBlank()) {
+            onResult(false, "Please enter a valid referral code")
+            return
+        }
+
+        val myProfile = _profile.value
+        if (myProfile != null) {
+            if (myProfile.referredBy.isNotBlank()) {
+                onResult(false, "You have already claimed a referral bonus!")
+                return
+            }
+            if (myProfile.referralCode.equals(cleanCode, ignoreCase = true)) {
+                onResult(false, "You cannot claim your own referral code!")
+                return
+            }
+        }
+
+        // Find user with this referral code
+        db.collection("users")
+            .whereEqualTo("referralCode", cleanCode)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                if (querySnapshot.isEmpty) {
+                    onResult(false, "Invalid referral code! Please check and try again.")
+                } else {
+                    val referrerDoc = querySnapshot.documents[0]
+                    val referrerUid = referrerDoc.id
+
+                    if (referrerUid == currentUser.uid) {
+                        onResult(false, "You cannot use your own referral code!")
+                        return@addOnSuccessListener
+                    }
+
+                    // Reward Current User (Claimer)
+                    val myDocRef = db.collection("users").document(currentUser.uid)
+                    myDocRef.update(
+                        mapOf(
+                            "referredBy" to cleanCode,
+                            "appMoney" to FieldValue.increment(bonusCoins.toLong())
+                        )
+                    ).addOnSuccessListener {
+                        // Reward the Referrer (Inviter)
+                        val referrerDocRef = db.collection("users").document(referrerUid)
+                        referrerDocRef.update(
+                            mapOf(
+                                "appMoney" to FieldValue.increment(bonusCoins.toLong()),
+                                "referralCount" to FieldValue.increment(1L),
+                                "referralEarnings" to FieldValue.increment(bonusCoins.toLong())
+                            )
+                        )
+
+                        onResult(true, "🎉 Success! +$bonusCoins Bonus Coins added to your wallet!")
+                    }.addOnFailureListener {
+                        onResult(false, "Failed to claim reward: ${it.localizedMessage}")
+                    }
+                }
+            }
+            .addOnFailureListener {
+                onResult(false, "Error verifying referral code: ${it.localizedMessage}")
+            }
     }
     
     fun logout() {
