@@ -120,6 +120,15 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Brand Logo SCRIM X
+            com.example.ui.components.ScrimXLogo(
+                isDarkBackground = true,
+                fontSize = 32.sp,
+                showSubtext = true
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
             // Toggle Login / Register
             Row(
                 modifier = Modifier

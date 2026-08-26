@@ -794,14 +794,33 @@ fun TopWalletBar(
             // Profile Avatar with dynamic initial
             Box(
                 modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .background(Color.Black)
-                    .border(2.dp, Color(0xFFFFD700), CircleShape),
+                    .size(46.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(
+                        Brush.linearGradient(
+                            listOf(Color(0xFF1E293B), Color(0xFF0F172A))
+                        )
+                    )
+                    .border(
+                        1.5.dp,
+                        Brush.linearGradient(
+                            listOf(Color(0xFF38BDF8), Color(0xFF818CF8))
+                        ),
+                        RoundedCornerShape(14.dp)
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 val initial = userName.trim().firstOrNull()?.toString()?.uppercase() ?: "P"
-                Text(initial, color = Color.White, fontWeight = FontWeight.Black, fontSize = 20.sp)
+                Text(initial, color = Color.White, fontWeight = FontWeight.Black, fontSize = 19.sp)
+                // Active status dot
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .size(9.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFF00E676))
+                        .border(1.dp, Color(0xFF0F172A), CircleShape)
+                )
             }
 
             Spacer(modifier = Modifier.width(10.dp))
