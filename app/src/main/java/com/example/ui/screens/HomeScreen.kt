@@ -45,6 +45,7 @@ import kotlin.math.sin
 import kotlin.random.Random
 
 import com.example.FirebaseHelper
+import com.example.ui.components.LiveAnnouncementMarquee
 
 data class WheelPrize(
     val coins: Int,
@@ -101,9 +102,11 @@ fun SpinWheelIcon(modifier: Modifier = Modifier) {
 fun HomeScreen(
     navController: NavController,
     onNavigateToTab: ((String) -> Unit)? = null,
-    userViewModel: UserViewModel = viewModel()
+    userViewModel: UserViewModel = viewModel(),
+    appControlViewModel: AppControlViewModel = viewModel()
 ) {
     val profile by userViewModel.profile.collectAsState()
+    val appConfig by appControlViewModel.config.collectAsState()
     val context = LocalContext.current
     val db = remember { FirebaseHelper.getFirestore() }
     val scope = rememberCoroutineScope()
@@ -123,9 +126,9 @@ fun HomeScreen(
     val spinRotation = remember { Animatable(0f) }
     val spinPrefs = remember { context.getSharedPreferences("spin_preferences", android.content.Context.MODE_PRIVATE) }
     val todayDate = remember { SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(Date()) }
-    val maxDailySpins = 2
+    val maxDailySpins = appConfig.dailyFreeSpins
 
-    var spinsRemaining by remember {
+    var spinsRemaining by remember(maxDailySpins) {
         val lastDate = spinPrefs.getString("last_spin_date", "") ?: ""
         if (lastDate != todayDate) {
             spinPrefs.edit().putString("last_spin_date", todayDate).putInt("spins_count", 0).apply()
@@ -136,7 +139,8 @@ fun HomeScreen(
         }
     }
 
-    val wheelPrizes = remember {
+    val jackpotAmount = appConfig.spinJackpot
+    val wheelPrizes = remember(jackpotAmount) {
         listOf(
             WheelPrize(10, "+10", Color(0xFFEF4444)),
             WheelPrize(25, "+25", Color(0xFF2563EB)),
@@ -145,7 +149,7 @@ fun HomeScreen(
             WheelPrize(15, "+15", Color(0xFF8B5CF6)),
             WheelPrize(100, "+100", Color(0xFFD946EF)),
             WheelPrize(20, "+20", Color(0xFF06B6D4)),
-            WheelPrize(200, "👑 200", Color(0xFFFFD700), android.graphics.Color.BLACK)
+            WheelPrize(jackpotAmount, "👑 $jackpotAmount", Color(0xFFFFD700), android.graphics.Color.BLACK)
         )
     }
 
@@ -158,10 +162,11 @@ fun HomeScreen(
                 delay(35) // Total 3.5 seconds
                 videoProgress = i / 100f
             }
-            userViewModel.addAppMoney(15)
+            val rewardAmount = appConfig.watchVideoCoins
+            userViewModel.addAppMoney(rewardAmount)
             videoRewardClaimed = true
             isWatchingVideo = false
-            Toast.makeText(context, "🎉 +15 Coins Added to Wallet!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "🎉 +$rewardAmount Coins Added to Wallet!", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -347,7 +352,7 @@ fun HomeScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Text(
-                        if (dailyClaimed) "Already claimed today! Come back tomorrow." else "Claim your free +25 daily login bonus coins!",
+                        if (dailyClaimed) "Already claimed today! Come back tomorrow." else "Claim your free +${appConfig.dailyRewardCoins} daily login bonus coins!",
                         color = Color(0xFFC0C4D6),
                         fontSize = 13.sp,
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -407,10 +412,11 @@ fun HomeScreen(
                 Button(
                     onClick = {
                         if (!dailyClaimed) {
+                            val reward = appConfig.dailyRewardCoins
                             dailyClaimed = true
                             currentStreak++
-                            userViewModel.addAppMoney(25)
-                            Toast.makeText(context, "🎁 +25 Daily Coins Claimed!", Toast.LENGTH_SHORT).show()
+                            userViewModel.addAppMoney(reward)
+                            Toast.makeText(context, "🎁 +$reward Daily Coins Claimed!", Toast.LENGTH_SHORT).show()
                         } else {
                             showDailyDialog = false
                         }
@@ -418,7 +424,7 @@ fun HomeScreen(
                     colors = ButtonDefaults.buttonColors(containerColor = Color.White),
                     shape = RoundedCornerShape(10.dp)
                 ) {
-                    Text(if (dailyClaimed) "Done" else "CLAIM +25 COINS", color = Color.Black, fontWeight = FontWeight.Black)
+                    Text(if (dailyClaimed) "Done" else "CLAIM +${appConfig.dailyRewardCoins} COINS", color = Color.Black, fontWeight = FontWeight.Black)
                 }
             },
             dismissButton = {
@@ -696,6 +702,11 @@ fun HomeScreen(
                 onProfileClick = { onNavigateToTab?.invoke("profile_tab") },
                 onWalletClick = { onNavigateToTab?.invoke("wallet_tab") }
             ) 
+        }
+        if (appConfig.isAnnouncementActive && appConfig.announcementNotice.isNotBlank()) {
+            item {
+                LiveAnnouncementMarquee(notice = appConfig.announcementNotice)
+            }
         }
         item { 
             EarningZone(

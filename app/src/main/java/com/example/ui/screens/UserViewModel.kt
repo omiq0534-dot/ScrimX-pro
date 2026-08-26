@@ -15,7 +15,11 @@ data class UserProfile(
     val email: String = "",
     val name: String = "",
     val realMoney: Int = 100, // Free joining bonus for testing
-    val appMoney: Int = 0
+    val appMoney: Int = 0,
+    val isBanned: Boolean = false,
+    val banType: String = "none", // "none", "temporary", "permanent"
+    val banReason: String = "",
+    val banUntil: Long = 0L
 )
 
 class UserViewModel : ViewModel() {

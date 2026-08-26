@@ -185,6 +185,26 @@ fun AdminScreen(navController: NavController) {
                 onClick = { navController.navigate("admin_manage_wallets") }
             )
 
+            // 5. App Update & Live Patch Control
+            ClassyAdminActionCard(
+                title = "App Updates & Live Patch",
+                subtitle = "Push new APK versions, maintenance mode, live notices & rewards patch",
+                icon = Icons.Default.SystemUpdateAlt,
+                iconTint = Color(0xFF00E5FF),
+                badge = "Live Control",
+                onClick = { navController.navigate("admin_app_update") }
+            )
+
+            // 6. User Security & Ban System
+            ClassyAdminActionCard(
+                title = "User Security & Ban System",
+                subtitle = "Ban violators, temporary 24h suspensions, permanent bans & unban players",
+                icon = Icons.Default.Gavel,
+                iconTint = Color(0xFFFF3366),
+                badge = "Security",
+                onClick = { navController.navigate("admin_user_security") }
+            )
+
             Spacer(modifier = Modifier.height(30.dp))
         }
     }

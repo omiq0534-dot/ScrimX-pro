@@ -3,9 +3,7 @@ package com.example.ui.screens
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalanceWallet
@@ -13,8 +11,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.SportsEsports
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
@@ -23,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -30,35 +28,127 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.FirebaseHelper
+import com.example.ui.components.AdminVipTopBanner
+import com.example.ui.components.AppUpdateDialog
+import com.example.ui.components.ServerMaintenanceScreen
+import com.example.ui.components.UserBannedLockScreen
 
 @Composable
-fun MainScreen(rootNavController: NavController) {
+fun MainScreen(
+    rootNavController: NavController,
+    userViewModel: UserViewModel = viewModel(),
+    appControlViewModel: AppControlViewModel = viewModel()
+) {
     val bottomNavController = rememberNavController()
-    
+    val userProfile by userViewModel.profile.collectAsState()
+    val appConfig by appControlViewModel.config.collectAsState()
+
+    val isAdmin = userProfile?.email == AppControlViewModel.ADMIN_EMAIL
+    val isAppOutdated = appConfig.latestVersionCode > AppControlViewModel.CURRENT_APP_VERSION_CODE
+    var dismissUpdateDialog by remember { mutableStateOf(false) }
+
+    // Ban Verification: check if banned and if temporary ban has not expired
+    val isTempBanActive = userProfile?.banType == "temporary" && (userProfile?.banUntil ?: 0L) > System.currentTimeMillis()
+    val isPermBanActive = userProfile?.banType == "permanent" || (userProfile?.isBanned == true && userProfile?.banType != "temporary")
+    val isUserCurrentlyBanned = (isTempBanActive || isPermBanActive) && !isAdmin
+
+    // If User is Banned -> Block with Ban Screen
+    if (isUserCurrentlyBanned) {
+        UserBannedLockScreen(
+            banType = userProfile?.banType ?: "permanent",
+            banReason = userProfile?.banReason ?: "Unauthorized usage or violations.",
+            banUntil = userProfile?.banUntil ?: 0L,
+            onLogout = {
+                userViewModel.logout()
+                rootNavController.navigate("login") {
+                    popUpTo(0) { inclusive = true }
+                }
+            }
+        )
+        return
+    }
+
+    // Auto-Ban Trigger: If admin enabled auto-ban for outdated app bypassers
+    LaunchedEffect(isAppOutdated, appConfig.autoBanOutdatedUsers, userProfile?.uid) {
+        if (isAppOutdated && appConfig.autoBanOutdatedUsers && !isAdmin && userProfile != null) {
+            val uid = userProfile!!.uid
+            if (uid.isNotBlank()) {
+                val db = FirebaseHelper.getFirestore()
+                // Apply a 24-hour temporary ban automatically for using outdated app version
+                val tempBanUntil = System.currentTimeMillis() + (24 * 3600 * 1000L)
+                db?.collection("users")?.document(uid)?.update(
+                    mapOf(
+                        "isBanned" to true,
+                        "banType" to "temporary",
+                        "banReason" to "Banned: Attempted to bypass required update with outdated APK.",
+                        "banUntil" to tempBanUntil
+                    )
+                )
+            }
+        }
+    }
+
+    // If regular user and server is in maintenance mode -> Show Fullscreen Maintenance Screen
+    if (appConfig.isMaintenanceMode && !isAdmin) {
+        ServerMaintenanceScreen(
+            message = appConfig.maintenanceMessage,
+            onRefresh = {
+                // re-evaluated by snapshot listener
+            }
+        )
+        return
+    }
+
     Scaffold(
+        topBar = {
+            // Admin VIP Status Indicator Bar when Maintenance or Updates are Active
+            if (isAdmin && (appConfig.isMaintenanceMode || isAppOutdated)) {
+                val bannerText = when {
+                    appConfig.isMaintenanceMode -> "⚠️ MAINTENANCE MODE ACTIVE (Users Blocked • Admin Bypassed)"
+                    isAppOutdated -> "📦 NEW UPDATE PUBLISHED: ${appConfig.latestVersionName} (Admin Bypassed)"
+                    else -> "👑 ADMIN VIP MODE ACTIVE"
+                }
+                AdminVipTopBanner(
+                    text = bannerText,
+                    onAdminClick = { rootNavController.navigate("admin_dashboard") }
+                )
+            }
+        },
         bottomBar = { AppBottomNav(bottomNavController) },
         containerColor = Color(0xFFFAFAFA)
     ) { innerPadding ->
-        NavHost(
-            navController = bottomNavController,
-            startDestination = "home_tab",
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            composable("home_tab") { 
-                HomeScreen(
-                    navController = rootNavController,
-                    onNavigateToTab = { tab ->
-                        bottomNavController.navigate(tab) {
-                            popUpTo(bottomNavController.graph.findStartDestination().id) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    }
-                ) 
+        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+            NavHost(
+                navController = bottomNavController,
+                startDestination = "home_tab"
+            ) {
+                composable("home_tab") { 
+                    HomeScreen(
+                        navController = rootNavController,
+                        onNavigateToTab = { tab ->
+                            bottomNavController.navigate(tab) {
+                                popUpTo(bottomNavController.graph.findStartDestination().id) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        },
+                        userViewModel = userViewModel,
+                        appControlViewModel = appControlViewModel
+                    ) 
+                }
+                composable("matches_tab") { MatchesScreen(rootNavController) }
+                composable("wallet_tab") { WalletScreen(rootNavController) }
+                composable("profile_tab") { ProfileScreen(rootNavController, userViewModel) }
             }
-            composable("matches_tab") { MatchesScreen(rootNavController) }
-            composable("wallet_tab") { WalletScreen(rootNavController) }
-            composable("profile_tab") { ProfileScreen(rootNavController) }
+
+            // Normal Users Update Popup Dialog
+            if (isAppOutdated && !isAdmin && !dismissUpdateDialog) {
+                AppUpdateDialog(
+                    config = appConfig,
+                    onDismiss = { dismissUpdateDialog = true }
+                )
+            }
         }
     }
 }

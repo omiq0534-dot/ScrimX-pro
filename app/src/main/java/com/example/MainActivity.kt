@@ -62,6 +62,12 @@ class MainActivity : ComponentActivity() {
             composable("admin_manage_wallets") {
               com.example.ui.screens.AdminManageWalletsScreen(navController)
             }
+            composable("admin_app_update") {
+              com.example.ui.screens.AdminAppUpdateScreen(navController)
+            }
+            composable("admin_user_security") {
+              com.example.ui.screens.AdminUserSecurityScreen(navController)
+            }
           }
           }
         }
