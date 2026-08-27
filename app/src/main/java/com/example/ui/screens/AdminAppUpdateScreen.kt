@@ -35,7 +35,7 @@ fun AdminAppUpdateScreen(navController: NavController) {
     // APK Version Update State
     var latestVersionCode by remember { mutableStateOf("1") }
     var latestVersionName by remember { mutableStateOf("v1.0.0") }
-    var apkDownloadUrl by remember { mutableStateOf("") }
+    var apkDownloadUrl by remember { mutableStateOf("https://website-scrim-x-pro.vercel.app/") }
     var whatsNewText by remember { mutableStateOf("• Bug fixes & performance improvements\n• Enhanced tournament room speed\n• New instant cashout options") }
     var isForceUpdate by remember { mutableStateOf(false) }
     var allowLaterButton by remember { mutableStateOf(false) }

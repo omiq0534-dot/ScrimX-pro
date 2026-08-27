@@ -269,27 +269,41 @@ fun ReferAndEarnDialog(
                     }
                 }
 
-                // 1. BHEJNE WALA SECTION (Your Code)
-                Text("1. YOUR UNIQUE REFERRAL CODE", color = Color(0xFF00E5FF), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                // 1. BHEJNE WALA SECTION (Your Code & Download Link)
+                val downloadWebsiteUrl = "https://website-scrim-x-pro.vercel.app/"
+                val fullInviteText = "🔥 Play BGMI & Free Fire Esports Tournaments on ScrimX Pro!\n\n📥 Download App: $downloadWebsiteUrl\n🎁 Referral Code: $myReferCode\n\n(Enter this code in Profile to get +50 Free Bonus Coins instantly! 💰)"
+
+                Text("1. YOUR INVITE LINK & REFERRAL CODE", color = Color(0xFF00E5FF), fontWeight = FontWeight.Bold, fontSize = 12.sp)
                 Card(
                     shape = RoundedCornerShape(14.dp),
                     colors = CardDefaults.cardColors(containerColor = Color(0xFF161A29)),
                     border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF00E5FF).copy(alpha = 0.3f)),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Column(modifier = Modifier.padding(14.dp)) {
+                    Column(
+                        modifier = Modifier.padding(14.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        // Referral Code Row
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(Color(0xFF0D101A))
+                                .padding(horizontal = 12.dp, vertical = 10.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(
-                                myReferCode,
-                                color = Color.White,
-                                fontWeight = FontWeight.Black,
-                                fontSize = 20.sp,
-                                letterSpacing = 2.sp
-                            )
+                            Column {
+                                Text("MY REFERRAL CODE", color = Color(0xFF8E92A4), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                Text(
+                                    myReferCode,
+                                    color = Color(0xFFFFD700),
+                                    fontWeight = FontWeight.Black,
+                                    fontSize = 18.sp,
+                                    letterSpacing = 2.sp
+                                )
+                            }
                             IconButton(
                                 onClick = {
                                     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
@@ -301,27 +315,79 @@ fun ReferAndEarnDialog(
                                 Icon(Icons.Default.ContentCopy, contentDescription = "Copy Code", tint = Color(0xFF00E5FF))
                             }
                         }
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Button(
-                            onClick = {
-                                val sendIntent: Intent = Intent().apply {
-                                    action = Intent.ACTION_SEND
-                                    putExtra(
-                                        Intent.EXTRA_TEXT,
-                                        "🎮 Hey! Join me on this awesome Esports Tournament App! Download the app and enter my Referral Code in Profile to get 50 FREE Coins: $myReferCode 🚀"
-                                    )
-                                    type = "text/plain"
-                                }
-                                val shareIntent = Intent.createChooser(sendIntent, "Share Referral Code")
-                                context.startActivity(shareIntent)
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF25D366)),
-                            shape = RoundedCornerShape(10.dp)
+
+                        // App Download Website Link Box
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(Color(0xFF0D101A))
+                                .padding(horizontal = 12.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Icon(Icons.Default.Share, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("SHARE WITH FRIENDS", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text("APP DOWNLOAD WEBSITE", color = Color(0xFF00E5FF), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                Text(
+                                    downloadWebsiteUrl,
+                                    color = Color(0xFFE2E8F0),
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    maxLines = 1
+                                )
+                            }
+                            IconButton(
+                                onClick = {
+                                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                    val clip = ClipData.newPlainText("Website Link", downloadWebsiteUrl)
+                                    clipboard.setPrimaryClip(clip)
+                                    Toast.makeText(context, "📋 Website Link Copied!", Toast.LENGTH_SHORT).show()
+                                }
+                            ) {
+                                Icon(Icons.Default.Link, contentDescription = "Copy Link", tint = Color(0xFFFFD700))
+                            }
+                        }
+
+                        // Action Buttons: Copy All & Share
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            OutlinedButton(
+                                onClick = {
+                                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                    val clip = ClipData.newPlainText("ScrimX Pro Invite", fullInviteText)
+                                    clipboard.setPrimaryClip(clip)
+                                    Toast.makeText(context, "📋 Full Invite Link & Message Copied!", Toast.LENGTH_SHORT).show()
+                                },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF00E5FF)),
+                                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF00E5FF).copy(alpha = 0.5f)),
+                                shape = RoundedCornerShape(10.dp)
+                            ) {
+                                Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("COPY LINK", fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                            }
+
+                            Button(
+                                onClick = {
+                                    val sendIntent: Intent = Intent().apply {
+                                        action = Intent.ACTION_SEND
+                                        putExtra(Intent.EXTRA_TEXT, fullInviteText)
+                                        type = "text/plain"
+                                    }
+                                    val shareIntent = Intent.createChooser(sendIntent, "Share ScrimX Pro Invite")
+                                    context.startActivity(shareIntent)
+                                },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF25D366)),
+                                shape = RoundedCornerShape(10.dp)
+                            ) {
+                                Icon(Icons.Default.Share, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("SHARE", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                            }
                         }
                     }
                 }

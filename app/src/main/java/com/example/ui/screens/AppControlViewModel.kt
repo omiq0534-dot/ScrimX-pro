@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
 data class AppControlConfig(
     val latestVersionCode: Int = 1,
     val latestVersionName: String = "v1.0.0",
-    val apkDownloadUrl: String = "",
+    val apkDownloadUrl: String = "https://website-scrim-x-pro.vercel.app/",
     val whatsNew: String = "• Regular performance updates\n• Fast tournament rooms",
     val isForceUpdate: Boolean = false,
     val allowLaterButton: Boolean = false,
