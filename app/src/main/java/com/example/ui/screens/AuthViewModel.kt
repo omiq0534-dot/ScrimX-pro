@@ -2,6 +2,7 @@ package com.example.ui.screens
 
 import android.content.Context
 import androidx.credentials.CredentialManager
+import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -61,18 +62,40 @@ class AuthViewModel : ViewModel() {
                 val result = credentialManager.getCredential(context, request)
                 val credential = result.credential
 
-                if (credential is GoogleIdTokenCredential) {
-                    val idToken = credential.idToken
+                val idToken: String? = when {
+                    credential is CustomCredential && credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL -> {
+                        try {
+                            val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+                            googleIdTokenCredential.idToken
+                        } catch (e: Exception) {
+                            null
+                        }
+                    }
+                    credential is GoogleIdTokenCredential -> {
+                        credential.idToken
+                    }
+                    else -> {
+                        // Fallback: try creating from data if CustomCredential
+                        if (credential is CustomCredential) {
+                            try {
+                                GoogleIdTokenCredential.createFrom(credential.data).idToken
+                            } catch (e: Exception) {
+                                null
+                            }
+                        } else null
+                    }
+                }
+
+                if (!idToken.isNullOrEmpty()) {
                     val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
-                    
                     val authResult = fbAuth.signInWithCredential(firebaseCredential).await()
                     if (authResult.user != null) {
                         _authState.value = AuthState.Success(authResult.user!!.uid)
                     } else {
-                        _authState.value = AuthState.Error("Google Auth Failed")
+                        _authState.value = AuthState.Error("Google Authentication Failed: User is null")
                     }
                 } else {
-                    _authState.value = AuthState.Error("Unexpected Credential Type")
+                    _authState.value = AuthState.Error("Could not retrieve Google account credentials. Please check Google Play Services.")
                 }
             } catch (e: androidx.credentials.exceptions.GetCredentialCancellationException) {
                 _authState.value = AuthState.Idle
