@@ -20,7 +20,7 @@ class AuthViewModel : ViewModel() {
     private fun getAuth(): FirebaseAuth? = FirebaseHelper.getAuth()
     
     // The Web Client ID from your google-services.json
-    private val WEB_CLIENT_ID = "404122407805-k4h30v9led3gb20et1ih9nes7ohb79a2.apps.googleusercontent.com"
+    private val WEB_CLIENT_ID = "404122407805-o3qparuqg40rair571gmsp669j11qs17.apps.googleusercontent.com"
     
     private val _authState = MutableStateFlow<AuthState>(AuthState.Idle)
     val authState: StateFlow<AuthState> = _authState
