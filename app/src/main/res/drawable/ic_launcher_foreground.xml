@@ -4,53 +4,51 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- Group centered in 108x108 safe zone -->
+    <!-- Solid White Canvas Icon with SCRIM in Bold Black and X in Vivid Scarlet Red -->
+    <!-- Matches user's exact uploaded image with correct proportions -->
     <group
-        android:translateX="0"
-        android:translateY="0">
+        android:translateX="4"
+        android:translateY="2">
 
-        <!-- ================= 'S' (White) ================= -->
+        <!-- ================= 'S' (Solid Heavy Black) ================= -->
         <path
-            android:fillColor="#FFFFFF"
-            android:pathData="M23,45 L32,45 L32,48.5 L26,48.5 L26,51.5 L32,51.5 L32,59 L23,59 L23,55.5 L29,55.5 L29,53.5 L23,53.5 Z" />
+            android:fillColor="#000000"
+            android:pathData="M 10,40 L 23,40 L 23,45.5 L 15.5,45.5 L 15.5,48 L 23,48 L 23,60 L 10,60 L 10,54.5 L 17.5,54.5 L 17.5,52 L 10,52 Z" />
 
-        <!-- ================= 'C' (White) ================= -->
+        <!-- ================= 'C' (Solid Heavy Black) ================= -->
         <path
-            android:fillColor="#FFFFFF"
-            android:pathData="M34,45 L43,45 L43,48.5 L37.5,48.5 L37.5,55.5 L43,55.5 L43,59 L34,59 Z" />
+            android:fillColor="#000000"
+            android:pathData="M 25.5,40 L 38.5,40 L 38.5,45.5 L 31,45.5 L 31,54.5 L 38.5,54.5 L 38.5,60 L 25.5,60 Z" />
 
-        <!-- ================= 'R' (White) ================= -->
+        <!-- ================= 'R' (Solid Heavy Black) ================= -->
         <path
-            android:fillColor="#FFFFFF"
-            android:pathData="M45,45 L53,45 L53,52 L50,52 L53.5,59 L49.5,59 L46.5,53 L48.5,53 L48.5,48.5 L45,48.5 L45,59 L41.5,59 L41.5,45 Z" />
+            android:fillColor="#000000"
+            android:pathData="M 41,40 L 53,40 L 53,50 L 48.5,50 L 53.5,60 L 47.5,60 L 44,52 L 46.5,52 L 46.5,45.5 L 41,45.5 L 41,60 L 35.5,60 L 35.5,40 Z" />
 
-        <!-- ================= 'I' (White) ================= -->
+        <!-- ================= 'I' (Solid Heavy Black) ================= -->
         <path
-            android:fillColor="#FFFFFF"
-            android:pathData="M55,45 L58.5,45 L58.5,59 L55,59 Z" />
+            android:fillColor="#000000"
+            android:pathData="M 55.5,40 L 61,40 L 61,60 L 55.5,60 Z" />
 
-        <!-- ================= 'M' (White) ================= -->
+        <!-- ================= 'M' (Solid Heavy Black) ================= -->
         <path
-            android:fillColor="#FFFFFF"
-            android:pathData="M60.5,45 L64,45 L66,51 L68,45 L71.5,45 L71.5,59 L68.5,59 L68.5,50 L66.5,55.5 L65.5,55.5 L63.5,50 L63.5,59 L60.5,59 Z" />
+            android:fillColor="#000000"
+            android:pathData="M 63.5,40 L 69,40 L 72,50 L 75,40 L 80.5,40 L 80.5,60 L 75.5,60 L 75.5,48 L 73,56 L 71,56 L 68.5,48 L 68.5,60 L 63.5,60 Z" />
 
-        <!-- ================= 'X' (Fiery Razor Red) ================= -->
-        <!-- Left-Top to Bottom-Right Stroke with sharp slant cut -->
+        <!-- ================= 'X' (Vivid Electric Scarlet Red #E50914) ================= -->
+        <!-- Main Top-Left to Bottom-Right Solid Slanted Beam -->
         <path
-            android:fillColor="#FF003F"
-            android:pathData="M74,45 L78.5,45 L89,59 L84.5,59 Z" />
+            android:fillColor="#E50914"
+            android:pathData="M 84,40 L 91,40 L 103,60 L 96,60 Z" />
 
-        <!-- Right-Top to Bottom-Left Stroke with razor slit -->
+        <!-- Top-Right Blade Slice -->
         <path
-            android:fillColor="#FF003F"
-            android:pathData="M84.5,45 L89,45 L83,52.5 L79.5,51 Z" />
-        <path
-            android:fillColor="#FF003F"
-            android:pathData="M78,54.5 L81.5,56 L74,59 L69.5,59 Z" />
+            android:fillColor="#E50914"
+            android:pathData="M 96,40 L 103,40 L 95.5,50.5 L 91.5,48.5 Z" />
 
-        <!-- Red Underline Accent Bar -->
+        <!-- Bottom-Left Blade Slice -->
         <path
-            android:fillColor="#FF003F"
-            android:pathData="M23,62 L89,62 L87,63.5 L23,63.5 Z" />
+            android:fillColor="#E50914"
+            android:pathData="M 89.5,53 L 93.5,55 L 84,60 L 77,60 Z" />
     </group>
 </vector>

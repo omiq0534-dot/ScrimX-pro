@@ -74,8 +74,20 @@ class AuthViewModel : ViewModel() {
                 } else {
                     _authState.value = AuthState.Error("Unexpected Credential Type")
                 }
+            } catch (e: androidx.credentials.exceptions.GetCredentialCancellationException) {
+                _authState.value = AuthState.Idle
             } catch (e: Exception) {
-                _authState.value = AuthState.Error(e.message ?: "Google Login Failed")
+                val errorMsg = e.message ?: ""
+                val friendlyMsg = when {
+                    errorMsg.contains("16:") || errorMsg.contains("Canceled", ignoreCase = true) -> 
+                        "Google Sign-In canceled."
+                    errorMsg.contains("10:") || errorMsg.contains("DEVELOPER_ERROR", ignoreCase = true) ->
+                        "Developer Error: Please make sure Google Sign-In is enabled in Firebase Console (Authentication > Sign-in method > Google)."
+                    errorMsg.contains("network", ignoreCase = true) ->
+                        "Network error. Please check your internet connection."
+                    else -> "Google Sign-In: ${e.localizedMessage ?: "Unknown error"}"
+                }
+                _authState.value = AuthState.Error(friendlyMsg)
             }
         }
     }
