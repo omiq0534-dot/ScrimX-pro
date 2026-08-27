@@ -34,6 +34,7 @@ fun AdminScreen(navController: NavController) {
     var liveMatches by remember { mutableStateOf(0) }
     var totalUsers by remember { mutableStateOf(0) }
     var isLiveStreamActive by remember { mutableStateOf(false) }
+    var pendingQueriesCount by remember { mutableStateOf(0) }
 
     LaunchedEffect(Unit) {
         if (db != null) {
@@ -48,6 +49,13 @@ fun AdminScreen(navController: NavController) {
             db.collection("users").addSnapshotListener { snap, _ ->
                 if (snap != null) {
                     totalUsers = snap.size()
+                }
+            }
+            db.collection("support_tickets").addSnapshotListener { snap, _ ->
+                if (snap != null) {
+                    pendingQueriesCount = snap.documents.count {
+                        it.getString("status") == "Pending"
+                    }
                 }
             }
             db.collection("settings").document("live_stream").addSnapshotListener { doc, _ ->
@@ -203,6 +211,16 @@ fun AdminScreen(navController: NavController) {
                 iconTint = Color(0xFFFF3366),
                 badge = "Security",
                 onClick = { navController.navigate("admin_user_security") }
+            )
+
+            // 7. Customer Helpdesk & User Queries
+            ClassyAdminActionCard(
+                title = "Helpdesk & User Queries",
+                subtitle = "Read user questions, send official answers, setup contact channels & FAQs",
+                icon = Icons.Default.HeadsetMic,
+                iconTint = Color(0xFFFFD700),
+                badge = if (pendingQueriesCount > 0) "$pendingQueriesCount New" else "Live",
+                onClick = { navController.navigate("admin_support") }
             )
 
             Spacer(modifier = Modifier.height(30.dp))

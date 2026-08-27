@@ -23,7 +23,10 @@ data class UserProfile(
     val isBanned: Boolean = false,
     val banType: String = "none", // "none", "temporary", "permanent"
     val banReason: String = "",
-    val banUntil: Long = 0L
+    val banUntil: Long = 0L,
+    val totalMatches: Int = 0,
+    val totalWins: Int = 0,
+    val totalKills: Int = 0
 )
 
 class UserViewModel : ViewModel() {

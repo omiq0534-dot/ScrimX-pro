@@ -47,6 +47,9 @@ class MainActivity : ComponentActivity() {
               val matchId = backStackEntry.arguments?.getString("matchId") ?: ""
               MatchDetailsScreen(matchId, navController)
             }
+            composable("customer_support") {
+              com.example.ui.screens.CustomerSupportScreen(navController)
+            }
             composable("admin_dashboard") {
               com.example.ui.screens.AdminScreen(navController)
             }
@@ -67,6 +70,9 @@ class MainActivity : ComponentActivity() {
             }
             composable("admin_user_security") {
               com.example.ui.screens.AdminUserSecurityScreen(navController)
+            }
+            composable("admin_support") {
+              com.example.ui.screens.AdminSupportScreen(navController)
             }
           }
           }

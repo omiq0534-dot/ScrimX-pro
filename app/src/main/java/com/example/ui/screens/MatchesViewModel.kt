@@ -145,7 +145,13 @@ class MatchesViewModel : ViewModel() {
                     "slotUids" to currentUids
                 )
             )
-            transaction.update(userRef, "realMoney", userProfile.realMoney - entryFee)
+            transaction.update(
+                userRef,
+                mapOf(
+                    "realMoney" to (userProfile.realMoney - entryFee),
+                    "totalMatches" to (userProfile.totalMatches + 1)
+                )
+            )
             
         }.addOnSuccessListener {
             onSuccess()

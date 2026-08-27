@@ -101,14 +101,17 @@ class AuthViewModel : ViewModel() {
                 _authState.value = AuthState.Idle
             } catch (e: Exception) {
                 val errorMsg = e.message ?: ""
+                val errorDetails = e.localizedMessage ?: e.toString()
+                android.util.Log.e("SCRIMX_AUTH", "Google Sign-In Exception: ", e)
+                
                 val friendlyMsg = when {
-                    errorMsg.contains("16:") || errorMsg.contains("Canceled", ignoreCase = true) -> 
+                    errorMsg.contains("16:") || errorMsg.contains("Canceled", ignoreCase = true) || errorMsg.contains("12501") -> 
                         "Google Sign-In canceled."
-                    errorMsg.contains("10:") || errorMsg.contains("DEVELOPER_ERROR", ignoreCase = true) ->
-                        "Developer Error: Please make sure Google Sign-In is enabled in Firebase Console (Authentication > Sign-in method > Google)."
-                    errorMsg.contains("network", ignoreCase = true) ->
+                    errorMsg.contains("10:") || errorMsg.contains("DEVELOPER_ERROR", ignoreCase = true) || errorMsg.contains("12500") ->
+                        "Firebase Config Mismatch (Code 10): $errorDetails"
+                    errorMsg.contains("network", ignoreCase = true) || errorMsg.contains("7:") ->
                         "Network error. Please check your internet connection."
-                    else -> "Google Sign-In: ${e.localizedMessage ?: "Unknown error"}"
+                    else -> "Sign-in error: $errorDetails"
                 }
                 _authState.value = AuthState.Error(friendlyMsg)
             }

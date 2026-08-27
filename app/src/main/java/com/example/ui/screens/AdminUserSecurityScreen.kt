@@ -7,8 +7,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
@@ -33,7 +35,11 @@ data class BannedUserData(
     val isBanned: Boolean = false,
     val banType: String = "none", // "none", "temporary", "permanent"
     val banReason: String = "",
-    val banUntil: Long = 0L // timestamp in ms for temporary ban
+    val banUntil: Long = 0L, // timestamp in ms for temporary ban
+    val totalMatches: Int = 0,
+    val totalWins: Int = 0,
+    val totalKills: Int = 0,
+    val realMoney: Int = 0
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -53,6 +59,14 @@ fun AdminUserSecurityScreen(navController: NavController) {
     var banReasonInput by remember { mutableStateOf("Using unauthorized outdated APK / Terms violation") }
     var isProcessingBan by remember { mutableStateOf(false) }
 
+    // Edit Stats Dialog State
+    var selectedUserForStats by remember { mutableStateOf<BannedUserData?>(null) }
+    var editMatchesInput by remember { mutableStateOf("0") }
+    var editWinsInput by remember { mutableStateOf("0") }
+    var editKillsInput by remember { mutableStateOf("0") }
+    var editWalletInput by remember { mutableStateOf("0") }
+    var isSavingStats by remember { mutableStateOf(false) }
+
     fun loadUsers() {
         isLoading = true
         db?.collection("users")?.get()?.addOnSuccessListener { snap ->
@@ -64,6 +78,11 @@ fun AdminUserSecurityScreen(navController: NavController) {
                 val banType = doc.getString("banType") ?: if (isBanned) "permanent" else "none"
                 val banReason = doc.getString("banReason") ?: ""
                 val banUntil = doc.getLong("banUntil") ?: 0L
+                val totalMatches = doc.getLong("totalMatches")?.toInt() ?: 0
+                val totalWins = doc.getLong("totalWins")?.toInt() ?: 0
+                val totalKills = doc.getLong("totalKills")?.toInt() ?: 0
+                val realMoney = doc.getLong("realMoney")?.toInt() ?: 0
+
                 BannedUserData(
                     uid = uid,
                     email = email,
@@ -71,7 +90,11 @@ fun AdminUserSecurityScreen(navController: NavController) {
                     isBanned = isBanned,
                     banType = banType,
                     banReason = banReason,
-                    banUntil = banUntil
+                    banUntil = banUntil,
+                    totalMatches = totalMatches,
+                    totalWins = totalWins,
+                    totalKills = totalKills,
+                    realMoney = realMoney
                 )
             }
             usersList = list
@@ -305,8 +328,49 @@ fun AdminUserSecurityScreen(navController: NavController) {
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Medium
                                     )
+
+                                    Spacer(modifier = Modifier.height(6.dp))
+                                    // User Live Stats Row
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(6.dp))
+                                                .background(Color(0xFF202638))
+                                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                                        ) {
+                                            Text("⚔️ M: ${user.totalMatches}", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                        }
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(6.dp))
+                                                .background(Color(0xFF202638))
+                                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                                        ) {
+                                            Text("🏆 W: ${user.totalWins}", color = Color(0xFFFFD700), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                        }
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(6.dp))
+                                                .background(Color(0xFF202638))
+                                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                                        ) {
+                                            Text("🎯 K: ${user.totalKills}", color = Color(0xFFFF5252), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                        }
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(6.dp))
+                                                .background(Color(0xFF202638))
+                                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                                        ) {
+                                            Text("💰 ₹${user.realMoney}", color = Color(0xFF00E676), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                        }
+                                    }
+
                                     if (isUserBanned && user.banReason.isNotBlank()) {
-                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Spacer(modifier = Modifier.height(4.dp))
                                         Text(
                                             "Reason: ${user.banReason}",
                                             color = Color(0xFFFF8A80),
@@ -315,26 +379,49 @@ fun AdminUserSecurityScreen(navController: NavController) {
                                     }
                                 }
 
-                                if (isUserBanned) {
-                                    Button(
-                                        onClick = { unbanUser(user) },
-                                        shape = RoundedCornerShape(10.dp),
-                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E676))
-                                    ) {
-                                        Text("UNBAN", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 11.sp)
-                                    }
-                                } else {
-                                    Button(
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    OutlinedButton(
                                         onClick = {
-                                            selectedUserForBan = user
-                                            selectedBanType = "temporary"
-                                            tempBanHours = "24"
-                                            banReasonInput = "Using unauthorized outdated APK / Terms violation"
+                                            selectedUserForStats = user
+                                            editMatchesInput = user.totalMatches.toString()
+                                            editWinsInput = user.totalWins.toString()
+                                            editKillsInput = user.totalKills.toString()
+                                            editWalletInput = user.realMoney.toString()
                                         },
                                         shape = RoundedCornerShape(10.dp),
-                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF3366))
+                                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFFFD700)),
+                                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFFFD700).copy(alpha = 0.5f)),
+                                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
                                     ) {
-                                        Text("BAN", color = Color.White, fontWeight = FontWeight.Black, fontSize = 11.sp)
+                                        Text("STATS", fontWeight = FontWeight.Black, fontSize = 10.sp)
+                                    }
+
+                                    if (isUserBanned) {
+                                        Button(
+                                            onClick = { unbanUser(user) },
+                                            shape = RoundedCornerShape(10.dp),
+                                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E676)),
+                                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
+                                        ) {
+                                            Text("UNBAN", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 10.sp)
+                                        }
+                                    } else {
+                                        Button(
+                                            onClick = {
+                                                selectedUserForBan = user
+                                                selectedBanType = "temporary"
+                                                tempBanHours = "24"
+                                                banReasonInput = "Using unauthorized outdated APK / Terms violation"
+                                            },
+                                            shape = RoundedCornerShape(10.dp),
+                                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF3366)),
+                                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
+                                        ) {
+                                            Text("BAN", color = Color.White, fontWeight = FontWeight.Black, fontSize = 10.sp)
+                                        }
                                     }
                                 }
                             }
@@ -460,6 +547,146 @@ fun AdminUserSecurityScreen(navController: NavController) {
             },
             dismissButton = {
                 TextButton(onClick = { selectedUserForBan = null }, enabled = !isProcessingBan) {
+                    Text("CANCEL", color = Color.Gray)
+                }
+            }
+        )
+    }
+
+    // Edit Player Stats & Wallet Dialog
+    if (selectedUserForStats != null) {
+        val target = selectedUserForStats!!
+        AlertDialog(
+            onDismissRequest = { if (!isSavingStats) selectedUserForStats = null },
+            containerColor = Color(0xFF181B26),
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.SportsEsports, contentDescription = null, tint = Color(0xFFFFD700))
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Column {
+                        Text(
+                            "MANAGE STATS & WALLET",
+                            color = Color.White,
+                            fontWeight = FontWeight.Black,
+                            fontSize = 14.sp
+                        )
+                        Text(
+                            target.email.ifBlank { target.name },
+                            color = Color(0xFF94A3B8),
+                            fontSize = 11.sp
+                        )
+                    }
+                }
+            },
+            text = {
+                Column(
+                    modifier = Modifier.verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text("Adjust verified stats & match records:", color = Color(0xFFC4C8D8), fontSize = 12.sp)
+
+                    OutlinedTextField(
+                        value = editMatchesInput,
+                        onValueChange = { editMatchesInput = it },
+                        label = { Text("Total Matches Played") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFFFFD700),
+                            unfocusedBorderColor = Color(0xFF33384C),
+                            focusedLabelColor = Color(0xFFFFD700),
+                            unfocusedLabelColor = Color(0xFF8E92A4),
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White
+                        )
+                    )
+
+                    OutlinedTextField(
+                        value = editWinsInput,
+                        onValueChange = { editWinsInput = it },
+                        label = { Text("Total Wins (Booyahs / Chicken)") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFFFFD700),
+                            unfocusedBorderColor = Color(0xFF33384C),
+                            focusedLabelColor = Color(0xFFFFD700),
+                            unfocusedLabelColor = Color(0xFF8E92A4),
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White
+                        )
+                    )
+
+                    OutlinedTextField(
+                        value = editKillsInput,
+                        onValueChange = { editKillsInput = it },
+                        label = { Text("Total Kills 🎯") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFFFF3366),
+                            unfocusedBorderColor = Color(0xFF33384C),
+                            focusedLabelColor = Color(0xFFFF3366),
+                            unfocusedLabelColor = Color(0xFF8E92A4),
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White
+                        )
+                    )
+
+                    OutlinedTextField(
+                        value = editWalletInput,
+                        onValueChange = { editWalletInput = it },
+                        label = { Text("Real Money Balance (₹)") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFF00E676),
+                            unfocusedBorderColor = Color(0xFF33384C),
+                            focusedLabelColor = Color(0xFF00E676),
+                            unfocusedLabelColor = Color(0xFF8E92A4),
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White
+                        )
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (db == null) return@Button
+                        isSavingStats = true
+                        val matchesVal = editMatchesInput.toIntOrNull() ?: 0
+                        val winsVal = editWinsInput.toIntOrNull() ?: 0
+                        val killsVal = editKillsInput.toIntOrNull() ?: 0
+                        val walletVal = editWalletInput.toIntOrNull() ?: 0
+
+                        val updates = hashMapOf<String, Any>(
+                            "totalMatches" to matchesVal,
+                            "totalWins" to winsVal,
+                            "totalKills" to killsVal,
+                            "realMoney" to walletVal
+                        )
+
+                        db.collection("users").document(target.uid).update(updates)
+                            .addOnSuccessListener {
+                                isSavingStats = false
+                                selectedUserForStats = null
+                                Toast.makeText(context, "Stats updated successfully!", Toast.LENGTH_SHORT).show()
+                                loadUsers()
+                            }
+                            .addOnFailureListener { e ->
+                                isSavingStats = false
+                                Toast.makeText(context, "Error updating stats: ${e.message}", Toast.LENGTH_SHORT).show()
+                            }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700)),
+                    enabled = !isSavingStats
+                ) {
+                    Text("SAVE STATS", color = Color.Black, fontWeight = FontWeight.Black)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { selectedUserForStats = null }, enabled = !isSavingStats) {
                     Text("CANCEL", color = Color.Gray)
                 }
             }

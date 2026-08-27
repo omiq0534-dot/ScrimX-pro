@@ -144,7 +144,7 @@ fun ProfileScreen(navController: NavController, userViewModel: UserViewModel = v
                 onClick = { showReferDialog = true }
             )
 
-            StatsCard()
+            StatsCard(profile = profile)
             SettingsList(
                 isAdmin = profile?.email == "omiq0534@gmail.com",
                 onAdminClick = {
@@ -156,6 +156,9 @@ fun ProfileScreen(navController: NavController, userViewModel: UserViewModel = v
                 onEditProfileClick = {
                     editNameText = profile?.name ?: ""
                     showEditDialog = true
+                },
+                onSupportClick = {
+                    navController.navigate("customer_support")
                 },
                 onLogoutClick = {
                     showLogoutDialog = true
@@ -409,21 +412,104 @@ fun ProfileHeader(name: String, email: String) {
 }
 
 @Composable
-fun StatsCard() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .background(Color.Black)
-            .padding(20.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+fun StatsCard(profile: UserProfile?) {
+    val totalMatches = profile?.totalMatches ?: 0
+    val totalWins = profile?.totalWins ?: 0
+    val totalKills = profile?.totalKills ?: 0
+
+    val winRate = if (totalMatches > 0) {
+        String.format(java.util.Locale.US, "%.0f%%", (totalWins.toDouble() / totalMatches) * 100)
+    } else "0%"
+
+    val kdRatio = if (totalMatches > 0) {
+        String.format(java.util.Locale.US, "%.1f", totalKills.toDouble() / totalMatches)
+    } else "0.0"
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF0F172A)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        StatItem(title = "Matches", value = "42")
-        HorizontalDivider(color = Color(0xFF333333), modifier = Modifier.height(35.dp).width(1.dp))
-        StatItem(title = "Wins", value = "15")
-        HorizontalDivider(color = Color(0xFF333333), modifier = Modifier.height(35.dp).width(1.dp))
-        StatItem(title = "Kills", value = "120")
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    "CAREER BATTLE STATS",
+                    color = Color(0xFFFFD700),
+                    fontWeight = FontWeight.Black,
+                    fontSize = 11.sp,
+                    letterSpacing = 1.sp
+                )
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(Color(0xFF1E293B))
+                        .padding(horizontal = 8.dp, vertical = 3.dp)
+                ) {
+                    Text(
+                        "LIVE VERIFIED",
+                        color = Color(0xFF00E5FF),
+                        fontWeight = FontWeight.Black,
+                        fontSize = 9.sp
+                    )
+                }
+            }
+
+            // 3 Main Stat Items
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                StatItem(title = "Matches Played", value = "$totalMatches")
+                HorizontalDivider(color = Color(0xFF334155), modifier = Modifier.height(35.dp).width(1.dp))
+                StatItem(title = "Total Wins 🏆", value = "$totalWins")
+                HorizontalDivider(color = Color(0xFF334155), modifier = Modifier.height(35.dp).width(1.dp))
+                StatItem(title = "Total Kills 🎯", value = "$totalKills")
+            }
+
+            HorizontalDivider(color = Color(0xFF1E293B))
+
+            // Efficiency Row: Win Rate & K/D Ratio
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceAround,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFF00E676))
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Win Rate: ", color = Color(0xFF94A3B8), fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                    Text(winRate, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Black)
+                }
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFFF3366))
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Avg K/D: ", color = Color(0xFF94A3B8), fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                    Text(kdRatio, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Black)
+                }
+            }
+        }
     }
 }
 
@@ -442,6 +528,7 @@ fun SettingsList(
     onAdminClick: () -> Unit,
     onReferClick: () -> Unit,
     onEditProfileClick: () -> Unit,
+    onSupportClick: () -> Unit,
     onLogoutClick: () -> Unit
 ) {
     Column(
@@ -460,7 +547,7 @@ fun SettingsList(
         HorizontalDivider(color = Color(0xFFF3F4F6), modifier = Modifier.padding(horizontal = 12.dp))
         SettingsRow(icon = Icons.Default.Edit, title = "Edit Profile Name", onClick = onEditProfileClick)
         HorizontalDivider(color = Color(0xFFF3F4F6), modifier = Modifier.padding(horizontal = 12.dp))
-        SettingsRow(icon = Icons.Default.Help, title = "Help & Support", onClick = { /* TODO */ })
+        SettingsRow(icon = Icons.Default.HeadsetMic, title = "Customer Support & FAQs", badge = "24/7", onClick = onSupportClick)
         HorizontalDivider(color = Color(0xFFF3F4F6), modifier = Modifier.padding(horizontal = 12.dp))
         SettingsRow(icon = Icons.AutoMirrored.Filled.Logout, title = "Log Out", isDestructive = true, onClick = onLogoutClick)
     }
