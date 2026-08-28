@@ -1,6 +1,11 @@
 package com.example.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.*
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -12,12 +17,14 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.SportsEsports
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -31,22 +38,67 @@ import androidx.navigation.compose.rememberNavController
 import com.example.FirebaseHelper
 import com.example.ui.components.AdminVipTopBanner
 import com.example.ui.components.AppUpdateDialog
+import com.example.ui.components.FloatingRoomLiveBanner
+import com.example.ui.components.RoomCredentialsDialog
 import com.example.ui.components.ServerMaintenanceScreen
 import com.example.ui.components.UserBannedLockScreen
+import com.example.utils.NotificationHelper
 
 @Composable
 fun MainScreen(
     rootNavController: NavController,
     userViewModel: UserViewModel = viewModel(),
-    appControlViewModel: AppControlViewModel = viewModel()
+    appControlViewModel: AppControlViewModel = viewModel(),
+    matchesViewModel: MatchesViewModel = viewModel()
 ) {
+    val context = LocalContext.current
     val bottomNavController = rememberNavController()
     val userProfile by userViewModel.profile.collectAsState()
     val appConfig by appControlViewModel.config.collectAsState()
+    val allMatches by matchesViewModel.matches.collectAsState()
 
     val isAdmin = userProfile?.email == AppControlViewModel.ADMIN_EMAIL
     val isAppOutdated = appConfig.latestVersionCode > AppControlViewModel.CURRENT_APP_VERSION_CODE
     var dismissUpdateDialog by remember { mutableStateOf(false) }
+
+    // State for in-app Room Credentials Banner & Dialog
+    var selectedLiveRoomMatch by remember { mutableStateOf<MatchData?>(null) }
+    var showRoomDetailsDialog by remember { mutableStateOf(false) }
+    var dismissedLiveMatchIds by remember { mutableStateOf(setOf<String>()) }
+
+    // Auto-detect Room Credentials for Matches Booked by Current User
+    val userIdentifier = userProfile?.email?.ifBlank { userProfile?.uid } ?: userProfile?.uid ?: ""
+    val activeJoinedLiveMatch = remember(allMatches, userIdentifier, dismissedLiveMatchIds) {
+        if (userIdentifier.isBlank()) null
+        else {
+            allMatches.firstOrNull { match ->
+                val isJoined = match.bookedSlots.values.any { it.equals(userProfile?.email, ignoreCase = true) || it == userProfile?.uid }
+                val hasRoom = match.roomId.isNotBlank() && match.roomPass.isNotBlank()
+                isJoined && hasRoom && !dismissedLiveMatchIds.contains(match.id)
+            }
+        }
+    }
+
+    // Trigger Android System Notification when Room ID & Pass become Live
+    LaunchedEffect(allMatches, userProfile?.uid, userProfile?.email) {
+        if (userProfile != null) {
+            val userEmail = userProfile?.email ?: ""
+            val userUid = userProfile?.uid ?: ""
+            allMatches.forEach { match ->
+                val isJoined = match.bookedSlots.values.any { it.equals(userEmail, ignoreCase = true) || it == userUid }
+                if (isJoined && match.roomId.isNotBlank() && match.roomPass.isNotBlank()) {
+                    NotificationHelper.showRoomCredentialsNotification(
+                        context = context,
+                        matchId = match.id,
+                        matchTitle = match.title,
+                        roomId = match.roomId,
+                        roomPass = match.roomPass,
+                        gameMode = match.mode
+                    )
+                }
+            }
+        }
+    }
 
     // Ban Verification: check if banned and if temporary ban has not expired
     val isTempBanActive = userProfile?.banType == "temporary" && (userProfile?.banUntil ?: 0L) > System.currentTimeMillis()
@@ -142,11 +194,42 @@ fun MainScreen(
                 composable("profile_tab") { ProfileScreen(rootNavController, userViewModel) }
             }
 
+            // Floating Top Room Alert Banner
+            activeJoinedLiveMatch?.let { liveMatch ->
+                AnimatedVisibility(
+                    visible = true,
+                    enter = slideInVertically(initialOffsetY = { -it }) + fadeIn(),
+                    exit = slideOutVertically(targetOffsetY = { -it }) + fadeOut(),
+                    modifier = Modifier.align(Alignment.TopCenter)
+                ) {
+                    FloatingRoomLiveBanner(
+                        match = liveMatch,
+                        onClick = {
+                            selectedLiveRoomMatch = liveMatch
+                            showRoomDetailsDialog = true
+                        },
+                        onDismiss = {
+                            dismissedLiveMatchIds = dismissedLiveMatchIds + liveMatch.id
+                        }
+                    )
+                }
+            }
+
             // Normal Users Update Popup Dialog
             if (isAppOutdated && !isAdmin && !dismissUpdateDialog) {
                 AppUpdateDialog(
                     config = appConfig,
                     onDismiss = { dismissUpdateDialog = true }
+                )
+            }
+
+            // Room Credentials Details Dialog
+            if (showRoomDetailsDialog && selectedLiveRoomMatch != null) {
+                RoomCredentialsDialog(
+                    match = selectedLiveRoomMatch!!,
+                    onDismiss = {
+                        showRoomDetailsDialog = false
+                    }
                 )
             }
         }

@@ -24,9 +24,11 @@ class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     FirebaseHelper.init(this)
+    com.example.utils.NotificationHelper.initNotificationChannels(this)
     enableEdgeToEdge()
     setContent {
       MyApplicationTheme {
+        com.example.ui.components.RequestNotificationPermissionOnLaunch()
         Surface(
           modifier = Modifier.fillMaxSize(),
           color = androidx.compose.ui.graphics.Color.White
