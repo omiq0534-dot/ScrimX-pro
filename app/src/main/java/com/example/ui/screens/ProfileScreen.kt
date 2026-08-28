@@ -31,6 +31,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.ui.components.XBadge
+import com.example.ui.components.XBadgeSize
+import com.example.ui.components.AdminMasterBadge
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -136,7 +139,14 @@ fun ProfileScreen(navController: NavController, userViewModel: UserViewModel = v
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             Spacer(modifier = Modifier.height(4.dp))
-            ProfileHeader(profile?.name ?: "Loading...", profile?.email ?: "loading...")
+            ProfileHeader(
+                name = profile?.name ?: "Loading...",
+                email = profile?.email ?: "loading...",
+                hasXBadge = profile?.hasXBadge == true
+            )
+
+            // 👑 [X] Badge Status Showcase Card
+            XBadgeStatusCard(profile = profile)
             
             // Refer & Earn Banner Button
             ReferBannerCard(
@@ -454,7 +464,10 @@ fun ReferAndEarnDialog(
 }
 
 @Composable
-fun ProfileHeader(name: String, email: String) {
+fun ProfileHeader(name: String, email: String, hasXBadge: Boolean = false) {
+    val isOwner = email.equals("omiq0534@gmail.com", ignoreCase = true)
+    val isAdmin = isOwner || email.equals("admin@tournament.com", ignoreCase = true)
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
@@ -463,16 +476,146 @@ fun ProfileHeader(name: String, email: String) {
             modifier = Modifier
                 .size(72.dp)
                 .clip(CircleShape)
-                .background(Color.Black),
+                .background(if (isAdmin) Color(0xFF1E1015) else Color.Black)
+                .border(
+                    width = if (isAdmin || hasXBadge) 2.5.dp else 0.dp,
+                    color = if (isOwner) Color(0xFFFF0055) else if (hasXBadge) Color(0xFFFFD700) else Color.Transparent,
+                    shape = CircleShape
+                ),
             contentAlignment = Alignment.Center
         ) {
-            Icon(Icons.Default.Person, contentDescription = "Avatar", tint = Color.White, modifier = Modifier.size(36.dp))
+            Icon(
+                if (isOwner) Icons.Default.Shield else Icons.Default.Person, 
+                contentDescription = "Avatar", 
+                tint = if (isOwner) Color(0xFFFFD700) else Color.White, 
+                modifier = Modifier.size(36.dp)
+            )
+            if (isAdmin) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .offset(x = 4.dp, y = 4.dp)
+                ) {
+                    AdminMasterBadge(isOwner = isOwner, showClickInfo = true)
+                }
+            } else if (hasXBadge) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .offset(x = 4.dp, y = 4.dp)
+                ) {
+                    XBadge(size = XBadgeSize.MINI, isAnimated = true)
+                }
+            }
         }
         Spacer(modifier = Modifier.width(16.dp))
         Column {
-            Text(name, fontSize = 22.sp, fontWeight = FontWeight.Black, color = Color.Black)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(name, fontSize = 22.sp, fontWeight = FontWeight.Black, color = Color.Black)
+                Spacer(modifier = Modifier.width(8.dp))
+                if (isAdmin) {
+                    AdminMasterBadge(isOwner = isOwner, showClickInfo = true)
+                } else if (hasXBadge) {
+                    XBadge(size = XBadgeSize.NORMAL, isAnimated = true, showClickInfo = true)
+                }
+            }
             Spacer(modifier = Modifier.height(2.dp))
             Text(email, fontSize = 13.sp, color = Color.DarkGray, fontWeight = FontWeight.Medium)
+        }
+    }
+}
+
+@Composable
+fun XBadgeStatusCard(profile: UserProfile?) {
+    val hasXBadge = profile?.hasXBadge == true
+    val wins = profile?.totalWins ?: 0
+    val targetWins = 10
+    val progress = (wins.toFloat() / targetWins).coerceIn(0f, 1f)
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (hasXBadge) Color(0xFF141208) else Color(0xFF0F172A)
+        ),
+        border = androidx.compose.foundation.BorderStroke(
+            width = 1.2.dp,
+            color = if (hasXBadge) Color(0xFFFFD700) else Color(0xFF1E293B)
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(
+                modifier = Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                XBadge(
+                    size = XBadgeSize.LARGE,
+                    isAnimated = true,
+                    showClickInfo = true
+                )
+                Spacer(modifier = Modifier.width(14.dp))
+                Column {
+                    if (hasXBadge) {
+                        Text(
+                            "VERIFIED [X] BADGE",
+                            color = Color(0xFFFFD700),
+                            fontWeight = FontWeight.Black,
+                            fontSize = 14.sp,
+                            letterSpacing = 0.5.sp
+                        )
+                        Text(
+                            "Official Pro Esports Player / Champion 👑",
+                            color = Color(0xFFE2E8F0),
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    } else {
+                        Text(
+                            "ROAD TO [X] BADGE",
+                            color = Color.White,
+                            fontWeight = FontWeight.Black,
+                            fontSize = 13.sp,
+                            letterSpacing = 0.5.sp
+                        )
+                        Text(
+                            "Win $wins/$targetWins Tournament Matches to Unlock",
+                            color = Color(0xFF94A3B8),
+                            fontSize = 11.sp
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        LinearProgressIndicator(
+                            progress = { progress },
+                            modifier = Modifier
+                                .fillMaxWidth(0.9f)
+                                .height(5.dp)
+                                .clip(CircleShape),
+                            color = Color(0xFFFFD700),
+                            trackColor = Color(0xFF1E293B)
+                        )
+                    }
+                }
+            }
+
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(if (hasXBadge) Color(0xFFFFD700).copy(alpha = 0.15f) else Color(0xFF1E293B))
+                    .border(1.dp, if (hasXBadge) Color(0xFFFFD700) else Color(0xFF334155), RoundedCornerShape(8.dp))
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+            ) {
+                Text(
+                    if (hasXBadge) "PRO ACTIVE" else "$wins/$targetWins WINS",
+                    color = if (hasXBadge) Color(0xFFFFD700) else Color(0xFF94A3B8),
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Black
+                )
+            }
         }
     }
 }

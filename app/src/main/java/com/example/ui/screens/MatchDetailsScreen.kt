@@ -27,6 +27,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
+import com.example.ui.components.XBadge
+import com.example.ui.components.XBadgeSize
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -505,12 +507,19 @@ fun SlotCard(slot: MatchSlot, isSelected: Boolean, onClick: () -> Unit) {
             Spacer(modifier = Modifier.width(14.dp))
             Column {
                 if (slot.isBooked) {
-                    Text(
-                        slot.teamName ?: "Reserved",
-                        fontWeight = FontWeight.Black,
-                        fontSize = 15.sp,
-                        color = Color(0xFF1C1C1E)
-                    )
+                    val isXPlayer = slot.teamName?.contains("[X]", ignoreCase = true) == true || slot.teamName?.contains("X-", ignoreCase = true) == true || slot.teamName?.contains("Admin", ignoreCase = true) == true || slot.teamName?.contains("GodLike", ignoreCase = true) == true || slot.teamName?.contains("Total Gaming", ignoreCase = true) == true
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (isXPlayer) {
+                            XBadge(size = XBadgeSize.MINI, isAnimated = false, showClickInfo = true)
+                            Spacer(modifier = Modifier.width(6.dp))
+                        }
+                        Text(
+                            slot.teamName ?: "Reserved",
+                            fontWeight = FontWeight.Black,
+                            fontSize = 15.sp,
+                            color = Color(0xFF1C1C1E)
+                        )
+                    }
                     if (!slot.inGameUid.isNullOrBlank() && slot.inGameUid != "N/A") {
                         Text(
                             "UID: ${slot.inGameUid}",

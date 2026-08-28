@@ -28,6 +28,9 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.FirebaseHelper
 
+import com.example.ui.components.XBadge
+import com.example.ui.components.XBadgeSize
+
 data class BannedUserData(
     val uid: String = "",
     val email: String = "",
@@ -39,7 +42,8 @@ data class BannedUserData(
     val totalMatches: Int = 0,
     val totalWins: Int = 0,
     val totalKills: Int = 0,
-    val realMoney: Int = 0
+    val realMoney: Int = 0,
+    val hasXBadge: Boolean = false
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -82,6 +86,7 @@ fun AdminUserSecurityScreen(navController: NavController) {
                 val totalWins = doc.getLong("totalWins")?.toInt() ?: 0
                 val totalKills = doc.getLong("totalKills")?.toInt() ?: 0
                 val realMoney = doc.getLong("realMoney")?.toInt() ?: 0
+                val hasXBadge = doc.getBoolean("hasXBadge") ?: false
 
                 BannedUserData(
                     uid = uid,
@@ -94,7 +99,8 @@ fun AdminUserSecurityScreen(navController: NavController) {
                     totalMatches = totalMatches,
                     totalWins = totalWins,
                     totalKills = totalKills,
-                    realMoney = realMoney
+                    realMoney = realMoney,
+                    hasXBadge = hasXBadge
                 )
             }
             usersList = list
@@ -106,6 +112,20 @@ fun AdminUserSecurityScreen(navController: NavController) {
 
     LaunchedEffect(Unit) {
         loadUsers()
+    }
+
+    fun toggleXBadge(user: BannedUserData) {
+        if (db == null) return
+        val newStatus = !user.hasXBadge
+        db.collection("users").document(user.uid).update("hasXBadge", newStatus)
+            .addOnSuccessListener {
+                val msg = if (newStatus) "👑 [X] Badge Granted to ${user.name}!" else "❌ [X] Badge Revoked for ${user.name}"
+                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                loadUsers()
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
     }
 
     fun applyBan(user: BannedUserData, banType: String, hours: Int, reason: String) {
@@ -283,6 +303,10 @@ fun AdminUserSecurityScreen(navController: NavController) {
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
+                                        if (user.hasXBadge) {
+                                            XBadge(size = XBadgeSize.MINI, isAnimated = false, showClickInfo = true)
+                                            Spacer(modifier = Modifier.width(6.dp))
+                                        }
                                         // Primary Identifier: GMAIL
                                         Text(
                                             user.email.ifBlank { "User UID: ${user.uid.take(10)}..." },
@@ -383,6 +407,23 @@ fun AdminUserSecurityScreen(navController: NavController) {
                                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
+                                    // 👑 [X] Badge Toggle Button
+                                    IconButton(
+                                        onClick = { toggleXBadge(user) },
+                                        modifier = Modifier
+                                            .size(34.dp)
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .background(if (user.hasXBadge) Color(0xFFFFD700) else Color(0xFF1E2230))
+                                            .border(1.dp, if (user.hasXBadge) Color(0xFFFF9100) else Color(0xFF374151), RoundedCornerShape(8.dp))
+                                    ) {
+                                        Text(
+                                            "X",
+                                            color = if (user.hasXBadge) Color.Black else Color(0xFF94A3B8),
+                                            fontWeight = FontWeight.Black,
+                                            fontSize = 14.sp
+                                        )
+                                    }
+
                                     OutlinedButton(
                                         onClick = {
                                             selectedUserForStats = user

@@ -26,7 +26,8 @@ data class UserProfile(
     val banUntil: Long = 0L,
     val totalMatches: Int = 0,
     val totalWins: Int = 0,
-    val totalKills: Int = 0
+    val totalKills: Int = 0,
+    val hasXBadge: Boolean = false // 👑 ScrimX Verified [X] Badge
 )
 
 class UserViewModel : ViewModel() {
@@ -73,6 +74,13 @@ class UserViewModel : ViewModel() {
                                 val genCode = "REF" + (currentUser.uid.take(4) + (1000..9999).random().toString()).uppercase()
                                 p = p.copy(referralCode = genCode)
                                 updates["referralCode"] = genCode
+                                needsUpdate = true
+                            }
+
+                            // 👑 Automatic Pro Milestone: 10+ Tournament Wins or Creator Email unlocks [X] Badge
+                            if (!p.hasXBadge && (p.totalWins >= 10 || p.email.equals("omiq0534@gmail.com", ignoreCase = true))) {
+                                p = p.copy(hasXBadge = true)
+                                updates["hasXBadge"] = true
                                 needsUpdate = true
                             }
 

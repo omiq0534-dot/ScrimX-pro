@@ -46,6 +46,8 @@ import kotlin.random.Random
 
 import com.example.FirebaseHelper
 import com.example.ui.components.LiveAnnouncementMarquee
+import com.example.ui.components.XBadge
+import com.example.ui.components.XBadgeSize
 
 data class WheelPrize(
     val coins: Int,
@@ -749,6 +751,7 @@ fun HomeScreen(
                 userName = profile?.name?.ifBlank { "Player" } ?: "Player",
                 appMoney = profile?.appMoney ?: 0,
                 realMoney = profile?.realMoney ?: 0,
+                hasXBadge = profile?.hasXBadge == true,
                 onProfileClick = { onNavigateToTab?.invoke("profile_tab") },
                 onWalletClick = { onNavigateToTab?.invoke("wallet_tab") }
             ) 
@@ -775,6 +778,7 @@ fun TopWalletBar(
     userName: String = "Player",
     appMoney: Int = 0,
     realMoney: Int = 0,
+    hasXBadge: Boolean = false,
     onProfileClick: () -> Unit = {},
     onWalletClick: () -> Unit = {}
 ) {
@@ -802,9 +806,9 @@ fun TopWalletBar(
                         )
                     )
                     .border(
-                        1.5.dp,
+                        if (hasXBadge) 1.8.dp else 1.5.dp,
                         Brush.linearGradient(
-                            listOf(Color(0xFF38BDF8), Color(0xFF818CF8))
+                            if (hasXBadge) listOf(Color(0xFFFFD700), Color(0xFFFF003F)) else listOf(Color(0xFF38BDF8), Color(0xFF818CF8))
                         ),
                         RoundedCornerShape(14.dp)
                     ),
@@ -812,34 +816,52 @@ fun TopWalletBar(
             ) {
                 val initial = userName.trim().firstOrNull()?.toString()?.uppercase() ?: "P"
                 Text(initial, color = Color.White, fontWeight = FontWeight.Black, fontSize = 19.sp)
-                // Active status dot
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .size(9.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFF00E676))
-                        .border(1.dp, Color(0xFF0F172A), CircleShape)
-                )
+                // Active status or X-badge dot
+                if (hasXBadge) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .offset(x = 2.dp, y = 2.dp)
+                    ) {
+                        XBadge(size = XBadgeSize.MINI, isAnimated = false)
+                    }
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .size(9.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFF00E676))
+                            .border(1.dp, Color(0xFF0F172A), CircleShape)
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.width(10.dp))
 
             Column {
-                Text(
-                    "GAMER",
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Black,
-                    color = Color(0xFF8E92A4),
-                    letterSpacing = 0.5.sp
-                )
-                Text(
-                    userName,
-                    fontWeight = FontWeight.Black,
-                    fontSize = 16.sp,
-                    color = Color.Black,
-                    maxLines = 1
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        if (hasXBadge) "VIP PRO GAMER" else "GAMER",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Black,
+                        color = if (hasXBadge) Color(0xFFFFD700) else Color(0xFF8E92A4),
+                        letterSpacing = 0.5.sp
+                    )
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (hasXBadge) {
+                        XBadge(size = XBadgeSize.MINI, isAnimated = false, showClickInfo = true)
+                        Spacer(modifier = Modifier.width(5.dp))
+                    }
+                    Text(
+                        userName,
+                        fontWeight = FontWeight.Black,
+                        fontSize = 16.sp,
+                        color = Color.Black,
+                        maxLines = 1
+                    )
+                }
             }
         }
 
