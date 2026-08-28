@@ -24,12 +24,21 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.google.firebase.firestore.FirebaseFirestore
 
+import androidx.compose.ui.platform.LocalContext
+import android.widget.Toast
 import com.example.FirebaseHelper
+import com.example.ui.components.AdminMasterBadge
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminScreen(navController: NavController) {
+    val context = LocalContext.current
     val db = remember { FirebaseHelper.getFirestore() }
+    val auth = remember { FirebaseHelper.getAuth() }
+    val currentUserEmail = auth?.currentUser?.email?.lowercase() ?: ""
+    val isOwner = currentUserEmail == "omiq0534@gmail.com"
+    var isModerator by remember { mutableStateOf(!isOwner) }
+
     var totalMatches by remember { mutableStateOf(0) }
     var liveMatches by remember { mutableStateOf(0) }
     var totalUsers by remember { mutableStateOf(0) }
@@ -38,6 +47,17 @@ fun AdminScreen(navController: NavController) {
 
     LaunchedEffect(Unit) {
         if (db != null) {
+            val uid = auth?.currentUser?.uid
+            if (uid != null) {
+                db.collection("users").document(uid).get().addOnSuccessListener { doc ->
+                    if (doc != null && doc.exists()) {
+                        val role = doc.getString("role") ?: "player"
+                        val isMod = doc.getBoolean("isModerator") ?: false
+                        isModerator = isMod || role == "moderator"
+                    }
+                }
+            }
+
             db.collection("matches").addSnapshotListener { snap, _ ->
                 if (snap != null) {
                     totalMatches = snap.size()
@@ -76,16 +96,18 @@ fun AdminScreen(navController: NavController) {
                             modifier = Modifier
                                 .size(8.dp)
                                 .clip(CircleShape)
-                                .background(Color(0xFFFFD700))
+                                .background(if (isOwner) Color(0xFFFF0055) else Color(0xFF8B5CF6))
                         )
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
-                            "ADMIN HQ",
+                            if (isOwner) "👑 OWNER HQ" else "🛡️ MODERATOR HQ",
                             fontWeight = FontWeight.Black,
                             color = Color.White,
                             fontSize = 17.sp,
                             letterSpacing = 1.sp
                         )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        AdminMasterBadge(isOwner = isOwner, showClickInfo = true)
                     }
                 },
                 navigationIcon = {
@@ -121,9 +143,20 @@ fun AdminScreen(navController: NavController) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text("COMMAND CENTER", color = Color(0xFF8E92A4), fontSize = 11.sp, fontWeight = FontWeight.Black, letterSpacing = 1.5.sp)
+                            Text(
+                                if (isOwner) "SUPREME COMMAND CENTER" else "STAFF & MODERATOR PORTAL",
+                                color = Color(0xFF8E92A4),
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Black,
+                                letterSpacing = 1.5.sp
+                            )
                             Spacer(modifier = Modifier.height(2.dp))
-                            Text("Tournament & Room Engine", color = Color.White, fontWeight = FontWeight.Black, fontSize = 18.sp)
+                            Text(
+                                if (isOwner) "Tournament & System Engine" else "Tournament Match Host Engine",
+                                color = Color.White,
+                                fontWeight = FontWeight.Black,
+                                fontSize = 17.sp
+                            )
                         }
                         Box(
                             modifier = Modifier
@@ -153,7 +186,20 @@ fun AdminScreen(navController: NavController) {
                 }
             }
 
-            Text("OPERATIONS", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color(0xFF75798E), letterSpacing = 1.5.sp)
+            // OWNER-EXCLUSIVE: STAFF MANAGEMENT BANNER
+            if (isOwner) {
+                Text("STAFF & ACCESS CONTROL", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color(0xFF75798E), letterSpacing = 1.5.sp)
+                ClassyAdminActionCard(
+                    title = "Staff & Moderator Management",
+                    subtitle = "Assign helper admins to create matches & release Room IDs on your behalf",
+                    icon = Icons.Default.GroupAdd,
+                    iconTint = Color(0xFF8B5CF6),
+                    badge = "👑 Owner",
+                    onClick = { navController.navigate("admin_staff_management") }
+                )
+            }
+
+            Text("MATCH OPERATIONS", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color(0xFF75798E), letterSpacing = 1.5.sp)
 
             // 1. Create Match Card
             ClassyAdminActionCard(
@@ -166,15 +212,25 @@ fun AdminScreen(navController: NavController) {
 
             // 2. Manage Matches & Rooms (Slot details, ID/Pass & Live URL)
             ClassyAdminActionCard(
-                title = "Manage Matches & Bookings",
-                subtitle = "View registered teams & player names, release Room ID/Pass",
+                title = "Manage Matches & Rooms",
+                subtitle = "View registered teams, release Room ID/Pass before match start",
                 icon = Icons.Default.Tune,
                 iconTint = Color(0xFFFFFFFF),
                 badge = "$totalMatches Total",
                 onClick = { navController.navigate("admin_manage_matches") }
             )
 
-            // 3. Live Stream Manager
+            // 3. Customer Helpdesk & User Queries
+            ClassyAdminActionCard(
+                title = "Helpdesk & User Queries",
+                subtitle = "Read user questions, send official answers, setup contact channels & FAQs",
+                icon = Icons.Default.HeadsetMic,
+                iconTint = Color(0xFFFFD700),
+                badge = if (pendingQueriesCount > 0) "$pendingQueriesCount New" else "Live",
+                onClick = { navController.navigate("admin_support") }
+            )
+
+            // 4. Live Stream Manager
             ClassyAdminActionCard(
                 title = "Global Live Stream Link",
                 subtitle = "Configure YouTube / Twitch live stream for all players",
@@ -184,44 +240,59 @@ fun AdminScreen(navController: NavController) {
                 onClick = { navController.navigate("admin_live_stream") }
             )
 
-            // 4. Player Wallets
-            ClassyAdminActionCard(
-                title = "Player Wallets & Cashout",
-                subtitle = "Search players by email, add winnings & manual deposit updates",
-                icon = Icons.Default.AccountBalanceWallet,
-                iconTint = Color(0xFF00E676),
-                onClick = { navController.navigate("admin_manage_wallets") }
-            )
+            // OWNER-EXCLUSIVE POWER TOOLS
+            if (isOwner) {
+                Text("OWNER SYSTEM CONTROLS", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color(0xFF75798E), letterSpacing = 1.5.sp)
 
-            // 5. App Update & Live Patch Control
-            ClassyAdminActionCard(
-                title = "App Updates & Live Patch",
-                subtitle = "Push new APK versions, maintenance mode, live notices & rewards patch",
-                icon = Icons.Default.SystemUpdateAlt,
-                iconTint = Color(0xFF00E5FF),
-                badge = "Live Control",
-                onClick = { navController.navigate("admin_app_update") }
-            )
+                // 5. Player Wallets
+                ClassyAdminActionCard(
+                    title = "Player Wallets & Cashout",
+                    subtitle = "Search players by email, add winnings & manual deposit updates",
+                    icon = Icons.Default.AccountBalanceWallet,
+                    iconTint = Color(0xFF00E676),
+                    badge = "🔒 Owner",
+                    onClick = { navController.navigate("admin_manage_wallets") }
+                )
 
-            // 6. User Security & Ban System
-            ClassyAdminActionCard(
-                title = "User Security & Ban System",
-                subtitle = "Ban violators, temporary 24h suspensions, permanent bans & unban players",
-                icon = Icons.Default.Gavel,
-                iconTint = Color(0xFFFF3366),
-                badge = "Security",
-                onClick = { navController.navigate("admin_user_security") }
-            )
+                // 6. App Update & Live Patch Control
+                ClassyAdminActionCard(
+                    title = "App Updates & Live Patch",
+                    subtitle = "Push new APK versions, maintenance mode, live notices & rewards patch",
+                    icon = Icons.Default.SystemUpdateAlt,
+                    iconTint = Color(0xFF00E5FF),
+                    badge = "🔒 Owner",
+                    onClick = { navController.navigate("admin_app_update") }
+                )
 
-            // 7. Customer Helpdesk & User Queries
-            ClassyAdminActionCard(
-                title = "Helpdesk & User Queries",
-                subtitle = "Read user questions, send official answers, setup contact channels & FAQs",
-                icon = Icons.Default.HeadsetMic,
-                iconTint = Color(0xFFFFD700),
-                badge = if (pendingQueriesCount > 0) "$pendingQueriesCount New" else "Live",
-                onClick = { navController.navigate("admin_support") }
-            )
+                // 7. User Security & Ban System
+                ClassyAdminActionCard(
+                    title = "User Security & Ban Radar",
+                    subtitle = "Auto-detect cheats, ban violators, 24h suspensions & unban players",
+                    icon = Icons.Default.Gavel,
+                    iconTint = Color(0xFFFF3366),
+                    badge = "🔒 Owner",
+                    onClick = { navController.navigate("admin_user_security") }
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(Color(0xFF131520))
+                        .border(1.dp, Color(0xFF262938), RoundedCornerShape(14.dp))
+                        .padding(14.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("🛡️", fontSize = 16.sp)
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            "Logged in as Tournament Moderator. You have match hosting, room ID release, and helpdesk permissions.",
+                            color = Color(0xFF8E92A4),
+                            fontSize = 11.sp
+                        )
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(30.dp))
         }

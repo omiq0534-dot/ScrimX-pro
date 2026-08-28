@@ -139,10 +139,15 @@ fun ProfileScreen(navController: NavController, userViewModel: UserViewModel = v
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             Spacer(modifier = Modifier.height(4.dp))
+            val isOwner = profile?.email.equals("omiq0534@gmail.com", ignoreCase = true)
+            val isModerator = profile?.isModerator == true || profile?.role == "moderator"
+
             ProfileHeader(
                 name = profile?.name ?: "Loading...",
                 email = profile?.email ?: "loading...",
-                hasXBadge = profile?.hasXBadge == true
+                hasXBadge = profile?.hasXBadge == true,
+                isOwner = isOwner,
+                isModerator = isModerator
             )
 
             // 👑 [X] Badge Status Showcase Card
@@ -156,7 +161,8 @@ fun ProfileScreen(navController: NavController, userViewModel: UserViewModel = v
 
             StatsCard(profile = profile)
             SettingsList(
-                isAdmin = profile?.email == "omiq0534@gmail.com",
+                isOwner = isOwner,
+                isModerator = isModerator,
                 onAdminClick = {
                     navController.navigate("admin_dashboard")
                 },
@@ -464,9 +470,14 @@ fun ReferAndEarnDialog(
 }
 
 @Composable
-fun ProfileHeader(name: String, email: String, hasXBadge: Boolean = false) {
-    val isOwner = email.equals("omiq0534@gmail.com", ignoreCase = true)
-    val isAdmin = isOwner || email.equals("admin@tournament.com", ignoreCase = true)
+fun ProfileHeader(
+    name: String, 
+    email: String, 
+    hasXBadge: Boolean = false,
+    isOwner: Boolean = false,
+    isModerator: Boolean = false
+) {
+    val isPrivileged = isOwner || isModerator
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -476,21 +487,21 @@ fun ProfileHeader(name: String, email: String, hasXBadge: Boolean = false) {
             modifier = Modifier
                 .size(72.dp)
                 .clip(CircleShape)
-                .background(if (isAdmin) Color(0xFF1E1015) else Color.Black)
+                .background(if (isPrivileged) Color(0xFF1E1015) else Color.Black)
                 .border(
-                    width = if (isAdmin || hasXBadge) 2.5.dp else 0.dp,
-                    color = if (isOwner) Color(0xFFFF0055) else if (hasXBadge) Color(0xFFFFD700) else Color.Transparent,
+                    width = if (isPrivileged || hasXBadge) 2.5.dp else 0.dp,
+                    color = if (isOwner) Color(0xFFFF0055) else if (isModerator) Color(0xFF8B5CF6) else if (hasXBadge) Color(0xFFFFD700) else Color.Transparent,
                     shape = CircleShape
                 ),
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                if (isOwner) Icons.Default.Shield else Icons.Default.Person, 
+                if (isOwner) Icons.Default.Shield else if (isModerator) Icons.Default.Security else Icons.Default.Person, 
                 contentDescription = "Avatar", 
-                tint = if (isOwner) Color(0xFFFFD700) else Color.White, 
+                tint = if (isOwner) Color(0xFFFFD700) else if (isModerator) Color(0xFF8B5CF6) else Color.White, 
                 modifier = Modifier.size(36.dp)
             )
-            if (isAdmin) {
+            if (isPrivileged) {
                 Box(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
@@ -513,7 +524,7 @@ fun ProfileHeader(name: String, email: String, hasXBadge: Boolean = false) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(name, fontSize = 22.sp, fontWeight = FontWeight.Black, color = Color.Black)
                 Spacer(modifier = Modifier.width(8.dp))
-                if (isAdmin) {
+                if (isPrivileged) {
                     AdminMasterBadge(isOwner = isOwner, showClickInfo = true)
                 } else if (hasXBadge) {
                     XBadge(size = XBadgeSize.NORMAL, isAnimated = true, showClickInfo = true)
@@ -733,7 +744,8 @@ fun StatItem(title: String, value: String) {
 
 @Composable
 fun SettingsList(
-    isAdmin: Boolean,
+    isOwner: Boolean,
+    isModerator: Boolean,
     onAdminClick: () -> Unit,
     onReferClick: () -> Unit,
     onEditProfileClick: () -> Unit,
@@ -748,8 +760,11 @@ fun SettingsList(
             .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(24.dp))
             .padding(12.dp)
     ) {
-        if (isAdmin) {
-            SettingsRow(icon = Icons.Default.Security, title = "Admin HQ Panel", badge = "Owner", onClick = onAdminClick)
+        if (isOwner) {
+            SettingsRow(icon = Icons.Default.Security, title = "Admin HQ Command", badge = "👑 Owner", onClick = onAdminClick)
+            HorizontalDivider(color = Color(0xFFF3F4F6), modifier = Modifier.padding(horizontal = 12.dp))
+        } else if (isModerator) {
+            SettingsRow(icon = Icons.Default.Security, title = "Moderator HQ Panel", badge = "🛡️ Staff", onClick = onAdminClick)
             HorizontalDivider(color = Color(0xFFF3F4F6), modifier = Modifier.padding(horizontal = 12.dp))
         }
         SettingsRow(icon = Icons.Default.CardGiftcard, title = "Refer & Earn", badge = "+50 🪙", onClick = onReferClick)

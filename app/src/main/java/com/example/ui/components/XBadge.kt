@@ -226,11 +226,11 @@ fun AdminMasterBadge(
             horizontalArrangement = Arrangement.spacedBy(3.dp)
         ) {
             Text(
-                "👑",
+                if (isOwner) "👑" else "🛡️",
                 fontSize = 11.sp
             )
             Text(
-                text = if (isOwner) "OWNER" else "ADMIN",
+                text = if (isOwner) "OWNER" else "MODERATOR",
                 color = Color.White,
                 fontWeight = FontWeight.Black,
                 fontSize = 10.sp,

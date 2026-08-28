@@ -27,7 +27,9 @@ data class UserProfile(
     val totalMatches: Int = 0,
     val totalWins: Int = 0,
     val totalKills: Int = 0,
-    val hasXBadge: Boolean = false // 👑 ScrimX Verified [X] Badge
+    val hasXBadge: Boolean = false, // 👑 ScrimX Verified [X] Badge
+    val role: String = "player", // "owner", "moderator", "player"
+    val isModerator: Boolean = false
 )
 
 class UserViewModel : ViewModel() {
