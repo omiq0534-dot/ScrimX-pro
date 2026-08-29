@@ -483,47 +483,51 @@ fun ProfileHeader(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
     ) {
+        // Clean Circular Avatar with refined glow ring
         Box(
-            modifier = Modifier
-                .size(72.dp)
-                .clip(CircleShape)
-                .background(if (isPrivileged) Color(0xFF1E1015) else Color.Black)
-                .border(
-                    width = if (isPrivileged || hasXBadge) 2.5.dp else 0.dp,
-                    color = if (isOwner) Color(0xFFFF0055) else if (isModerator) Color(0xFF8B5CF6) else if (hasXBadge) Color(0xFFFFD700) else Color.Transparent,
-                    shape = CircleShape
-                ),
+            modifier = Modifier.size(68.dp),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                if (isOwner) Icons.Default.Shield else if (isModerator) Icons.Default.Security else Icons.Default.Person, 
-                contentDescription = "Avatar", 
-                tint = if (isOwner) Color(0xFFFFD700) else if (isModerator) Color(0xFF8B5CF6) else Color.White, 
-                modifier = Modifier.size(36.dp)
-            )
-            if (isPrivileged) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(CircleShape)
+                    .background(
+                        if (isOwner) androidx.compose.ui.graphics.Brush.sweepGradient(listOf(Color(0xFFFF0055), Color(0xFFFF9900), Color(0xFFFF0055)))
+                        else if (isModerator) androidx.compose.ui.graphics.Brush.sweepGradient(listOf(Color(0xFF6366F1), Color(0xFF8B5CF6), Color(0xFF6366F1)))
+                        else if (hasXBadge) androidx.compose.ui.graphics.Brush.sweepGradient(listOf(Color(0xFFFFD700), Color(0xFFFF8800), Color(0xFFFFD700)))
+                        else androidx.compose.ui.graphics.Brush.linearGradient(listOf(Color(0xFF2A2D3E), Color(0xFF1E2130)))
+                    )
+                    .padding(2.5.dp)
+            ) {
                 Box(
                     modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .offset(x = 4.dp, y = 4.dp)
+                        .fillMaxSize()
+                        .clip(CircleShape)
+                        .background(Color(0xFF111420)),
+                    contentAlignment = Alignment.Center
                 ) {
-                    AdminMasterBadge(isOwner = isOwner, showClickInfo = true)
-                }
-            } else if (hasXBadge) {
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .offset(x = 4.dp, y = 4.dp)
-                ) {
-                    XBadge(size = XBadgeSize.MINI, isAnimated = true)
+                    Icon(
+                        if (isOwner) Icons.Default.Shield else if (isModerator) Icons.Default.Security else Icons.Default.Person, 
+                        contentDescription = "Avatar", 
+                        tint = if (isOwner) Color(0xFFFFD700) else if (isModerator) Color(0xFFA78BFA) else Color.White, 
+                        modifier = Modifier.size(34.dp)
+                    )
                 }
             }
         }
         Spacer(modifier = Modifier.width(16.dp))
-        Column {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(name, fontSize = 22.sp, fontWeight = FontWeight.Black, color = Color.Black)
-                Spacer(modifier = Modifier.width(8.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = name, 
+                    fontSize = 20.sp, 
+                    fontWeight = FontWeight.Black, 
+                    color = Color.Black
+                )
                 if (isPrivileged) {
                     AdminMasterBadge(isOwner = isOwner, showClickInfo = true)
                 } else if (hasXBadge) {
@@ -531,7 +535,12 @@ fun ProfileHeader(
                 }
             }
             Spacer(modifier = Modifier.height(2.dp))
-            Text(email, fontSize = 13.sp, color = Color.DarkGray, fontWeight = FontWeight.Medium)
+            Text(
+                text = email, 
+                fontSize = 13.sp, 
+                color = Color(0xFF6B7280), 
+                fontWeight = FontWeight.Medium
+            )
         }
     }
 }

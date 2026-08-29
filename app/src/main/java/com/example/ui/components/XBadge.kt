@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -18,9 +19,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -28,23 +31,23 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlin.math.cos
+import kotlin.math.sin
 
 enum class XBadgeSize {
-    MINI,    // In-line with player names in slots / tables (16-18dp)
-    NORMAL,  // In profile and leaderboard headers (24-28dp)
-    LARGE    // Hero profile showcase (40-48dp)
-}
-
-enum class BadgeType {
-    X_BADGE,       // Gold/Fire [X] Pro Player Badge
-    ADMIN_BADGE,   // Ruby Electric Crown [ADMIN] Badge
-    FOUNDER_BADGE  // Diamond/Gold [OWNER] Badge
+    MINI,    // In-line with player names in slots / tables (18dp)
+    NORMAL,  // In profile and leaderboard headers (28dp)
+    LARGE    // Hero profile showcase (44dp)
 }
 
 /**
- * 👑 Official ScrimX [X] Badge Component
- * Inspired by Free Fire's [V] Badge & Kick's [K] Badge.
- * Rendered with golden-fiery metallic gradients and diamond/hexagon styling.
+ * ⚡ Ultra-Premium 3D Glassy Ruby Gemstone [X] Badge
+ * Inspired by Kick's Iconic Polygon & Free Fire's [V] Badge, elevated to a luxury 3D faceted crystal ruby gem.
+ * Featuring:
+ * - 8-Sided Faceted Octagonal Crystal Cut with 3D Light Refraction
+ * - Glossy Glass Specular Highlights & Diagonal Surface Glare
+ * - Esports Crimson / Fiery Ruby Red (#FF003F -> #D50000 -> #880015)
+ * - Metallic Golden Cyber Rim & Laser-Cut Deep Carbon [X]
  */
 @Composable
 fun XBadge(
@@ -55,14 +58,15 @@ fun XBadge(
 ) {
     var showDialog by remember { mutableStateOf(false) }
 
-    // Shimmer/Pulse animation for live shine
-    val infiniteTransition = rememberInfiniteTransition(label = "XBadgeShine")
+    val infiniteTransition = rememberInfiniteTransition(label = "XBadgeGlint")
+    
+    // Smooth breathing pulse
     val pulseScale by if (isAnimated) {
         infiniteTransition.animateFloat(
             initialValue = 1f,
-            targetValue = 1.08f,
+            targetValue = 1.05f,
             animationSpec = infiniteRepeatable(
-                animation = tween(1200, easing = FastOutSlowInEasing),
+                animation = tween(1400, easing = FastOutSlowInEasing),
                 repeatMode = RepeatMode.Reverse
             ),
             label = "pulse"
@@ -71,62 +75,240 @@ fun XBadge(
         remember { mutableFloatStateOf(1f) }
     }
 
+    // Moving glass gleam sweep
+    val gleamOffset by if (isAnimated) {
+        infiniteTransition.animateFloat(
+            initialValue = -0.6f,
+            targetValue = 1.6f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(2800, easing = LinearEasing),
+                repeatMode = RepeatMode.Restart
+            ),
+            label = "gleam"
+        )
+    } else {
+        remember { mutableFloatStateOf(-1f) }
+    }
+
     val badgeDimension = when (size) {
-        XBadgeSize.MINI -> 18.dp
-        XBadgeSize.NORMAL -> 26.dp
-        XBadgeSize.LARGE -> 44.dp
+        XBadgeSize.MINI -> 20.dp
+        XBadgeSize.NORMAL -> 28.dp
+        XBadgeSize.LARGE -> 46.dp
     }
 
     val fontSize: TextUnit = when (size) {
-        XBadgeSize.MINI -> 10.sp
+        XBadgeSize.MINI -> 11.sp
         XBadgeSize.NORMAL -> 15.sp
-        XBadgeSize.LARGE -> 24.sp
-    }
-
-    val cornerRadius = when (size) {
-        XBadgeSize.MINI -> 5.dp
-        XBadgeSize.NORMAL -> 7.dp
-        XBadgeSize.LARGE -> 12.dp
+        XBadgeSize.LARGE -> 25.sp
     }
 
     Box(
         modifier = modifier
             .scale(pulseScale)
             .size(badgeDimension)
-            .clip(RoundedCornerShape(cornerRadius))
-            .background(
-                Brush.linearGradient(
-                    listOf(
-                        Color(0xFFFFD700), // Bright Gold
-                        Color(0xFFFF9100), // Amber
-                        Color(0xFFFF003F)  // Ruby ScrimX Red
-                    )
-                )
-            )
-            .border(
-                width = if (size == XBadgeSize.LARGE) 2.dp else 1.2.dp,
-                brush = Brush.linearGradient(
-                    listOf(
-                        Color(0xFFFFFFFF),
-                        Color(0xFFFFE082),
-                        Color(0xFFFF3D00)
-                    )
-                ),
-                shape = RoundedCornerShape(cornerRadius)
-            )
             .clickable(enabled = showClickInfo) {
                 if (showClickInfo) showDialog = true
             },
         contentAlignment = Alignment.Center
     ) {
-        // High-contrast Bold stylized 'X'
+        // High-Precision 3D Glassy Faceted Ruby Canvas
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val canvasW: Float = this.size.width
+            val canvasH: Float = this.size.height
+            val cut: Float = canvasW * 0.26f
+
+            // 1. Outer Octagon Path (The Gem Bezel)
+            val outerPath = Path().apply {
+                moveTo(cut, 0f)
+                lineTo(canvasW - cut, 0f)
+                lineTo(canvasW, cut)
+                lineTo(canvasW, canvasH - cut)
+                lineTo(canvasW - cut, canvasH)
+                lineTo(cut, canvasH)
+                lineTo(0f, canvasH - cut)
+                lineTo(0f, cut)
+                close()
+            }
+
+            // Outer Golden Cyber-Chamber Rim
+            drawPath(
+                path = outerPath,
+                brush = Brush.linearGradient(
+                    colors = listOf(
+                        Color(0xFFFFF4B8), // Top-left Gold Highlight
+                        Color(0xFFFFD700), // Pure Gold
+                        Color(0xFFFF6D00), // Amber Flare
+                        Color(0xFFFF1744), // Crimson
+                        Color(0xFF880015)  // Deep Shadow Gold/Bronze
+                    ),
+                    start = Offset(0f, 0f),
+                    end = Offset(canvasW, canvasH)
+                ),
+                style = Fill
+            )
+
+            // 2. Inner Crystal Base (Deep Glowing Ruby Body)
+            val rimPad: Float = canvasW * 0.065f
+            val rimCut: Float = (canvasW - (rimPad * 2f)) * 0.26f
+            val gemPath = Path().apply {
+                moveTo(rimPad + rimCut, rimPad)
+                lineTo(canvasW - rimPad - rimCut, rimPad)
+                lineTo(canvasW - rimPad, rimPad + rimCut)
+                lineTo(canvasW - rimPad, canvasH - rimPad - rimCut)
+                lineTo(canvasW - rimPad - rimCut, canvasH - rimPad)
+                lineTo(rimPad + rimCut, canvasH - rimPad)
+                lineTo(rimPad, canvasH - rimPad - rimCut)
+                lineTo(rimPad, rimPad + rimCut)
+                close()
+            }
+
+            drawPath(
+                path = gemPath,
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFFFF4081), // Top Light Ruby
+                        Color(0xFFFF003F), // Neon Crimson
+                        Color(0xFFD50000), // Deep Scarlet
+                        Color(0xFF6B000B)  // Shadow Ruby Red
+                    )
+                ),
+                style = Fill
+            )
+
+            // 3. Faceted Crystal 3D Depth (Top bevels reflect bright light, bottom in rich shade)
+            val tablePad: Float = canvasW * 0.20f
+            val tableCut: Float = (canvasW - (tablePad * 2f)) * 0.26f
+
+            // Top Facet (High Reflection)
+            val topFacet = Path().apply {
+                moveTo(rimPad + rimCut, rimPad)
+                lineTo(canvasW - rimPad - rimCut, rimPad)
+                lineTo(canvasW - tablePad - tableCut, tablePad)
+                lineTo(tablePad + tableCut, tablePad)
+                close()
+            }
+            drawPath(
+                path = topFacet,
+                color = Color.White.copy(alpha = 0.35f),
+                style = Fill
+            )
+
+            // Left Facet (Medium Reflection)
+            val leftFacet = Path().apply {
+                moveTo(rimPad, rimPad + rimCut)
+                lineTo(rimPad + rimCut, rimPad)
+                lineTo(tablePad + tableCut, tablePad)
+                lineTo(tablePad, tablePad + tableCut)
+                lineTo(tablePad, canvasH - tablePad - tableCut)
+                lineTo(rimPad, canvasH - rimPad - rimCut)
+                close()
+            }
+            drawPath(
+                path = leftFacet,
+                color = Color.White.copy(alpha = 0.18f),
+                style = Fill
+            )
+
+            // Bottom & Right Facets (Deep Shaded Glass Depth)
+            val bottomFacet = Path().apply {
+                moveTo(tablePad + tableCut, canvasH - tablePad)
+                lineTo(canvasW - tablePad - tableCut, canvasH - tablePad)
+                lineTo(canvasW - rimPad - rimCut, canvasH - rimPad)
+                lineTo(rimPad + rimCut, canvasH - rimPad)
+                close()
+            }
+            drawPath(
+                path = bottomFacet,
+                color = Color.Black.copy(alpha = 0.45f),
+                style = Fill
+            )
+
+            // 4. Center Table Gemstone Flat
+            val tablePath = Path().apply {
+                moveTo(tablePad + tableCut, tablePad)
+                lineTo(canvasW - tablePad - tableCut, tablePad)
+                lineTo(canvasW - tablePad, tablePad + tableCut)
+                lineTo(canvasW - tablePad, canvasH - tablePad - tableCut)
+                lineTo(canvasW - tablePad - tableCut, canvasH - tablePad)
+                lineTo(tablePad + tableCut, canvasH - tablePad)
+                lineTo(tablePad, canvasH - tablePad - tableCut)
+                lineTo(tablePad, tablePad + tableCut)
+                close()
+            }
+
+            drawPath(
+                path = tablePath,
+                brush = Brush.radialGradient(
+                    colors = listOf(
+                        Color(0xFFFF3366), // Inner glowing core
+                        Color(0xFFD50000), // Crimson Red
+                        Color(0xFF880015)  // Deep rich ruby
+                    ),
+                    center = Offset(canvasW * 0.4f, canvasH * 0.4f),
+                    radius = canvasW * 0.45f
+                ),
+                style = Fill
+            )
+
+            // Table Border Accent Line
+            drawPath(
+                path = tablePath,
+                color = Color(0xFFFFD700).copy(alpha = 0.4f),
+                style = Stroke(width = 1f)
+            )
+
+            // 5. Glossy Glass Specular Sheen (Curved Glass Sheen on Top-Left)
+            val glassGlare = Path().apply {
+                moveTo(rimPad, rimPad + rimCut)
+                lineTo(rimPad + rimCut, rimPad)
+                lineTo(canvasW * 0.65f, rimPad)
+                lineTo(rimPad, canvasH * 0.65f)
+                close()
+            }
+            drawPath(
+                path = glassGlare,
+                brush = Brush.linearGradient(
+                    colors = listOf(
+                        Color.White.copy(alpha = 0.65f),
+                        Color.White.copy(alpha = 0.15f),
+                        Color.Transparent
+                    ),
+                    start = Offset(rimPad, rimPad),
+                    end = Offset(canvasW * 0.5f, canvasH * 0.5f)
+                ),
+                style = Fill
+            )
+
+            // 6. Animated Light Glint Ray
+            if (isAnimated && gleamOffset in 0f..1f) {
+                val gx = gleamOffset * canvasW
+                drawLine(
+                    brush = Brush.horizontalGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            Color.White.copy(alpha = 0.65f),
+                            Color(0xFFFFE082).copy(alpha = 0.85f),
+                            Color.White.copy(alpha = 0.65f),
+                            Color.Transparent
+                        ),
+                        startX = gx - (canvasW * 0.2f),
+                        endX = gx + (canvasW * 0.2f)
+                    ),
+                    start = Offset(gx, 0f),
+                    end = Offset(gx - (canvasW * 0.3f), canvasH),
+                    strokeWidth = 2.5.dp.toPx()
+                )
+            }
+        }
+
+        // Heavy Bold Pixel-Cut "X" (Esports Laser-Cut Style in Center of Gem)
         Text(
             text = "X",
-            color = Color.Black,
+            color = Color(0xFF07090E), // Ultra-Deep Laser Solid Black
             fontWeight = FontWeight.Black,
             fontSize = fontSize,
-            fontFamily = FontFamily.SansSerif,
-            letterSpacing = (-0.5).sp,
+            fontFamily = FontFamily.Monospace,
+            letterSpacing = (-1.5).sp,
             modifier = Modifier.offset(y = (-0.5).dp)
         )
     }

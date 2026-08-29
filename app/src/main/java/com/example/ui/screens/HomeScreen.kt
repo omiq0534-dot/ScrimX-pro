@@ -798,43 +798,31 @@ fun TopWalletBar(
             // Profile Avatar with dynamic initial
             Box(
                 modifier = Modifier
-                    .size(46.dp)
-                    .clip(RoundedCornerShape(14.dp))
+                    .size(44.dp)
+                    .clip(CircleShape)
                     .background(
                         Brush.linearGradient(
-                            listOf(Color(0xFF1E293B), Color(0xFF0F172A))
+                            if (hasXBadge) listOf(Color(0xFF2A0812), Color(0xFF150409))
+                            else listOf(Color(0xFF1E293B), Color(0xFF0F172A))
                         )
                     )
                     .border(
-                        if (hasXBadge) 1.8.dp else 1.5.dp,
-                        Brush.linearGradient(
-                            if (hasXBadge) listOf(Color(0xFFFFD700), Color(0xFFFF003F)) else listOf(Color(0xFF38BDF8), Color(0xFF818CF8))
+                        width = if (hasXBadge) 2.dp else 1.5.dp,
+                        brush = Brush.linearGradient(
+                            if (hasXBadge) listOf(Color(0xFFFF1744), Color(0xFFFFD700), Color(0xFFFF003F)) 
+                            else listOf(Color(0xFF38BDF8), Color(0xFF818CF8))
                         ),
-                        RoundedCornerShape(14.dp)
+                        shape = CircleShape
                     ),
                 contentAlignment = Alignment.Center
             ) {
                 val initial = userName.trim().firstOrNull()?.toString()?.uppercase() ?: "P"
-                Text(initial, color = Color.White, fontWeight = FontWeight.Black, fontSize = 19.sp)
-                // Active status or X-badge dot
-                if (hasXBadge) {
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .offset(x = 2.dp, y = 2.dp)
-                    ) {
-                        XBadge(size = XBadgeSize.MINI, isAnimated = false)
-                    }
-                } else {
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .size(9.dp)
-                            .clip(CircleShape)
-                            .background(Color(0xFF00E676))
-                            .border(1.dp, Color(0xFF0F172A), CircleShape)
-                    )
-                }
+                Text(
+                    text = initial, 
+                    color = if (hasXBadge) Color(0xFFFFD700) else Color.White, 
+                    fontWeight = FontWeight.Black, 
+                    fontSize = 18.sp
+                )
             }
 
             Spacer(modifier = Modifier.width(10.dp))
