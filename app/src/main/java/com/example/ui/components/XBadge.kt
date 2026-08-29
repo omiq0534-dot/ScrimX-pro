@@ -77,14 +77,21 @@ fun GemstoneBadge(
         remember { mutableFloatStateOf(1f) }
     }
 
-    // Micro Star Diamond Twinkle flare (0.2f to 1f)
+    // Micro Star Diamond Twinkle flare
     val sparkleIntensity by if (isAnimated) {
         infiniteTransition.animateFloat(
-            initialValue = 0.2f,
+            initialValue = 0f,
             targetValue = 1f,
             animationSpec = infiniteRepeatable(
-                animation = tween(1800, easing = FastOutSlowInEasing),
-                repeatMode = RepeatMode.Reverse
+                animation = keyframes {
+                    durationMillis = 3600
+                    0f at 0
+                    0.2f at 400
+                    1f at 650 using FastOutSlowInEasing
+                    0f at 1100 using FastOutSlowInEasing
+                    0f at 3600
+                },
+                repeatMode = RepeatMode.Restart
             ),
             label = "sparkle"
         )
@@ -92,13 +99,18 @@ fun GemstoneBadge(
         remember { mutableFloatStateOf(0.7f) }
     }
 
-    // Internal crystal refraction shimmer (strictly inside gem)
+    // Internal crystal refraction shimmer with crisp speed & delay pause
     val shimmerPhase by if (isAnimated) {
         infiniteTransition.animateFloat(
             initialValue = -0.3f,
             targetValue = 1.3f,
             animationSpec = infiniteRepeatable(
-                animation = tween(3000, easing = LinearEasing),
+                animation = keyframes {
+                    durationMillis = 3600
+                    -0.3f at 0
+                    1.3f at 650 using FastOutSlowInEasing
+                    1.3f at 3600
+                },
                 repeatMode = RepeatMode.Restart
             ),
             label = "shimmer"
@@ -359,54 +371,60 @@ fun GemstoneBadge(
                     style = Fill
                 )
 
-                // E. Delicate Internal Shimmer (Hairline sweep inside the table only)
-                if (isAnimated && shimmerPhase in 0f..1f) {
-                    val sx = shimmerPhase * cW
-                    drawLine(
-                        brush = Brush.horizontalGradient(
-                            colors = listOf(
-                                Color.Transparent,
-                                Color.White.copy(alpha = 0.45f),
-                                Color(0xFFFFD700).copy(alpha = 0.6f),
-                                Color.White.copy(alpha = 0.45f),
-                                Color.Transparent
+                // E. Delicate Internal Shimmer (Strictly clipped inside tablePath)
+                if (isAnimated && shimmerPhase in -0.2f..1.2f) {
+                    clipPath(tablePath) {
+                        val sx = shimmerPhase * cW
+                        drawLine(
+                            brush = Brush.horizontalGradient(
+                                colors = listOf(
+                                    Color.Transparent,
+                                    Color.White.copy(alpha = 0.5f),
+                                    Color(0xFFFFD700).copy(alpha = 0.75f),
+                                    Color.White.copy(alpha = 0.5f),
+                                    Color.Transparent
+                                ),
+                                startX = sx - (cW * 0.12f),
+                                endX = sx + (cW * 0.12f)
                             ),
-                            startX = sx - (cW * 0.15f),
-                            endX = sx + (cW * 0.15f)
-                        ),
-                        start = Offset(sx, tablePad),
-                        end = Offset(sx - (cW * 0.15f), cH - tablePad),
-                        strokeWidth = 1.2f
-                    )
+                            start = Offset(sx, 0f),
+                            end = Offset(sx - (cW * 0.2f), cH),
+                            strokeWidth = (cW * 0.05f).coerceAtLeast(1.2f)
+                        )
+                    }
                 }
 
-                // F. Micro Diamond Starburst Sparkle (Twinkles at top-left crown facet point)
-                val starCenterX = tablePad + (tableCut * 0.5f)
-                val starCenterY = tablePad * 0.9f
-                val starRadius = (cW * 0.12f) * sparkleIntensity
+                // F. Micro Diamond Starburst Sparkle (Clipped inside gem and synced with shimmer)
+                if (isAnimated && sparkleIntensity > 0.05f) {
+                    clipPath(gemPath) {
+                        val starCenterX = tablePad + (tableCut * 0.5f)
+                        val starCenterY = tablePad * 0.9f
+                        val starRadius = (cW * 0.09f) * sparkleIntensity
 
-                // Horizontal Ray
-                drawLine(
-                    color = Color.White.copy(alpha = 0.9f * sparkleIntensity),
-                    start = Offset(starCenterX - starRadius, starCenterY),
-                    end = Offset(starCenterX + starRadius, starCenterY),
-                    strokeWidth = 1.2f,
-                    cap = StrokeCap.Round
-                )
-                // Vertical Ray
-                drawLine(
-                    color = Color.White.copy(alpha = 0.9f * sparkleIntensity),
-                    start = Offset(starCenterX, starCenterY - starRadius),
-                    end = Offset(starCenterX, starCenterY + starRadius),
-                    strokeWidth = 1.2f,
-                    cap = StrokeCap.Round
-                )
-                // Center Star Point Glow
-                drawCircle(
-                    color = Color.White.copy(alpha = 0.85f * sparkleIntensity),
-                    radius = starRadius * 0.35f,
-                    center = Offset(starCenterX, starCenterY)
-                )
+                        // Horizontal Ray
+                        drawLine(
+                            color = Color.White.copy(alpha = 0.9f * sparkleIntensity),
+                            start = Offset(starCenterX - starRadius, starCenterY),
+                            end = Offset(starCenterX + starRadius, starCenterY),
+                            strokeWidth = 1.2f,
+                            cap = StrokeCap.Round
+                        )
+                        // Vertical Ray
+                        drawLine(
+                            color = Color.White.copy(alpha = 0.9f * sparkleIntensity),
+                            start = Offset(starCenterX, starCenterY - starRadius),
+                            end = Offset(starCenterX, starCenterY + starRadius),
+                            strokeWidth = 1.2f,
+                            cap = StrokeCap.Round
+                        )
+                        // Center Star Point Glow
+                        drawCircle(
+                            color = Color.White.copy(alpha = 0.85f * sparkleIntensity),
+                            radius = starRadius * 0.35f,
+                            center = Offset(starCenterX, starCenterY)
+                        )
+                    }
+                }
             }
         }
 

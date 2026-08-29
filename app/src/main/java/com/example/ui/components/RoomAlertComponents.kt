@@ -65,7 +65,7 @@ fun RequestNotificationPermissionOnLaunch() {
 }
 
 /**
- * Sleek, pulsating Floating Top Notification Banner when a joined match has live Room credentials
+ * Sleek, ultra-compact & confidential Floating Top Notification Banner when a joined match has live Room credentials
  */
 @Composable
 fun FloatingRoomLiveBanner(
@@ -75,123 +75,106 @@ fun FloatingRoomLiveBanner(
     modifier: Modifier = Modifier
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
-    val borderAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.4f,
+    val dotAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.3f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
-            animation = tween(900, easing = FastOutSlowInEasing),
+            animation = tween(700, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
-        label = "pulse_alpha"
+        label = "dot_alpha"
     )
 
-    Card(
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF0F172A)),
-        border = BorderStroke(2.dp, Color(0xFFFFD700).copy(alpha = borderAlpha)),
+    Box(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .shadow(elevation = 12.dp, shape = RoundedCornerShape(16.dp))
+            .padding(horizontal = 14.dp, vertical = 6.dp)
+            .shadow(elevation = 8.dp, shape = RoundedCornerShape(20.dp), spotColor = Color(0x66000000))
+            .clip(RoundedCornerShape(20.dp))
+            .background(Color(0xF0121522))
+            .border(1.dp, Color(0xFF2E354B), RoundedCornerShape(20.dp))
             .clickable { onClick() }
+            .padding(horizontal = 12.dp, vertical = 8.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    Brush.horizontalGradient(
-                        colors = listOf(
-                            Color(0xFF1E1B4B),
-                            Color(0xFF0F172A),
-                            Color(0xFF1E293B)
-                        )
-                    )
-                )
-                .padding(14.dp),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Pulsing Live Indicator
             Box(
                 modifier = Modifier
-                    .size(42.dp)
+                    .size(28.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFFFFD700).copy(alpha = 0.15f))
-                    .border(1.dp, Color(0xFFFFD700), CircleShape),
+                    .background(Color(0xFFEF4444).copy(alpha = 0.15f)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    Icons.Default.NotificationsActive,
-                    contentDescription = "Room Alert",
-                    tint = Color(0xFFFFD700),
-                    modifier = Modifier.size(24.dp)
+                Box(
+                    modifier = Modifier
+                        .size(10.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFFEF4444).copy(alpha = dotAlpha))
                 )
             }
 
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(10.dp))
 
+            // Match Title & Confidential Subtitle
             Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        "🚨 ROOM ID & PASS LIVE!",
-                        color = Color(0xFFFFD700),
-                        fontWeight = FontWeight.Black,
-                        fontSize = 12.sp,
-                        letterSpacing = 0.5.sp
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(Color(0xFFEF4444))
-                            .padding(horizontal = 4.dp, vertical = 2.dp)
-                    ) {
-                        Text("JOIN NOW", color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(2.dp))
-
                 Text(
-                    match.title.ifBlank { "Esports Match" },
+                    text = match.title.ifBlank { "Live Match" },
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp,
+                    fontSize = 12.5.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-
-                Text(
-                    "ID: ${match.roomId} • Pass: ${match.roomPass}",
-                    color = Color(0xFF38BDF8),
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "🔒 Room ID & Pass Ready",
+                        color = Color(0xFFFFD700),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "• Tap to view",
+                        color = Color(0xFF94A3B8),
+                        fontSize = 10.5.sp
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(6.dp))
 
-            Button(
-                onClick = onClick,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700)),
-                shape = RoundedCornerShape(8.dp),
-                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
+            // Compact Action Button
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFFFFD700))
+                    .clickable { onClick() }
+                    .padding(horizontal = 10.dp, vertical = 5.dp),
+                contentAlignment = Alignment.Center
             ) {
                 Text(
-                    "VIEW",
-                    color = Color.Black,
+                    text = "VIEW",
+                    color = Color(0xFF0F172A),
                     fontWeight = FontWeight.Black,
                     fontSize = 11.sp
                 )
             }
 
+            Spacer(modifier = Modifier.width(4.dp))
+
+            // Small Dismiss button
             IconButton(
                 onClick = onDismiss,
-                modifier = Modifier.size(28.dp)
+                modifier = Modifier.size(24.dp)
             ) {
                 Icon(
                     Icons.Default.Close,
                     contentDescription = "Dismiss",
-                    tint = Color(0xFF94A3B8),
-                    modifier = Modifier.size(16.dp)
+                    tint = Color(0xFF64748B),
+                    modifier = Modifier.size(14.dp)
                 )
             }
         }
