@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
+import com.example.ui.components.AdminMasterBadge
 import com.example.ui.components.XBadge
 import com.example.ui.components.XBadgeSize
 
@@ -71,9 +72,20 @@ fun MatchDetailsScreen(
     val bookedSlots = match.bookedSlots
     val slotNames = match.slotNames
     val slotUids = match.slotUids
+    val slotBadges = match.slotBadges
+
+    val isHeadToHead = match.matchType.equals("CS", ignoreCase = true) ||
+                       match.matchType.equals("TDM", ignoreCase = true) ||
+                       match.matchType.equals("DUEL", ignoreCase = true) ||
+                       match.mode.equals("1v1", ignoreCase = true) ||
+                       match.mode.equals("2v2", ignoreCase = true) ||
+                       match.mode.equals("4v4", ignoreCase = true)
 
     val matchMode = when {
         match.mode.isNotBlank() -> match.mode
+        match.title.contains("1v1", true) -> "1v1"
+        match.title.contains("2v2", true) -> "2v2"
+        match.title.contains("4v4", true) -> "4v4"
         match.title.contains("Solo", true) -> "Solo"
         match.title.contains("Duo", true) -> "Duo"
         else -> "Squad"
@@ -83,11 +95,20 @@ fun MatchDetailsScreen(
         match.totalSlots
     } else {
         when (matchMode) {
+            "1v1" -> 2
+            "2v2" -> 4
+            "4v4" -> 8
             "Solo" -> 48
             "Duo" -> 24
             else -> 12
         }
     }
+
+    val currentUserEmail = FirebaseAuth.getInstance().currentUser?.email ?: ""
+    val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+    
+    val myBookedEntry = bookedSlots.entries.find { it.value == currentUserEmail || it.value == currentUserId }
+    val userAlreadyBookedSlot = myBookedEntry?.key?.toIntOrNull()
 
     // Classy Booking Confirmation Dialog
     if (showBookingDialog && selectedSlot != null) {
@@ -124,6 +145,23 @@ fun MatchDetailsScreen(
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Medium
                     )
+
+                    if (match.rules.isNotBlank()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color(0xFF1F222C))
+                                .padding(10.dp)
+                        ) {
+                            Text(
+                                "Rules: ${match.rules}",
+                                color = Color(0xFFFFD700),
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
 
                     OutlinedTextField(
                         value = inputPlayerOrTeamName,
@@ -257,14 +295,40 @@ fun MatchDetailsScreen(
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                 }
+
+                if (userAlreadyBookedSlot != null) {
+                    Surface(
+                        color = Color(0xFF10B981).copy(alpha = 0.12f),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF10B981), modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                "You already booked Slot $userAlreadyBookedSlot. (1 Slot per player allowed)",
+                                color = Color(0xFF047857),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
                 
                 Button(
                     onClick = {
+                        if (userAlreadyBookedSlot != null) {
+                            Toast.makeText(context, "You have already booked Slot $userAlreadyBookedSlot!", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
                         if (selectedSlot != null) {
                             showBookingDialog = true
                         }
                     },
-                    enabled = selectedSlot != null && !isBooking,
+                    enabled = selectedSlot != null && !isBooking && userAlreadyBookedSlot == null,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.Black,
                         disabledContainerColor = Color(0xFFE5E5EA),
@@ -278,6 +342,8 @@ fun MatchDetailsScreen(
                 ) {
                     if (isBooking) {
                         CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                    } else if (userAlreadyBookedSlot != null) {
+                        Text("ALREADY REGISTERED (SLOT $userAlreadyBookedSlot)", fontWeight = FontWeight.Black, fontSize = 14.sp)
                     } else if (selectedSlot != null) {
                         Text("BOOK SLOT $selectedSlot • ${match.entry}", fontWeight = FontWeight.Black, fontSize = 15.sp, letterSpacing = 0.5.sp)
                     } else {
@@ -296,11 +362,11 @@ fun MatchDetailsScreen(
         ) {
             // Title and basic info
             Spacer(modifier = Modifier.height(8.dp))
-            Text(match.title, fontSize = 26.sp, fontWeight = FontWeight.Black, color = Color.Black, lineHeight = 32.sp)
+            Text(match.title, fontSize = 24.sp, fontWeight = FontWeight.Black, color = Color.Black, lineHeight = 30.sp)
             Spacer(modifier = Modifier.height(12.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 InfoChip(match.map)
-                InfoChip(matchMode)
+                InfoChip(if (isHeadToHead) "${match.matchType} ($matchMode)" else matchMode)
                 InfoChip(if (match.badge.isNotBlank()) match.badge else "ESPORTS")
             }
             
@@ -331,10 +397,7 @@ fun MatchDetailsScreen(
                         Text("Match Timing: ${match.time}", fontWeight = FontWeight.Bold, color = Color.Black, fontSize = 14.sp)
                     }
                     
-                    val currentUserEmail = FirebaseAuth.getInstance().currentUser?.email ?: ""
-                    val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
-                    
-                    val hasBooked = bookedSlots.values.any { it == currentUserEmail || it == currentUserId }
+                    val hasBooked = userAlreadyBookedSlot != null
                     
                     if (hasBooked && match.roomId.isNotEmpty()) {
                         Box(
@@ -355,7 +418,7 @@ fun MatchDetailsScreen(
                         }
                     } else if (hasBooked) {
                         Text(
-                            "You are registered! Room ID & Password will appear here 15 mins before match starts.",
+                            "You are registered in Slot $userAlreadyBookedSlot! Room ID & Password will appear here 15 mins before match starts.",
                             color = Color(0xFF2E7D32),
                             fontSize = 13.sp,
                             fontWeight = FontWeight.SemiBold
@@ -406,53 +469,340 @@ fun MatchDetailsScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("SELECT YOUR SLOT", fontSize = 16.sp, fontWeight = FontWeight.Black, color = Color.Black, letterSpacing = 0.5.sp)
+                Text(
+                    if (isHeadToHead) "HEAD-TO-HEAD SLOTS" else "SELECT YOUR SLOT", 
+                    fontSize = 16.sp, 
+                    fontWeight = FontWeight.Black, 
+                    color = Color.Black, 
+                    letterSpacing = 0.5.sp
+                )
                 Text("${bookedSlots.size}/$totalSlotsCount Booked", fontSize = 12.sp, color = Color(0xFF666677), fontWeight = FontWeight.Bold)
             }
             
             Spacer(modifier = Modifier.height(14.dp))
             
-            // Slots Grid
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                val slots = (1..totalSlotsCount).map { i ->
-                    val isBooked = bookedSlots.containsKey(i.toString())
-                    val bookedName = slotNames[i.toString()] ?: if (isBooked) "Booked Player" else null
-                    val inGameId = slotUids[i.toString()]
-                    MatchSlot(
-                        number = i,
-                        isBooked = isBooked,
-                        teamName = bookedName,
-                        inGameUid = inGameId
-                    )
-                }
+            // SLOTS RENDERING:
+            // If CS/TDM/DUEL: Display VS Face-off Cards
+            // Else: Display standard BR slot list
+            if (isHeadToHead) {
+                HeadToHeadSlotsSection(
+                    totalSlots = totalSlotsCount,
+                    bookedSlots = bookedSlots,
+                    slotNames = slotNames,
+                    slotUids = slotUids,
+                    slotBadges = slotBadges,
+                    selectedSlot = selectedSlot,
+                    userAlreadyBookedSlot = userAlreadyBookedSlot,
+                    onSelectSlot = { slotNum ->
+                        if (userAlreadyBookedSlot != null) {
+                            Toast.makeText(context, "You are already booked in Slot $userAlreadyBookedSlot!", Toast.LENGTH_SHORT).show()
+                        } else {
+                            selectedSlot = slotNum
+                        }
+                    }
+                )
+            } else {
+                // Standard BR Slot List
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    val slots = (1..totalSlotsCount).map { i ->
+                        val isBooked = bookedSlots.containsKey(i.toString())
+                        val bookedName = slotNames[i.toString()] ?: if (isBooked) "Booked Player" else null
+                        val inGameId = slotUids[i.toString()]
+                        val badgeKey = slotBadges[i.toString()]
+                        val bookedUser = bookedSlots[i.toString()]
+                        MatchSlot(
+                            number = i,
+                            isBooked = isBooked,
+                            teamName = bookedName,
+                            inGameUid = inGameId,
+                            badgeKey = badgeKey,
+                            bookedUser = bookedUser
+                        )
+                    }
 
-                slots.forEach { slot ->
-                    val isSelected = selectedSlot == slot.number
-                    SlotCard(slot = slot, isSelected = isSelected) {
-                        if (!slot.isBooked) selectedSlot = slot.number
+                    slots.forEach { slot ->
+                        val isSelected = selectedSlot == slot.number
+                        SlotCard(
+                            slot = slot, 
+                            isSelected = isSelected,
+                            isMySlot = userAlreadyBookedSlot == slot.number
+                        ) {
+                            if (!slot.isBooked) {
+                                if (userAlreadyBookedSlot != null) {
+                                    Toast.makeText(context, "You are already booked in Slot $userAlreadyBookedSlot!", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    selectedSlot = slot.number
+                                }
+                            }
+                        }
                     }
                 }
             }
             
             Spacer(modifier = Modifier.height(28.dp))
             
-            // Rules
-            Text("TOURNAMENT RULES", fontSize = 14.sp, fontWeight = FontWeight.Black, color = Color.Black, letterSpacing = 1.sp)
+            // Custom Match Rules Section
+            Text("MATCH SPECIFIC RULES", fontSize = 14.sp, fontWeight = FontWeight.Black, color = Color.Black, letterSpacing = 1.sp)
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                "1. Emulators & Hacks are strictly prohibited (Instant Ban).\n" +
-                "2. Join only the designated Slot Number you booked.\n" +
-                "3. Room ID & Password must not be shared with external players.\n" +
-                "4. Screenshot of final result must be kept for verification.",
-                color = Color(0xFF444455),
-                fontSize = 13.sp,
-                lineHeight = 22.sp
-            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(Color(0xFF14161F))
+                    .border(1.dp, Color(0xFF262A38), RoundedCornerShape(14.dp))
+                    .padding(14.dp)
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    if (match.rules.isNotBlank()) {
+                        Text(
+                            match.rules,
+                            color = Color(0xFFFFD700),
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            lineHeight = 18.sp
+                        )
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), color = Color(0xFF262A38))
+                    }
+                    Text(
+                        "• Emulators & Hacks are strictly prohibited (Instant Ban).\n" +
+                        "• Join only the designated Slot Number you booked.\n" +
+                        "• Room ID & Password must not be shared with external players.\n" +
+                        "• Keep screenshot of the match result for verification.",
+                        color = Color(0xFFC0C4D6),
+                        fontSize = 12.sp,
+                        lineHeight = 20.sp
+                    )
+                }
+            }
             
             Spacer(modifier = Modifier.height(100.dp))
+        }
+    }
+}
+
+/**
+ * Helper to display authentic player badge in slots
+ */
+@Composable
+fun PlayerSlotBadge(badgeKey: String?, playerName: String?, bookedUid: String?) {
+    val isOwner = badgeKey == "OWNER" || 
+                  bookedUid == "omiq0534@gmail.com" || 
+                  playerName?.contains("Owner", ignoreCase = true) == true
+    val isMod = badgeKey == "MOD" || 
+                playerName?.contains("Mod", ignoreCase = true) == true
+    val isXBadge = badgeKey == "X_BADGE" || 
+                   playerName?.contains("[X]", ignoreCase = true) == true || 
+                   playerName?.contains("X-", ignoreCase = true) == true ||
+                   playerName?.contains("GodLike", ignoreCase = true) == true ||
+                   playerName?.contains("Total Gaming", ignoreCase = true) == true
+
+    if (isOwner) {
+        AdminMasterBadge(isOwner = true, size = XBadgeSize.MINI, showClickInfo = true)
+    } else if (isMod) {
+        AdminMasterBadge(isOwner = false, size = XBadgeSize.MINI, showClickInfo = true)
+    } else if (isXBadge) {
+        XBadge(size = XBadgeSize.MINI, isAnimated = false, showClickInfo = true)
+    }
+}
+
+/**
+ * Head to Head (CS, TDM, 1v1) Face-off Layout: Team 1 vs Team 2
+ */
+@Composable
+fun HeadToHeadSlotsSection(
+    totalSlots: Int,
+    bookedSlots: Map<String, String>,
+    slotNames: Map<String, String>,
+    slotUids: Map<String, String>,
+    slotBadges: Map<String, String>,
+    selectedSlot: Int?,
+    userAlreadyBookedSlot: Int?,
+    onSelectSlot: (Int) -> Unit
+) {
+    val half = (totalSlots / 2).coerceAtLeast(1)
+    val teamASlots = (1..half).toList()
+    val teamBSlots = ((half + 1)..totalSlots).toList()
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+        // Team A (Side 1) vs Team B (Side 2) Pairs
+        for (i in 0 until half) {
+            val slotA = teamASlots.getOrNull(i) ?: 1
+            val slotB = teamBSlots.getOrNull(i) ?: 2
+
+            val isBookedA = bookedSlots.containsKey(slotA.toString())
+            val nameA = slotNames[slotA.toString()]
+            val uidA = slotUids[slotA.toString()]
+            val badgeA = slotBadges[slotA.toString()]
+            val userA = bookedSlots[slotA.toString()]
+
+            val isBookedB = bookedSlots.containsKey(slotB.toString())
+            val nameB = slotNames[slotB.toString()]
+            val uidB = slotUids[slotB.toString()]
+            val badgeB = slotBadges[slotB.toString()]
+            val userB = bookedSlots[slotB.toString()]
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Color(0xFF111319))
+                    .border(1.dp, Color(0xFF262A38), RoundedCornerShape(16.dp))
+                    .padding(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    // Player A / Team A Slot
+                    Box(modifier = Modifier.weight(1f)) {
+                        HeadToHeadSlotItem(
+                            slotNum = slotA,
+                            isBooked = isBookedA,
+                            playerName = nameA,
+                            uid = uidA,
+                            badgeKey = badgeA,
+                            bookedUserId = userA,
+                            isSelected = selectedSlot == slotA,
+                            isMySlot = userAlreadyBookedSlot == slotA,
+                            onClick = { onSelectSlot(slotA) }
+                        )
+                    }
+
+                    // VS Badge in center
+                    Box(
+                        modifier = Modifier
+                            .padding(horizontal = 8.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFF1E212D))
+                            .border(1.dp, Color(0xFFFFD700).copy(alpha = 0.5f), CircleShape)
+                            .padding(horizontal = 8.dp, vertical = 6.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            "VS",
+                            fontWeight = FontWeight.Black,
+                            fontSize = 11.sp,
+                            color = Color(0xFFFFD700),
+                            letterSpacing = 1.sp
+                        )
+                    }
+
+                    // Player B / Team B Slot
+                    Box(modifier = Modifier.weight(1f)) {
+                        HeadToHeadSlotItem(
+                            slotNum = slotB,
+                            isBooked = isBookedB,
+                            playerName = nameB,
+                            uid = uidB,
+                            badgeKey = badgeB,
+                            bookedUserId = userB,
+                            isSelected = selectedSlot == slotB,
+                            isMySlot = userAlreadyBookedSlot == slotB,
+                            onClick = { onSelectSlot(slotB) }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun HeadToHeadSlotItem(
+    slotNum: Int,
+    isBooked: Boolean,
+    playerName: String?,
+    uid: String?,
+    badgeKey: String?,
+    bookedUserId: String?,
+    isSelected: Boolean,
+    isMySlot: Boolean,
+    onClick: () -> Unit
+) {
+    val bgColor = when {
+        isMySlot -> Color(0xFF10B981).copy(alpha = 0.15f)
+        isSelected -> Color(0xFFFFD700).copy(alpha = 0.15f)
+        isBooked -> Color(0xFF1C1F2B)
+        else -> Color(0xFF161922)
+    }
+
+    val borderColor = when {
+        isMySlot -> Color(0xFF10B981)
+        isSelected -> Color(0xFFFFD700)
+        isBooked -> Color(0xFF2E3346)
+        else -> Color(0xFF262A38)
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(bgColor)
+            .border(1.2.dp, borderColor, RoundedCornerShape(12.dp))
+            .clickable(enabled = !isBooked) { onClick() }
+            .padding(10.dp)
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                "Slot $slotNum",
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Black,
+                color = if (isSelected || isMySlot) Color(0xFFFFD700) else Color(0xFF8E92A4)
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            
+            if (isBooked) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    PlayerSlotBadge(badgeKey = badgeKey, playerName = playerName, bookedUid = bookedUserId)
+                    if (badgeKey in listOf("OWNER", "MOD", "X_BADGE") || playerName?.contains("[X]") == true) {
+                        Spacer(modifier = Modifier.width(4.dp))
+                    }
+                    Text(
+                        playerName ?: "Booked",
+                        fontWeight = FontWeight.Black,
+                        fontSize = 13.sp,
+                        color = Color.White,
+                        maxLines = 1
+                    )
+                }
+                if (!uid.isNullOrBlank() && uid != "N/A") {
+                    Text("UID: $uid", fontSize = 9.5.sp, color = Color(0xFF8E92A4), maxLines = 1)
+                }
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    if (isMySlot) "YOU (BOOKED)" else "BOOKED",
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.Black,
+                    color = if (isMySlot) Color(0xFF10B981) else Color(0xFF75798E)
+                )
+            } else {
+                Text(
+                    "No Player",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 12.sp,
+                    color = Color(0xFF6B7280)
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    if (isSelected) "SELECTED" else "BOOK SLOT",
+                    fontSize = 9.5.sp,
+                    fontWeight = FontWeight.Black,
+                    color = if (isSelected) Color(0xFFFFD700) else Color.White
+                )
+            }
         }
     }
 }
@@ -461,18 +811,27 @@ data class MatchSlot(
     val number: Int,
     val isBooked: Boolean,
     val teamName: String? = null,
-    val inGameUid: String? = null
+    val inGameUid: String? = null,
+    val badgeKey: String? = null,
+    val bookedUser: String? = null
 )
 
 @Composable
-fun SlotCard(slot: MatchSlot, isSelected: Boolean, onClick: () -> Unit) {
+fun SlotCard(
+    slot: MatchSlot, 
+    isSelected: Boolean, 
+    isMySlot: Boolean = false,
+    onClick: () -> Unit
+) {
     val bgColor = when {
+        isMySlot -> Color(0xFFE8F5E9)
         isSelected -> Color.Black
         slot.isBooked -> Color(0xFFF2F2F7)
         else -> Color(0xFFFFFFFF)
     }
     
     val borderColor = when {
+        isMySlot -> Color(0xFF4CAF50)
         isSelected -> Color.Black
         slot.isBooked -> Color(0xFFE5E5EA)
         else -> Color(0xFFD1D1D6)
@@ -494,7 +853,12 @@ fun SlotCard(slot: MatchSlot, isSelected: Boolean, onClick: () -> Unit) {
                 modifier = Modifier
                     .size(36.dp)
                     .clip(CircleShape)
-                    .background(if (isSelected) Color(0xFFFFD700) else if (slot.isBooked) Color(0xFFD1D1D6) else Color.Black),
+                    .background(
+                        if (isMySlot) Color(0xFF2E7D32) 
+                        else if (isSelected) Color(0xFFFFD700) 
+                        else if (slot.isBooked) Color(0xFFD1D1D6) 
+                        else Color.Black
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -507,10 +871,9 @@ fun SlotCard(slot: MatchSlot, isSelected: Boolean, onClick: () -> Unit) {
             Spacer(modifier = Modifier.width(14.dp))
             Column {
                 if (slot.isBooked) {
-                    val isXPlayer = slot.teamName?.contains("[X]", ignoreCase = true) == true || slot.teamName?.contains("X-", ignoreCase = true) == true || slot.teamName?.contains("Admin", ignoreCase = true) == true || slot.teamName?.contains("GodLike", ignoreCase = true) == true || slot.teamName?.contains("Total Gaming", ignoreCase = true) == true
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        if (isXPlayer) {
-                            XBadge(size = XBadgeSize.MINI, isAnimated = false, showClickInfo = true)
+                        PlayerSlotBadge(badgeKey = slot.badgeKey, playerName = slot.teamName, bookedUid = slot.bookedUser)
+                        if (slot.badgeKey in listOf("OWNER", "MOD", "X_BADGE") || slot.teamName?.contains("[X]") == true) {
                             Spacer(modifier = Modifier.width(6.dp))
                         }
                         Text(
@@ -548,11 +911,16 @@ fun SlotCard(slot: MatchSlot, isSelected: Boolean, onClick: () -> Unit) {
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0xFFE8F5E9))
+                    .background(if (isMySlot) Color(0xFF2E7D32) else Color(0xFFE8F5E9))
                     .border(1.dp, Color(0xFF4CAF50), RoundedCornerShape(8.dp))
                     .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
-                Text("BOOKED", color = Color(0xFF2E7D32), fontSize = 10.sp, fontWeight = FontWeight.Black)
+                Text(
+                    if (isMySlot) "YOU (BOOKED)" else "BOOKED", 
+                    color = if (isMySlot) Color.White else Color(0xFF2E7D32), 
+                    fontSize = 10.sp, 
+                    fontWeight = FontWeight.Black
+                )
             }
         } else {
             if (isSelected) {

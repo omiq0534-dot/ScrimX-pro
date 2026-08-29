@@ -201,6 +201,16 @@ fun AdminScreen(navController: NavController) {
 
             Text("MATCH OPERATIONS", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color(0xFF75798E), letterSpacing = 1.5.sp)
 
+            // 0. Push Notifications & Broadcast Hub
+            ClassyAdminActionCard(
+                title = "Push Notifications & Broadcast Hub",
+                subtitle = "Send Global alerts or Room ID/Pass to joined players + Instant phone test push",
+                icon = Icons.Default.Campaign,
+                iconTint = Color(0xFFFF0055),
+                badge = "📢 Push Alerts",
+                onClick = { navController.navigate("admin_broadcast_notifications") }
+            )
+
             // 1. Create Match Card
             ClassyAdminActionCard(
                 title = "Create New Tournament Match",

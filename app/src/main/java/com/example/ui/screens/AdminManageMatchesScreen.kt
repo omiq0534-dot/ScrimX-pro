@@ -51,6 +51,7 @@ fun AdminManageMatchesScreen(
     var roomPass by remember { mutableStateOf("") }
     var status by remember { mutableStateOf("") }
     var liveUrl by remember { mutableStateOf("") }
+    var editRules by remember { mutableStateOf("") }
 
     // View Bookings Dialog
     var showBookingsDialog by remember { mutableStateOf(false) }
@@ -105,6 +106,26 @@ fun AdminManageMatchesScreen(
                         placeholder = "https://youtube.com/live/..."
                     )
 
+                    OutlinedTextField(
+                        value = editRules,
+                        onValueChange = { editRules = it },
+                        label = { Text("Match Custom Rules", color = Color(0xFF75798E)) },
+                        placeholder = { Text("e.g. Desert Eagle Only, 13 Rounds, No Grenades...", color = Color(0xFF3E4254)) },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFFFFD700),
+                            unfocusedBorderColor = Color(0xFF262938),
+                            focusedContainerColor = Color(0xFF0C0D12),
+                            unfocusedContainerColor = Color(0xFF0C0D12),
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            cursorColor = Color(0xFFFFD700)
+                        ),
+                        minLines = 2,
+                        maxLines = 4
+                    )
+
                     Text("Match Status", fontWeight = FontWeight.Bold, fontSize = 11.sp, color = Color(0xFF75798E))
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         listOf("Upcoming", "Live", "Completed").forEach { st ->
@@ -140,7 +161,8 @@ fun AdminManageMatchesScreen(
                                     "roomId", roomId.trim(),
                                     "roomPass", roomPass.trim(),
                                     "status", status,
-                                    "liveUrl", liveUrl.trim()
+                                    "liveUrl", liveUrl.trim(),
+                                    "rules", editRules.trim()
                                 )
                             showEditDialog = false
                         }
@@ -487,6 +509,7 @@ fun AdminManageMatchesScreen(
                                     roomPass = match.roomPass
                                     status = match.status
                                     liveUrl = match.liveUrl
+                                    editRules = match.rules
                                     showEditDialog = true
                                 },
                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF262A3B)),

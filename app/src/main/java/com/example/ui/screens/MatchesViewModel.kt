@@ -24,11 +24,14 @@ data class MatchData(
     val roomPass: String = "",
     val liveUrl: String = "",
     val map: String = "Bermuda",
-    val mode: String = "Squad", // "Solo", "Duo", "Squad"
-    val totalSlots: Int = 12,   // 48 for Solo, 24 for Duo, 12 for Squad
-    val bookedSlots: Map<String, String> = emptyMap(), // slotNumber -> user UID
+    val mode: String = "Squad", // "Solo", "Duo", "Squad", "1v1", "2v2", "4v4"
+    val matchType: String = "BR", // "BR", "CS", "TDM", "DUEL"
+    val rules: String = "", // Custom match rules set by admin for this specific match
+    val totalSlots: Int = 12,   // 48 for Solo, 24 for Duo, 12 for Squad, 2 for 1v1, 8 for 4v4
+    val bookedSlots: Map<String, String> = emptyMap(), // slotNumber -> user UID/email
     val slotNames: Map<String, String> = emptyMap(),   // slotNumber -> Player IGN / Team Name
-    val slotUids: Map<String, String> = emptyMap()     // slotNumber -> In-game numeric UID
+    val slotUids: Map<String, String> = emptyMap(),     // slotNumber -> In-game numeric UID
+    val slotBadges: Map<String, String> = emptyMap()   // slotNumber -> badge key ("OWNER", "MOD", "X_BADGE", "NONE")
 )
 
 class MatchesViewModel : ViewModel() {
@@ -127,22 +130,45 @@ class MatchesViewModel : ViewModel() {
             val currentSlots = match.bookedSlots.toMutableMap()
             val currentNames = match.slotNames.toMutableMap()
             val currentUids = match.slotUids.toMutableMap()
+            val currentBadges = match.slotBadges.toMutableMap()
+
+            // Check if user already booked a slot in this match
+            val userIdentifier = user.email ?: user.uid
+            val alreadyBookedSlot = currentSlots.entries.find { it.value == userIdentifier || it.value == user.uid }
+            if (alreadyBookedSlot != null) {
+                throw Exception("You have already booked Slot ${alreadyBookedSlot.key} in this match! One player can only book 1 slot.")
+            }
 
             if (currentSlots.containsKey(slotNumber.toString())) {
-                throw Exception("Slot already booked!")
+                throw Exception("Slot $slotNumber is already booked by another player!")
+            }
+
+            val isOwner = userProfile.email.equals("omiq0534@gmail.com", ignoreCase = true) || 
+                          userProfile.role.equals("owner", ignoreCase = true) || 
+                          userProfile.role.equals("admin", ignoreCase = true)
+            val isModerator = (userProfile.isModerator || userProfile.role.equals("moderator", ignoreCase = true)) && !isOwner
+            val hasXBadge = userProfile.hasXBadge
+
+            val userBadgeKey = when {
+                isOwner -> "OWNER"
+                isModerator -> "MOD"
+                hasXBadge -> "X_BADGE"
+                else -> "NONE"
             }
             
             val key = slotNumber.toString()
             currentSlots[key] = user.email ?: user.uid
             currentNames[key] = playerNameOrTeam.ifBlank { userProfile.name.ifBlank { "Player $slotNumber" } }
             currentUids[key] = inGameUid.ifBlank { "N/A" }
+            currentBadges[key] = userBadgeKey
 
             transaction.update(
                 docRef,
                 mapOf(
                     "bookedSlots" to currentSlots,
                     "slotNames" to currentNames,
-                    "slotUids" to currentUids
+                    "slotUids" to currentUids,
+                    "slotBadges" to currentBadges
                 )
             )
             transaction.update(

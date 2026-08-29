@@ -20,7 +20,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -32,6 +31,7 @@ fun AdminCreateMatchScreen(navController: NavController) {
     val db = remember { FirebaseHelper.getFirestore() }
     val scope = rememberCoroutineScope()
 
+    var matchType by remember { mutableStateOf("BR") } // "BR", "CS", "TDM", "DUEL"
     var title by remember { mutableStateOf("") }
     var customMap by remember { mutableStateOf("Bermuda") }
     var selectedMode by remember { mutableStateOf("Squad") }
@@ -44,14 +44,27 @@ fun AdminCreateMatchScreen(navController: NavController) {
     var roomId by remember { mutableStateOf("") }
     var roomPass by remember { mutableStateOf("") }
     var liveUrl by remember { mutableStateOf("") }
+    var customRules by remember { mutableStateOf("") }
 
     var isLoading by remember { mutableStateOf(false) }
 
-    val commonMapSuggestions = listOf("Bermuda", "Purgatory", "Kalahari", "Alpine", "Erangel", "Miramar")
-    val modes = listOf(
-        "Solo" to 48,
-        "Duo" to 24,
-        "Squad" to 12
+    val brMapSuggestions = listOf("Bermuda", "Purgatory", "Kalahari", "Alpine", "Erangel", "Miramar")
+    val csTdmMapSuggestions = listOf("Clash Squad Bermuda", "CS Kalahari", "TDM Warehouse", "CS Purgatory", "Custom Duel Arena")
+
+    val matchTypeOptions = listOf(
+        "BR" to "🗺️ Battle Royale",
+        "CS" to "⚔️ Clash Squad",
+        "TDM" to "🔫 TDM / Warehouse",
+        "DUEL" to "🎯 1v1 Head-to-Head"
+    )
+
+    // Common quick rule templates
+    val quickRuleTemplates = listOf(
+        "Standard Scrims (No Hacks/Emulators)",
+        "Desert Eagle / Pistol Only • 13 Rounds",
+        "Sniper Only • No Grenades • Limited Ammo: No",
+        "Gun Property OFF • Character Skill OFF",
+        "TDM M416 / AKM Only • 40 Kills Target"
     )
 
     Scaffold(
@@ -84,28 +97,96 @@ fun AdminCreateMatchScreen(navController: NavController) {
                 .padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Mode Selector & Slot auto-set
-            Text("MATCH MODE & SLOTS", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color(0xFF75798E), letterSpacing = 1.5.sp)
+            // Match Type Format
+            Text("1. SELECT MATCH FORMAT", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color(0xFF75798E), letterSpacing = 1.5.sp)
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                matchTypeOptions.chunked(2).forEach { rowOptions ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        rowOptions.forEach { (typeKey, label) ->
+                            val isSelected = matchType == typeKey
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(if (isSelected) Color(0xFF222738) else Color(0xFF14161F))
+                                    .border(1.2.dp, if (isSelected) Color(0xFFFFD700) else Color(0xFF262938), RoundedCornerShape(12.dp))
+                                    .clickable {
+                                        matchType = typeKey
+                                        when (typeKey) {
+                                            "BR" -> {
+                                                selectedMode = "Squad"
+                                                customSlots = "12"
+                                                customMap = "Bermuda"
+                                                customRules = "Standard Scrims (No Hacks/Emulators)"
+                                                title = "Bermuda Squad Scrims"
+                                            }
+                                            "CS" -> {
+                                                selectedMode = "4v4"
+                                                customSlots = "8"
+                                                customMap = "CS Bermuda"
+                                                customRules = "13 Rounds • Gun Property OFF • Character Skill OFF"
+                                                title = "Clash Squad 4v4 Face-off"
+                                            }
+                                            "TDM" -> {
+                                                selectedMode = "4v4"
+                                                customSlots = "8"
+                                                customMap = "TDM Warehouse"
+                                                customRules = "M416/AKM Only • 40 Kills • No Grenade"
+                                                title = "TDM Warehouse 4v4 Battle"
+                                            }
+                                            "DUEL" -> {
+                                                selectedMode = "1v1"
+                                                customSlots = "2"
+                                                customMap = "CS Duel"
+                                                customRules = "1v1 Head-to-Head • Desert Eagle/Sniper Only • 7 Rounds"
+                                                title = "1v1 Head-to-Head Duel"
+                                            }
+                                        }
+                                    }
+                                    .padding(vertical = 12.dp, horizontal = 8.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    label,
+                                    color = if (isSelected) Color(0xFFFFD700) else Color.White,
+                                    fontWeight = FontWeight.Black,
+                                    fontSize = 12.sp
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Mode Selector based on matchType
+            Text("2. MODE & SLOTS", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color(0xFF75798E), letterSpacing = 1.5.sp)
+            val availableModes = when (matchType) {
+                "BR" -> listOf("Solo" to "48", "Duo" to "24", "Squad" to "12")
+                "CS", "TDM" -> listOf("1v1" to "2", "2v2" to "4", "4v4" to "8")
+                else -> listOf("1v1" to "2")
+            }
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                modes.forEach { (mode, defaultSlots) ->
+                availableModes.forEach { (mode, defaultSlots) ->
                     val isSelected = selectedMode == mode
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .clip(RoundedCornerShape(14.dp))
+                            .clip(RoundedCornerShape(12.dp))
                             .background(if (isSelected) Color(0xFF1F2332) else Color(0xFF14161F))
-                            .border(1.dp, if (isSelected) Color(0xFFFFD700) else Color(0xFF262938), RoundedCornerShape(14.dp))
+                            .border(1.dp, if (isSelected) Color(0xFFFFD700) else Color(0xFF262938), RoundedCornerShape(12.dp))
                             .clickable {
                                 selectedMode = mode
-                                customSlots = defaultSlots.toString()
-                                if (title.isBlank() || title.contains("Scrims", true)) {
-                                    title = "$customMap $mode Scrims"
-                                }
+                                customSlots = defaultSlots
+                                title = "$customMap $mode Match"
                             }
-                            .padding(vertical = 12.dp),
+                            .padding(vertical = 10.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -116,7 +197,7 @@ fun AdminCreateMatchScreen(navController: NavController) {
                                 fontSize = 14.sp
                             )
                             Text(
-                                "$defaultSlots Slots",
+                                if (matchType == "CS" || matchType == "TDM" || matchType == "DUEL") "$defaultSlots Players (VS)" else "$defaultSlots Slots",
                                 color = Color(0xFF8E92A4),
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.SemiBold
@@ -131,11 +212,11 @@ fun AdminCreateMatchScreen(navController: NavController) {
                 value = customMap,
                 onValueChange = { 
                     customMap = it
-                    if (title.isBlank() || title.contains("Scrims", true)) {
-                        title = "$customMap $selectedMode Scrims"
+                    if (title.isBlank() || title.contains("Match", true) || title.contains("Scrims", true)) {
+                        title = "$customMap $selectedMode Match"
                     }
                 },
-                label = "Map Name (Custom: e.g. Bermuda / Kalahari)",
+                label = "Map Name (Custom)",
                 placeholder = "Type custom map name..."
             )
 
@@ -144,7 +225,8 @@ fun AdminCreateMatchScreen(navController: NavController) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                commonMapSuggestions.take(4).forEach { mapSug ->
+                val suggestions = if (matchType == "BR") brMapSuggestions else csTdmMapSuggestions
+                suggestions.take(4).forEach { mapSug ->
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
@@ -152,9 +234,9 @@ fun AdminCreateMatchScreen(navController: NavController) {
                             .border(1.dp, Color(0xFF2C3042), RoundedCornerShape(8.dp))
                             .clickable {
                                 customMap = mapSug
-                                title = "$mapSug $selectedMode Scrims"
+                                title = "$mapSug $selectedMode Match"
                             }
-                            .padding(horizontal = 10.dp, vertical = 6.dp)
+                            .padding(horizontal = 8.dp, vertical = 6.dp)
                     ) {
                         Text(mapSug, color = Color(0xFFC0C4D6), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     }
@@ -166,7 +248,7 @@ fun AdminCreateMatchScreen(navController: NavController) {
                 value = title,
                 onValueChange = { title = it },
                 label = "Match Title",
-                placeholder = "e.g. Bermuda Squad Scrims #1"
+                placeholder = "e.g. Clash Squad 4v4 Face-off #1"
             )
 
             Row(
@@ -185,8 +267,8 @@ fun AdminCreateMatchScreen(navController: NavController) {
                     ClassyDarkInput(
                         value = customSlots,
                         onValueChange = { customSlots = it },
-                        label = "Total Slots",
-                        placeholder = "12 or 48"
+                        label = "Total Slots / Players",
+                        placeholder = "2, 8, 12, 48"
                     )
                 }
             }
@@ -217,8 +299,48 @@ fun AdminCreateMatchScreen(navController: NavController) {
                 value = badge,
                 onValueChange = { badge = it },
                 label = "Tournament Badge / Tier",
-                placeholder = "e.g. FREE FIRE T3 / BGMI PRO"
+                placeholder = "e.g. FREE FIRE CS / BGMI TDM / T3"
             )
+
+            // CUSTOM RULES FOR THIS MATCH
+            Text("MATCH SPECIFIC RULES (Admin Custom Rules)", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color(0xFF75798E), letterSpacing = 1.5.sp)
+            OutlinedTextField(
+                value = customRules,
+                onValueChange = { customRules = it },
+                label = { Text("Custom Rules for this match", color = Color(0xFF75798E)) },
+                placeholder = { Text("e.g. Desert Eagle Only, 13 Rounds, No Grenade, Headshot Only...", color = Color(0xFF3E4254)) },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(14.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFFFFD700),
+                    unfocusedBorderColor = Color(0xFF262938),
+                    focusedContainerColor = Color(0xFF14161F),
+                    unfocusedContainerColor = Color(0xFF14161F),
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White,
+                    cursorColor = Color(0xFFFFD700)
+                ),
+                minLines = 3,
+                maxLines = 6
+            )
+
+            // Quick Rule Templates Chips
+            Text("Quick Rule Templates (Tap to apply):", fontSize = 10.sp, color = Color(0xFF8E92A4), fontWeight = FontWeight.SemiBold)
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                quickRuleTemplates.forEach { ruleTpl ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color(0xFF161922))
+                            .border(1.dp, Color(0xFF2A2E3E), RoundedCornerShape(8.dp))
+                            .clickable { customRules = ruleTpl }
+                            .padding(horizontal = 10.dp, vertical = 6.dp)
+                    ) {
+                        Text(ruleTpl, color = Color(0xFFC0C4D6), fontSize = 11.sp)
+                    }
+                }
+            }
 
             // Live Stream link for this match
             ClassyDarkInput(
@@ -285,6 +407,9 @@ fun AdminCreateMatchScreen(navController: NavController) {
                     scope.launch {
                         val newId = UUID.randomUUID().toString()
                         val calculatedSlots = customSlots.toIntOrNull() ?: when (selectedMode) {
+                            "1v1" -> 2
+                            "2v2" -> 4
+                            "4v4" -> 8
                             "Solo" -> 48
                             "Duo" -> 24
                             else -> 12
@@ -292,7 +417,7 @@ fun AdminCreateMatchScreen(navController: NavController) {
 
                         val newMatch = MatchData(
                             id = newId,
-                            title = if (title.isNotBlank()) title else "$customMap $selectedMode Scrims",
+                            title = if (title.isNotBlank()) title else "$customMap $selectedMode Match",
                             time = time,
                             prize = prize,
                             entry = entry,
@@ -303,6 +428,8 @@ fun AdminCreateMatchScreen(navController: NavController) {
                             liveUrl = liveUrl.trim(),
                             map = customMap.trim().ifBlank { "Bermuda" },
                             mode = selectedMode,
+                            matchType = matchType,
+                            rules = customRules.trim(),
                             totalSlots = calculatedSlots,
                             bookedSlots = emptyMap(),
                             slotNames = emptyMap(),

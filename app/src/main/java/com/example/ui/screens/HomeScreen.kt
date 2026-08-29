@@ -35,6 +35,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.firebase.firestore.FirebaseFirestore
+import com.example.ui.components.XBadge
+import com.example.ui.components.XBadgeSize
+import com.example.ui.components.AdminMasterBadge
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -46,8 +49,6 @@ import kotlin.random.Random
 
 import com.example.FirebaseHelper
 import com.example.ui.components.LiveAnnouncementMarquee
-import com.example.ui.components.XBadge
-import com.example.ui.components.XBadgeSize
 
 data class WheelPrize(
     val coins: Int,
@@ -747,13 +748,20 @@ fun HomeScreen(
     ) {
         item { Spacer(modifier = Modifier.height(8.dp)) }
         item { 
+            val isOwner = profile?.email.equals("omiq0534@gmail.com", ignoreCase = true) || 
+                          profile?.role.equals("owner", ignoreCase = true) || 
+                          profile?.role.equals("admin", ignoreCase = true)
+            val isModerator = (profile?.isModerator == true || profile?.role.equals("moderator", ignoreCase = true)) && !isOwner
             TopWalletBar(
                 userName = profile?.name?.ifBlank { "Player" } ?: "Player",
                 appMoney = profile?.appMoney ?: 0,
                 realMoney = profile?.realMoney ?: 0,
                 hasXBadge = profile?.hasXBadge == true,
+                isOwner = isOwner,
+                isModerator = isModerator,
                 onProfileClick = { onNavigateToTab?.invoke("profile_tab") },
-                onWalletClick = { onNavigateToTab?.invoke("wallet_tab") }
+                onWalletClick = { onNavigateToTab?.invoke("wallet_tab") },
+                onAdminClick = { navController.navigate("admin_dashboard") }
             ) 
         }
         if (appConfig.isAnnouncementActive && appConfig.announcementNotice.isNotBlank()) {
@@ -779,8 +787,11 @@ fun TopWalletBar(
     appMoney: Int = 0,
     realMoney: Int = 0,
     hasXBadge: Boolean = false,
+    isOwner: Boolean = false,
+    isModerator: Boolean = false,
     onProfileClick: () -> Unit = {},
-    onWalletClick: () -> Unit = {}
+    onWalletClick: () -> Unit = {},
+    onAdminClick: (() -> Unit)? = null
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -790,103 +801,141 @@ fun TopWalletBar(
         // User Profile & Gamer Tag
         Row(
             modifier = Modifier
+                .weight(1f, fill = false)
                 .clip(RoundedCornerShape(20.dp))
                 .clickable { onProfileClick() }
                 .padding(vertical = 4.dp, horizontal = 2.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Profile Avatar with dynamic initial
+            // Profile Avatar (Clean, minimal, modern)
             Box(
                 modifier = Modifier
-                    .size(44.dp)
+                    .size(42.dp)
                     .clip(CircleShape)
-                    .background(
-                        Brush.linearGradient(
-                            if (hasXBadge) listOf(Color(0xFF2A0812), Color(0xFF150409))
-                            else listOf(Color(0xFF1E293B), Color(0xFF0F172A))
-                        )
-                    )
-                    .border(
-                        width = if (hasXBadge) 2.dp else 1.5.dp,
-                        brush = Brush.linearGradient(
-                            if (hasXBadge) listOf(Color(0xFFFF1744), Color(0xFFFFD700), Color(0xFFFF003F)) 
-                            else listOf(Color(0xFF38BDF8), Color(0xFF818CF8))
-                        ),
-                        shape = CircleShape
-                    ),
+                    .background(Color(0xFF1E2028))
+                    .border(1.dp, Color(0xFF33384A), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 val initial = userName.trim().firstOrNull()?.toString()?.uppercase() ?: "P"
                 Text(
                     text = initial, 
-                    color = if (hasXBadge) Color(0xFFFFD700) else Color.White, 
+                    color = Color.White, 
                     fontWeight = FontWeight.Black, 
-                    fontSize = 18.sp
+                    fontSize = 17.sp
                 )
             }
 
-            Spacer(modifier = Modifier.width(10.dp))
+            Spacer(modifier = Modifier.width(8.dp))
 
             Column {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        if (hasXBadge) "VIP PRO GAMER" else "GAMER",
-                        fontSize = 10.sp,
+                        if (isOwner) "👑 SUPREME OWNER" 
+                        else if (isModerator) "🛡️ MODERATOR" 
+                        else if (hasXBadge) "VIP PRO GAMER" 
+                        else "GAMER",
+                        fontSize = 9.5.sp,
                         fontWeight = FontWeight.Black,
-                        color = if (hasXBadge) Color(0xFFFFD700) else Color(0xFF8E92A4),
-                        letterSpacing = 0.5.sp
+                        color = if (isOwner) Color(0xFFFFD700) 
+                                else if (isModerator) Color(0xFF818CF8) 
+                                else if (hasXBadge) Color(0xFFFF1744) 
+                                else Color(0xFF8E92A4),
+                        letterSpacing = 0.5.sp,
+                        maxLines = 1,
+                        softWrap = false
                     )
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (hasXBadge) {
-                        XBadge(size = XBadgeSize.MINI, isAnimated = false, showClickInfo = true)
-                        Spacer(modifier = Modifier.width(5.dp))
+                    if (isOwner || isModerator) {
+                        AdminMasterBadge(isOwner = isOwner, size = XBadgeSize.MINI, showClickInfo = true)
+                        Spacer(modifier = Modifier.width(4.dp))
+                    } else if (hasXBadge) {
+                        XBadge(size = XBadgeSize.MINI, isAnimated = true, showClickInfo = true)
+                        Spacer(modifier = Modifier.width(4.dp))
                     }
                     Text(
                         userName,
                         fontWeight = FontWeight.Black,
-                        fontSize = 16.sp,
+                        fontSize = 15.sp,
                         color = Color.Black,
-                        maxLines = 1
+                        maxLines = 1,
+                        softWrap = false
                     )
                 }
             }
         }
 
-        // Dual Wallet Pill (Click opens Wallet)
+        // Action Pills: Quick Admin Hub (if Owner) + Dual Wallet Pill
         Row(
-            modifier = Modifier
-                .clip(RoundedCornerShape(32.dp))
-                .background(Color(0xFF111319))
-                .border(1.dp, Color(0xFF262A38), RoundedCornerShape(32.dp))
-                .clickable { onWalletClick() }
-                .padding(3.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            // App Money / Coins
-            Row(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(Color(0xFF1E212D))
-                    .padding(horizontal = 10.dp, vertical = 7.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(Icons.Default.Star, contentDescription = "Coins", tint = Color.White, modifier = Modifier.size(16.dp))
-                Spacer(modifier = Modifier.width(4.dp))
-                Text("$appMoney", fontWeight = FontWeight.Black, fontSize = 13.sp, color = Color.White)
+            if ((isOwner || isModerator) && onAdminClick != null) {
+                Box(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .background(Color(0xFF0F111A))
+                        .border(1.dp, Color(0xFFFF0055).copy(alpha = 0.7f), CircleShape)
+                        .clickable { onAdminClick() }
+                        .padding(horizontal = 8.dp, vertical = 6.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Campaign, contentDescription = "HQ", tint = Color(0xFFFF0055), modifier = Modifier.size(15.dp))
+                        Spacer(modifier = Modifier.width(3.dp))
+                        Text("HQ", fontWeight = FontWeight.Black, fontSize = 10.sp, color = Color.White, maxLines = 1, softWrap = false)
+                    }
+                }
             }
-            Spacer(modifier = Modifier.width(3.dp))
-            // Real Cash
+
+            // Dual Wallet Pill (Click opens Wallet)
             Row(
                 modifier = Modifier
                     .clip(RoundedCornerShape(24.dp))
-                    .background(Color.Black)
-                    .padding(horizontal = 12.dp, vertical = 7.dp),
+                    .background(Color(0xFF111319))
+                    .border(1.dp, Color(0xFF262A38), RoundedCornerShape(24.dp))
+                    .clickable { onWalletClick() }
+                    .padding(2.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(Icons.Default.AccountBalanceWallet, contentDescription = "Cash", tint = Color(0xFFFFD700), modifier = Modifier.size(15.dp))
-                Spacer(modifier = Modifier.width(4.dp))
-                Text("₹$realMoney", fontWeight = FontWeight.Black, fontSize = 13.sp, color = Color.White)
+                // App Money / Coins
+                Row(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(Color(0xFF1E212D))
+                        .padding(horizontal = 8.dp, vertical = 5.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Default.Star, contentDescription = "Coins", tint = Color.White, modifier = Modifier.size(14.dp))
+                    Spacer(modifier = Modifier.width(3.dp))
+                    Text(
+                        "$appMoney",
+                        fontWeight = FontWeight.Black,
+                        fontSize = 12.sp,
+                        color = Color.White,
+                        maxLines = 1,
+                        softWrap = false
+                    )
+                }
+                Spacer(modifier = Modifier.width(2.dp))
+                // Real Cash
+                Row(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(Color.Black)
+                        .padding(horizontal = 9.dp, vertical = 5.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Default.AccountBalanceWallet, contentDescription = "Cash", tint = Color(0xFFFFD700), modifier = Modifier.size(14.dp))
+                    Spacer(modifier = Modifier.width(3.dp))
+                    Text(
+                        "₹$realMoney",
+                        fontWeight = FontWeight.Black,
+                        fontSize = 12.sp,
+                        color = Color.White,
+                        maxLines = 1,
+                        softWrap = false
+                    )
+                }
             }
         }
     }

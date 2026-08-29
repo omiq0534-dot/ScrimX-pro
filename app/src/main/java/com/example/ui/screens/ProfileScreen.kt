@@ -139,8 +139,10 @@ fun ProfileScreen(navController: NavController, userViewModel: UserViewModel = v
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             Spacer(modifier = Modifier.height(4.dp))
-            val isOwner = profile?.email.equals("omiq0534@gmail.com", ignoreCase = true)
-            val isModerator = profile?.isModerator == true || profile?.role == "moderator"
+            val isOwner = profile?.email.equals("omiq0534@gmail.com", ignoreCase = true) || 
+                          profile?.role.equals("owner", ignoreCase = true) || 
+                          profile?.role.equals("admin", ignoreCase = true)
+            val isModerator = (profile?.isModerator == true || profile?.role.equals("moderator", ignoreCase = true)) && !isOwner
 
             ProfileHeader(
                 name = profile?.name ?: "Loading...",
@@ -483,38 +485,22 @@ fun ProfileHeader(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
     ) {
-        // Clean Circular Avatar with refined glow ring
+        // Normal, Clean, Modern Avatar
         Box(
-            modifier = Modifier.size(68.dp),
+            modifier = Modifier
+                .size(64.dp)
+                .clip(CircleShape)
+                .background(Color(0xFF1E2028))
+                .border(1.dp, Color(0xFF33384A), CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(CircleShape)
-                    .background(
-                        if (isOwner) androidx.compose.ui.graphics.Brush.sweepGradient(listOf(Color(0xFFFF0055), Color(0xFFFF9900), Color(0xFFFF0055)))
-                        else if (isModerator) androidx.compose.ui.graphics.Brush.sweepGradient(listOf(Color(0xFF6366F1), Color(0xFF8B5CF6), Color(0xFF6366F1)))
-                        else if (hasXBadge) androidx.compose.ui.graphics.Brush.sweepGradient(listOf(Color(0xFFFFD700), Color(0xFFFF8800), Color(0xFFFFD700)))
-                        else androidx.compose.ui.graphics.Brush.linearGradient(listOf(Color(0xFF2A2D3E), Color(0xFF1E2130)))
-                    )
-                    .padding(2.5.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(CircleShape)
-                        .background(Color(0xFF111420)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        if (isOwner) Icons.Default.Shield else if (isModerator) Icons.Default.Security else Icons.Default.Person, 
-                        contentDescription = "Avatar", 
-                        tint = if (isOwner) Color(0xFFFFD700) else if (isModerator) Color(0xFFA78BFA) else Color.White, 
-                        modifier = Modifier.size(34.dp)
-                    )
-                }
-            }
+            val initial = name.trim().firstOrNull()?.toString()?.uppercase() ?: "P"
+            Text(
+                text = initial,
+                color = Color.White,
+                fontWeight = FontWeight.Black,
+                fontSize = 24.sp
+            )
         }
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {

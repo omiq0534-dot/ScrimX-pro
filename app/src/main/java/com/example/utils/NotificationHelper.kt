@@ -142,6 +142,57 @@ object NotificationHelper {
         }
     }
 
+    fun showGeneralAnnouncementNotification(
+        context: Context,
+        title: String,
+        message: String
+    ) {
+        try {
+            initNotificationChannels(context)
+
+            if (!hasNotificationPermission(context)) {
+                Log.w(TAG, "Notification permission not granted, skipping announcement")
+                return
+            }
+
+            val intent = Intent(context, MainActivity::class.java).apply {
+                action = Intent.ACTION_MAIN
+                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            }
+
+            val pendingIntentFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            } else {
+                PendingIntent.FLAG_UPDATE_CURRENT
+            }
+
+            val pendingIntent = PendingIntent.getActivity(
+                context,
+                System.currentTimeMillis().toInt(),
+                intent,
+                pendingIntentFlags
+            )
+
+            val notification = NotificationCompat.Builder(context, CHANNEL_GENERAL)
+                .setSmallIcon(android.R.drawable.ic_dialog_info)
+                .setContentTitle(title)
+                .setContentText(message)
+                .setStyle(NotificationCompat.BigTextStyle().bigText(message))
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true)
+                .setContentIntent(pendingIntent)
+                .setVibrate(longArrayOf(0, 250, 150, 250))
+                .setDefaults(NotificationCompat.DEFAULT_ALL)
+                .build()
+
+            val notificationManager = NotificationManagerCompat.from(context)
+            val notifId = (System.currentTimeMillis() % 100000).toInt() + 200
+            notificationManager.notify(notifId, notification)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error displaying announcement notification", e)
+        }
+    }
+
     fun openGameApp(context: Context, gameMode: String) {
         try {
             val pm = context.packageManager
