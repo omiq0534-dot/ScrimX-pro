@@ -39,20 +39,56 @@ object UnityAdsManager {
         private set
 
     private var isAdShowing = false
+    private var isInitializing = false
+
+    fun syncFromFirestore(context: Context) {
+        val db = FirebaseHelper.getFirestore() ?: return
+        db.collection("settings").document("unity_ads").get()
+            .addOnSuccessListener { doc ->
+                if (doc != null && doc.exists()) {
+                    val savedGameId = doc.getString("gameId") ?: "6183190"
+                    val savedTestMode = doc.getBoolean("testMode") ?: true
+                    val savedRewarded = doc.getString("rewardedPlacement") ?: "Rewarded_Android"
+                    val savedInterstitial = doc.getString("interstitialPlacement") ?: "Interstitial_Android"
+                    val savedBanner = doc.getString("bannerPlacement") ?: "Banner_Android"
+
+                    rewardedPlacementId = savedRewarded
+                    interstitialPlacementId = savedInterstitial
+                    bannerPlacementId = savedBanner
+
+                    initialize(context, customGameId = savedGameId, isTest = savedTestMode)
+                } else {
+                    initialize(context, customGameId = "6183190", isTest = true)
+                }
+            }
+            .addOnFailureListener {
+                initialize(context, customGameId = "6183190", isTest = true)
+            }
+    }
 
     fun initialize(context: Context, customGameId: String = "6183190", isTest: Boolean = true) {
-        gameId = customGameId.ifBlank { "6183190" }
+        gameId = customGameId.trim().ifBlank { "6183190" }
         testMode = isTest
         
         if (UnityAds.isInitialized) {
             isInitialized = true
+            isInitializing = false
             Log.d(TAG, "Unity Ads already initialized")
+            loadRewardedAd()
+            loadInterstitialAd()
             return
         }
 
+        if (isInitializing) {
+            Log.d(TAG, "Unity Ads initialization already in progress...")
+            return
+        }
+
+        isInitializing = true
         UnityAds.initialize(context.applicationContext, gameId, testMode, object : IUnityAdsInitializationListener {
             override fun onInitializationComplete() {
                 isInitialized = true
+                isInitializing = false
                 Log.d(TAG, "✅ Unity Ads Initialized Successfully with Game ID: $gameId (TestMode: $testMode)")
                 loadRewardedAd()
                 loadInterstitialAd()
@@ -60,12 +96,17 @@ object UnityAdsManager {
 
             override fun onInitializationFailed(error: UnityAds.UnityAdsInitializationError?, message: String?) {
                 isInitialized = false
+                isInitializing = false
                 Log.e(TAG, "❌ Unity Ads Initialization Failed: $error - $message")
             }
         })
     }
 
     fun loadRewardedAd(placementId: String = rewardedPlacementId, onLoaded: (() -> Unit)? = null, onFailed: ((String) -> Unit)? = null) {
+        if (!UnityAds.isInitialized) {
+            onFailed?.invoke("Unity Ads not initialized")
+            return
+        }
         UnityAds.load(placementId, object : IUnityAdsLoadListener {
             override fun onUnityAdsAdLoaded(placementId: String) {
                 Log.d(TAG, "Rewarded Ad Loaded: $placementId")
@@ -80,6 +121,10 @@ object UnityAdsManager {
     }
 
     fun loadInterstitialAd(placementId: String = interstitialPlacementId, onLoaded: (() -> Unit)? = null, onFailed: ((String) -> Unit)? = null) {
+        if (!UnityAds.isInitialized) {
+            onFailed?.invoke("Unity Ads not initialized")
+            return
+        }
         UnityAds.load(placementId, object : IUnityAdsLoadListener {
             override fun onUnityAdsAdLoaded(placementId: String) {
                 Log.d(TAG, "Interstitial Ad Loaded: $placementId")
@@ -105,13 +150,12 @@ object UnityAdsManager {
             Log.d(TAG, "Ad already presenting, ignoring repeated tap")
             return
         }
-        isAdShowing = true
 
         val showListener = object : IUnityAdsShowListener {
             override fun onUnityAdsShowFailure(placementId: String, error: UnityAds.UnityAdsShowError, message: String) {
                 isAdShowing = false
                 Log.e(TAG, "Unity Ads Show Failure: $error - $message")
-                onAdFailed(message)
+                onAdFailed(message ?: "Ad Show Failed")
             }
 
             override fun onUnityAdsShowStart(placementId: String) {
@@ -136,7 +180,56 @@ object UnityAdsManager {
             }
         }
 
-        UnityAds.show(activity, placementId, UnityAdsShowOptions(), showListener)
+        // Auto-initialize if not ready
+        if (!UnityAds.isInitialized) {
+            isAdShowing = true
+            UnityAds.initialize(activity.applicationContext, gameId, testMode, object : IUnityAdsInitializationListener {
+                override fun onInitializationComplete() {
+                    isInitialized = true
+                    // Load and show
+                    UnityAds.load(placementId, object : IUnityAdsLoadListener {
+                        override fun onUnityAdsAdLoaded(pId: String) {
+                            UnityAds.show(activity, placementId, UnityAdsShowOptions(), showListener)
+                        }
+                        override fun onUnityAdsFailedToLoad(pId: String, error: UnityAds.UnityAdsLoadError, message: String) {
+                            isAdShowing = false
+                            onAdFailed("Failed to load ad: $message")
+                        }
+                    })
+                }
+                override fun onInitializationFailed(error: UnityAds.UnityAdsInitializationError?, message: String?) {
+                    isAdShowing = false
+                    onAdFailed("Ads initialization error: $message. Check internet connection.")
+                }
+            })
+            return
+        }
+
+        // If initialized, load and show
+        isAdShowing = true
+        UnityAds.load(placementId, object : IUnityAdsLoadListener {
+            override fun onUnityAdsAdLoaded(pId: String) {
+                UnityAds.show(activity, placementId, UnityAdsShowOptions(), showListener)
+            }
+            override fun onUnityAdsFailedToLoad(pId: String, error: UnityAds.UnityAdsLoadError, message: String) {
+                // If load fails, try direct show in case it was preloaded
+                UnityAds.show(activity, placementId, UnityAdsShowOptions(), object : IUnityAdsShowListener {
+                    override fun onUnityAdsShowFailure(placementId: String, error: UnityAds.UnityAdsShowError, message: String) {
+                        isAdShowing = false
+                        onAdFailed(message ?: "No ads available currently. Please try again.")
+                    }
+                    override fun onUnityAdsShowStart(placementId: String) {
+                        showListener.onUnityAdsShowStart(placementId)
+                    }
+                    override fun onUnityAdsShowClick(placementId: String) {
+                        showListener.onUnityAdsShowClick(placementId)
+                    }
+                    override fun onUnityAdsShowComplete(placementId: String, state: UnityAds.UnityAdsShowCompletionState) {
+                        showListener.onUnityAdsShowComplete(placementId, state)
+                    }
+                })
+            }
+        })
     }
 
     fun showInterstitialAd(
@@ -146,6 +239,11 @@ object UnityAdsManager {
         onAdFailed: (String) -> Unit = {}
     ) {
         if (isAdShowing) return
+        if (!UnityAds.isInitialized) {
+            initialize(activity.applicationContext, gameId, testMode)
+            return
+        }
+
         isAdShowing = true
 
         val showListener = object : IUnityAdsShowListener {
@@ -170,7 +268,15 @@ object UnityAdsManager {
             }
         }
 
-        UnityAds.show(activity, placementId, UnityAdsShowOptions(), showListener)
+        UnityAds.load(placementId, object : IUnityAdsLoadListener {
+            override fun onUnityAdsAdLoaded(pId: String) {
+                UnityAds.show(activity, placementId, UnityAdsShowOptions(), showListener)
+            }
+            override fun onUnityAdsFailedToLoad(pId: String, error: UnityAds.UnityAdsLoadError, message: String) {
+                isAdShowing = false
+                onAdFailed(message)
+            }
+        })
     }
 
     /**

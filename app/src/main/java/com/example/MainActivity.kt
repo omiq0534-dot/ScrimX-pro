@@ -24,6 +24,7 @@ class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     FirebaseHelper.init(this)
+    com.example.ads.UnityAdsManager.syncFromFirestore(this)
     com.example.utils.NotificationHelper.initNotificationChannels(this)
     enableEdgeToEdge()
     setContent {

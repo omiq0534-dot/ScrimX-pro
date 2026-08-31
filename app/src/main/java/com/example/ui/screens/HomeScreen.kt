@@ -120,9 +120,7 @@ fun HomeScreen(
 
     // Dialog States
     var showWatchDialog by remember { mutableStateOf(false) }
-    var isWatchingVideo by remember { mutableStateOf(false) }
-    var videoProgress by remember { mutableStateOf(0f) }
-    var videoRewardClaimed by remember { mutableStateOf(false) }
+    var isAdLoading by remember { mutableStateOf(false) }
 
     var showDailyDialog by remember { mutableStateOf(false) }
     val dailyPrefs = remember { context.getSharedPreferences("daily_reward_prefs", android.content.Context.MODE_PRIVATE) }
@@ -176,29 +174,12 @@ fun HomeScreen(
         )
     }
 
-    // Video Playing Simulation Effect (Runs smooth, never stuck)
-    LaunchedEffect(isWatchingVideo) {
-        if (isWatchingVideo) {
-            videoProgress = 0f
-            videoRewardClaimed = false
-            for (i in 1..100) {
-                delay(35) // Total 3.5 seconds
-                videoProgress = i / 100f
-            }
-            val rewardAmount = appConfig.watchVideoCoins
-            userViewModel.addAppMoney(rewardAmount)
-            videoRewardClaimed = true
-            isWatchingVideo = false
-            Toast.makeText(context, "🎉 +$rewardAmount Coins Added to Wallet!", Toast.LENGTH_SHORT).show()
-        }
-    }
-
     // 1. Watch Video & Live Stream Dialog
     if (showWatchDialog) {
         AlertDialog(
             containerColor = Color(0xFF14161F),
             onDismissRequest = { 
-                if (!isWatchingVideo) showWatchDialog = false 
+                if (!isAdLoading) showWatchDialog = false 
             },
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -210,7 +191,7 @@ fun HomeScreen(
                     )
                     Spacer(modifier = Modifier.width(10.dp))
                     Text(
-                        if (isWatchingVideo) "WATCHING VIDEO AD..." else "WATCH & EARN / LIVE",
+                        "WATCH & EARN / LIVE",
                         fontWeight = FontWeight.Black,
                         color = Color.White,
                         fontSize = 16.sp,
@@ -224,104 +205,58 @@ fun HomeScreen(
                     verticalArrangement = Arrangement.spacedBy(14.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    if (isWatchingVideo) {
-                        // Interactive Video Screen Simulator
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(160.dp)
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(Color(0xFF0C0D12))
-                                .border(1.dp, Color(0xFF262938), RoundedCornerShape(16.dp)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(10.dp)
-                            ) {
-                                Icon(
-                                    Icons.Default.PlayCircleFilled,
-                                    contentDescription = null,
-                                    tint = Color(0xFFFFD700),
-                                    modifier = Modifier.size(44.dp)
-                                )
-                                Text(
-                                    "Playing Sponsor Video...",
-                                    color = Color.White,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 13.sp
-                                )
-                                Text(
-                                    "Reward unlocks in a moment",
-                                    color = Color(0xFF8E92A4),
-                                    fontSize = 11.sp
+                    Text(
+                        "Watch short sponsor videos to earn Coins for entry fees, or tune into live tournament scrims!",
+                        color = Color(0xFFC0C4D6),
+                        fontSize = 13.sp,
+                        lineHeight = 18.sp
+                    )
+
+                    // Option 1: Watch Unity Video Ad (+15 Coins)
+                    Button(
+                        onClick = {
+                            val currentActivity = context as? Activity
+                            if (currentActivity != null) {
+                                isAdLoading = true
+                                Toast.makeText(context, "🎬 Loading Sponsor Video Ad...", Toast.LENGTH_SHORT).show()
+                                UnityAdsManager.showRewardedAd(
+                                    activity = currentActivity,
+                                    onRewardEarned = {
+                                        isAdLoading = false
+                                        val rewardAmount = appConfig.watchVideoCoins
+                                        userViewModel.addAppMoney(rewardAmount)
+                                        Toast.makeText(context, "🎉 +$rewardAmount Coins Added to Wallet!", Toast.LENGTH_LONG).show()
+                                        showWatchDialog = false
+                                    },
+                                    onAdClosed = {
+                                        isAdLoading = false
+                                    },
+                                    onAdSkipped = {
+                                        isAdLoading = false
+                                        Toast.makeText(context, "⚠️ Video was skipped! Reward claim karne ke liye poora ad dekhna zaroori hai.", Toast.LENGTH_SHORT).show()
+                                    },
+                                    onAdFailed = { err ->
+                                        isAdLoading = false
+                                        Toast.makeText(context, "⚠️ Ad loading: $err. Please tap again.", Toast.LENGTH_SHORT).show()
+                                    }
                                 )
                             }
-                        }
-
-                        // Progress Bar
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            LinearProgressIndicator(
-                                progress = { videoProgress },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(8.dp)
-                                    .clip(CircleShape),
-                                color = Color(0xFFFFD700),
-                                trackColor = Color(0xFF262938)
-                            )
-                            Spacer(modifier = Modifier.height(6.dp))
-                            Text(
-                                "${(videoProgress * 100).toInt()}% completed",
-                                color = Color(0xFF8E92A4),
-                                fontSize = 11.sp,
-                                modifier = Modifier.align(Alignment.End)
-                            )
-                        }
-                    } else {
-                        Text(
-                            "Watch short sponsor videos to earn Coins for entry fees, or tune into live tournament scrims!",
-                            color = Color(0xFFC0C4D6),
-                            fontSize = 13.sp,
-                            lineHeight = 18.sp
-                        )
-
-                        // Option 1: Watch Unity Video Ad (+15 Coins)
-                        Button(
-                            onClick = {
-                                val currentActivity = context as? Activity
-                                if (currentActivity != null) {
-                                    Toast.makeText(context, "🎬 Loading Sponsor Video Ad...", Toast.LENGTH_SHORT).show()
-                                    UnityAdsManager.showRewardedAd(
-                                        activity = currentActivity,
-                                        onRewardEarned = {
-                                            val rewardAmount = appConfig.watchVideoCoins
-                                            userViewModel.addAppMoney(rewardAmount)
-                                            Toast.makeText(context, "🎉 +$rewardAmount Coins Added to Wallet!", Toast.LENGTH_LONG).show()
-                                            showWatchDialog = false
-                                        },
-                                        onAdClosed = {
-                                            showWatchDialog = false
-                                        },
-                                        onAdFailed = {
-                                            // Fallback to simulated sponsor video player if offline/preloading
-                                            isWatchingVideo = true
-                                        }
-                                    )
-                                } else {
-                                    isWatchingVideo = true
-                                }
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700)),
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier.fillMaxWidth().height(48.dp)
-                        ) {
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700)),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth().height(48.dp),
+                        enabled = !isAdLoading
+                    ) {
+                        if (isAdLoading) {
+                            CircularProgressIndicator(color = Color.Black, modifier = Modifier.size(20.dp))
+                        } else {
                             Icon(Icons.Default.PlayArrow, contentDescription = null, tint = Color.Black, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(8.dp))
                             Text("WATCH SPONSOR AD (+${appConfig.watchVideoCoins} COINS)", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 12.sp)
                         }
+                    }
 
-                        // Option 2: Watch Live Scrims (YouTube)
+                    // Option 2: Watch Live Scrims (YouTube)
                         OutlinedButton(
                             onClick = {
                                 showWatchDialog = false
@@ -367,11 +302,10 @@ fun HomeScreen(
                             Spacer(modifier = Modifier.width(8.dp))
                             Text("WATCH TOURNAMENT LIVE (YT)", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                         }
-                    }
                 }
             },
             confirmButton = {
-                if (!isWatchingVideo) {
+                if (!isAdLoading) {
                     TextButton(onClick = { showWatchDialog = false }) {
                         Text("Close", color = Color(0xFF8E92A4), fontWeight = FontWeight.Bold)
                     }
