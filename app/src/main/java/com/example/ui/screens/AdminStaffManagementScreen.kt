@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.FirebaseHelper
+import com.example.security.AppSecurityGuard
 import com.example.ui.components.AdminMasterBadge
 
 data class StaffMember(
@@ -83,7 +84,7 @@ fun AdminStaffManagementScreen(navController: NavController) {
     }
 
     val activeModerators = allUsers.filter { 
-        (it.isModerator || it.role == "moderator") && !it.email.equals("omiq0534@gmail.com", ignoreCase = true)
+        (it.isModerator || it.role == "moderator") && !AppSecurityGuard.isSuperOwner(it.email)
     }
 
     val searchedUsers = if (searchQuery.isBlank()) emptyList() else {
@@ -91,7 +92,7 @@ fun AdminStaffManagementScreen(navController: NavController) {
             (user.email.contains(searchQuery, ignoreCase = true) ||
              user.name.contains(searchQuery, ignoreCase = true) ||
              user.uid.contains(searchQuery, ignoreCase = true)) &&
-            !user.email.equals("omiq0534@gmail.com", ignoreCase = true)
+            !AppSecurityGuard.isSuperOwner(user.email)
         }.take(8)
     }
 

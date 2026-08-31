@@ -82,6 +82,9 @@ class MainActivity : ComponentActivity() {
             composable("admin_staff_management") {
               com.example.ui.screens.AdminStaffManagementScreen(navController)
             }
+            composable("admin_unity_ads") {
+              com.example.ui.screens.AdminUnityAdsScreen(navController)
+            }
           }
           }
         }

@@ -36,6 +36,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.FirebaseHelper
+import com.example.security.AppSecurityGuard
 import com.example.ui.components.AdminVipTopBanner
 import com.example.ui.components.AppUpdateDialog
 import com.example.ui.components.FloatingRoomLiveBanner
@@ -57,7 +58,13 @@ fun MainScreen(
     val appConfig by appControlViewModel.config.collectAsState()
     val allMatches by matchesViewModel.matches.collectAsState()
 
-    val isAdmin = userProfile?.email == AppControlViewModel.ADMIN_EMAIL
+    val isAdmin = remember(userProfile?.email, userProfile?.isModerator, userProfile?.role) {
+        AppSecurityGuard.isAuthorizedAdmin(
+            email = userProfile?.email,
+            isModDocFlag = userProfile?.isModerator == true,
+            role = userProfile?.role
+        )
+    }
     val isAppOutdated = appConfig.latestVersionCode > AppControlViewModel.CURRENT_APP_VERSION_CODE
     var dismissUpdateDialog by remember { mutableStateOf(false) }
 

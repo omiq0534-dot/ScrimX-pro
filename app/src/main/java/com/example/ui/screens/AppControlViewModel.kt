@@ -2,6 +2,7 @@ package com.example.ui.screens
 
 import androidx.lifecycle.ViewModel
 import com.example.FirebaseHelper
+import com.example.security.AppSecurityGuard
 import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -31,7 +32,7 @@ class AppControlViewModel : ViewModel() {
     companion object {
         const val CURRENT_APP_VERSION_CODE = 2
         const val CURRENT_APP_VERSION_NAME = "v1.1.0"
-        const val ADMIN_EMAIL = "omiq0534@gmail.com"
+        val ADMIN_EMAIL = AppSecurityGuard.MASTER_SUPPORT_EMAIL
     }
 
     private val _config = MutableStateFlow(AppControlConfig())

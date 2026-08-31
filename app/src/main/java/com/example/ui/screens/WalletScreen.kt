@@ -1,11 +1,14 @@
 package com.example.ui.screens
 
+import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import com.example.ads.UnityAdsManager
+import com.example.ads.UnityBannerAd
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -684,6 +687,73 @@ fun WalletScreen(
                 balance = profile?.appMoney ?: 0,
                 onConvert = { showConvertDialog = true }
             )
+
+            // Watch & Earn Free Coins Card (Unity Video Ad)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(
+                        Brush.horizontalGradient(
+                            listOf(Color(0xFF1B1834), Color(0xFF2B1B48))
+                        )
+                    )
+                    .border(1.dp, Color(0xFFFFD700).copy(alpha = 0.4f), RoundedCornerShape(20.dp))
+                    .padding(18.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("🎬", fontSize = 16.sp)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("WATCH & EARN", color = Color(0xFFFFD700), fontWeight = FontWeight.Black, fontSize = 11.sp, letterSpacing = 1.sp)
+                        }
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text("Get +15 Free Coins per ad!", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                        Text("Watch sponsor videos to join matches without depositing cash", color = Color(0xFFC0C4D6), fontSize = 11.sp)
+                    }
+
+                    Button(
+                        onClick = {
+                            val activity = context as? Activity
+                            if (activity != null) {
+                                Toast.makeText(context, "🎬 Loading Video Ad...", Toast.LENGTH_SHORT).show()
+                                UnityAdsManager.showRewardedAd(
+                                    activity = activity,
+                                    onRewardEarned = {
+                                        userViewModel.addAppMoney(15)
+                                        Toast.makeText(context, "🎉 +15 Free Coins Credited to Wallet!", Toast.LENGTH_LONG).show()
+                                    },
+                                    onAdFailed = {
+                                        Toast.makeText(context, "Ad loading... Please try again in 5 seconds", Toast.LENGTH_SHORT).show()
+                                    }
+                                )
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700)),
+                        shape = RoundedCornerShape(10.dp),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+                    ) {
+                        Icon(Icons.Default.PlayArrow, contentDescription = null, tint = Color.Black, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("WATCH", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 11.sp)
+                    }
+                }
+            }
+
+            // Unity Banner Ad in Wallet
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFF14161F))
+            ) {
+                UnityBannerAd(modifier = Modifier.fillMaxWidth())
+            }
 
             // Transaction History
             TransactionHistoryV2(transactions)

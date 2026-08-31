@@ -47,6 +47,10 @@ fun AdminManageMatchesScreen(
     var showEditDialog by remember { mutableStateOf(false) }
     var selectedMatchForEdit by remember { mutableStateOf<MatchData?>(null) }
     var editMap by remember { mutableStateOf("") }
+    var editPrize by remember { mutableStateOf("") }
+    var editEntryType by remember { mutableStateOf("PAID") }
+    var editPaidEntryFee by remember { mutableStateOf("10") }
+    var editRequiredAds by remember { mutableStateOf("1") }
     var roomId by remember { mutableStateOf("") }
     var roomPass by remember { mutableStateOf("") }
     var status by remember { mutableStateOf("") }
@@ -84,6 +88,60 @@ fun AdminManageMatchesScreen(
                         label = "Map Name (Custom)",
                         placeholder = "Bermuda / Kalahari / Erangel"
                     )
+
+                    ClassyDarkInput(
+                        value = editPrize,
+                        onValueChange = { editPrize = it },
+                        label = "Prize Pool",
+                        placeholder = "e.g. ₹500"
+                    )
+
+                    Text("ENTRY TYPE & REQUIREMENTS", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color(0xFF75798E))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        listOf(
+                            "FREE" to "🆓 Free",
+                            "AD" to "🎬 Watch Ad",
+                            "PAID" to "💵 Paid"
+                        ).forEach { (tKey, tLabel) ->
+                            val isSel = editEntryType == tKey
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(if (isSel) Color(0xFF222738) else Color(0xFF0C0D12))
+                                    .border(1.dp, if (isSel) Color(0xFFFFD700) else Color(0xFF262938), RoundedCornerShape(8.dp))
+                                    .clickable { editEntryType = tKey }
+                                    .padding(vertical = 8.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    tLabel,
+                                    color = if (isSel) Color(0xFFFFD700) else Color.White,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 11.sp
+                                )
+                            }
+                        }
+                    }
+
+                    if (editEntryType == "AD") {
+                        ClassyDarkInput(
+                            value = editRequiredAds,
+                            onValueChange = { editRequiredAds = it },
+                            label = "Number of Ads to Watch",
+                            placeholder = "1, 2, 3..."
+                        )
+                    } else if (editEntryType == "PAID") {
+                        ClassyDarkInput(
+                            value = editPaidEntryFee,
+                            onValueChange = { editPaidEntryFee = it },
+                            label = "Entry Fee (Coins / ₹)",
+                            placeholder = "10, 20, 50..."
+                        )
+                    }
 
                     ClassyDarkInput(
                         value = roomId,
@@ -154,10 +212,24 @@ fun AdminManageMatchesScreen(
             confirmButton = {
                 Button(
                     onClick = {
+                        val computedEntry = when (editEntryType) {
+                            "FREE" -> "FREE"
+                            "AD" -> {
+                                val adsCount = editRequiredAds.toIntOrNull()?.coerceAtLeast(1) ?: 1
+                                "🎬 Free ($adsCount Ad${if (adsCount > 1) "s" else ""})"
+                            }
+                            else -> "₹${editPaidEntryFee.trim().removePrefix("₹").ifBlank { "10" }}"
+                        }
+                        val computedRequiredAds = if (editEntryType == "AD") (editRequiredAds.toIntOrNull()?.coerceAtLeast(1) ?: 1) else 0
+
                         scope.launch {
                             db?.collection("matches")?.document(selectedMatchForEdit!!.id)
                                 ?.update(
                                     "map", editMap.trim().ifBlank { "Bermuda" },
+                                    "prize", editPrize.trim().ifBlank { "₹500" },
+                                    "entry", computedEntry,
+                                    "entryType", editEntryType,
+                                    "requiredAds", computedRequiredAds,
                                     "roomId", roomId.trim(),
                                     "roomPass", roomPass.trim(),
                                     "status", status,
@@ -505,6 +577,15 @@ fun AdminManageMatchesScreen(
                                 onClick = {
                                     selectedMatchForEdit = match
                                     editMap = match.map
+                                    editPrize = match.prize
+                                    editEntryType = when {
+                                        match.entryType.isNotBlank() -> match.entryType
+                                        match.entry.contains("Ad", ignoreCase = true) -> "AD"
+                                        match.entry.equals("Free", ignoreCase = true) -> "FREE"
+                                        else -> "PAID"
+                                    }
+                                    editPaidEntryFee = match.entry.filter { it.isDigit() }.ifBlank { "10" }
+                                    editRequiredAds = (if (match.requiredAds > 0) match.requiredAds else (match.entry.filter { it.isDigit() }.toIntOrNull() ?: 1)).toString()
                                     roomId = match.roomId
                                     roomPass = match.roomPass
                                     status = match.status

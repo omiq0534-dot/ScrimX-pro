@@ -1,0 +1,108 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions for unbreakable security
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner() {
+      return isAuthenticated() && (
+        request.auth.token.email.lower() == 'omiq0534@gmail.com'
+      );
+    }
+
+    function isAdminOrMod() {
+      return isOwner() || (
+        isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        (
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('isModerator', false) == true ||
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', 'player') == 'moderator' ||
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', 'player') == 'admin'
+        )
+      );
+    }
+
+    // 1. Users Collection
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      
+      // Allow initial user document creation on registration
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+
+      // Allow updates: Regular users can ONLY edit normal profile fields (not wallet or role!)
+      // Admin/Owner can update any user's fields
+      allow update: if isOwner() || isAdminOrMod() || (
+        isAuthenticated() && request.auth.uid == userId &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+          'walletBalance', 'role', 'isModerator', 'isBanned', 'banType', 'hasXBadge'
+        ])
+      );
+
+      allow delete: if isOwner();
+    }
+
+    // 2. Matches Collection (Tournaments)
+    match /matches/{matchId} {
+      allow read: if isAuthenticated();
+      // Only authorized Admins / Moderators / Owner can create, edit or delete tournaments
+      allow create, update, delete: if isAdminOrMod();
+    }
+
+    // 3. Transactions Collection (Deposits, Withdrawals, Winnings)
+    match /transactions/{txId} {
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid || isAdminOrMod()
+      );
+      // Only owner or admin can create/approve financial transactions
+      allow create, update: if isAdminOrMod() || (
+        isAuthenticated() && request.resource.data.userId == request.auth.uid && request.resource.data.status == 'Pending'
+      );
+      allow delete: if isOwner();
+    }
+
+    // 4. App Remote Config & System Settings
+    match /settings/{settingId} {
+      allow read: if true; // Public for maintenance and app update checks
+      allow write: if isOwner();
+    }
+
+    // 5. Support Tickets
+    match /support_tickets/{ticketId} {
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid || isAdminOrMod()
+      );
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAdminOrMod() || (
+        isAuthenticated() && resource.data.userId == request.auth.uid
+      );
+      allow delete: if isOwner();
+    }
+
+    // 6. Notifications & Broadcasts
+    match /notifications/{notifId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdminOrMod();
+    }
+
+    match /broadcast_notifications/{notifId} {
+      allow read: if true;
+      allow write: if isAdminOrMod();
+    }
+
+    // 7. Security Alerts & Anti-Cheat Log Collection
+    match /security_alerts/{alertId} {
+      allow read: if isOwner();
+      allow create: if isAuthenticated();
+      allow update, delete: if isOwner();
+    }
+
+    // Default fallback: Block all other unauthorized direct database writes
+    match /{document=**} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner();
+    }
+  }
+}

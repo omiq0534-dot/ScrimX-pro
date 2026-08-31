@@ -38,7 +38,9 @@ fun AdminCreateMatchScreen(navController: NavController) {
     var customSlots by remember { mutableStateOf("12") }
     var time by remember { mutableStateOf("") }
     var prize by remember { mutableStateOf("₹500") }
-    var entry by remember { mutableStateOf("₹10") }
+    var entryType by remember { mutableStateOf("PAID") } // "FREE", "AD", "PAID"
+    var paidEntryFee by remember { mutableStateOf("10") }
+    var requiredAdsInput by remember { mutableStateOf("1") }
     var badge by remember { mutableStateOf("FREE FIRE T3") }
     var status by remember { mutableStateOf("Upcoming") }
     var roomId by remember { mutableStateOf("") }
@@ -273,25 +275,133 @@ fun AdminCreateMatchScreen(navController: NavController) {
                 }
             }
 
+            // PRIZE & ENTRY SECTION
+            Text("3. PRIZE POOL & ENTRY TYPE", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color(0xFF75798E), letterSpacing = 1.5.sp)
+
+            ClassyDarkInput(
+                value = prize,
+                onValueChange = { prize = it },
+                label = "Prize Pool (Customizable)",
+                placeholder = "e.g. ₹500, ₹1000, ₹2500"
+            )
+
+            // 3 Entry Type Options
+            Text("SELECT MATCH ENTRY TYPE (No limits):", fontSize = 10.sp, color = Color(0xFF8E92A4), fontWeight = FontWeight.SemiBold)
+            val entryTypeOptions = listOf(
+                Triple("FREE", "🆓 100% Free", "0 Coins • 0 Ads"),
+                Triple("AD", "🎬 Watch Ad to Join", "Free via Unity Ads"),
+                Triple("PAID", "💵 Paid Entry Fee", "Deduct Wallet Coins")
+            )
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Box(modifier = Modifier.weight(1f)) {
-                    ClassyDarkInput(
-                        value = prize,
-                        onValueChange = { prize = it },
-                        label = "Prize Pool",
-                        placeholder = "₹500"
-                    )
+                entryTypeOptions.forEach { (typeKey, titleLabel, subLabel) ->
+                    val isSelected = entryType == typeKey
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(if (isSelected) Color(0xFF222738) else Color(0xFF14161F))
+                            .border(1.2.dp, if (isSelected) Color(0xFFFFD700) else Color(0xFF262938), RoundedCornerShape(12.dp))
+                            .clickable { entryType = typeKey }
+                            .padding(vertical = 10.dp, horizontal = 6.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                titleLabel,
+                                color = if (isSelected) Color(0xFFFFD700) else Color.White,
+                                fontWeight = FontWeight.Black,
+                                fontSize = 11.sp
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                subLabel,
+                                color = if (isSelected) Color(0xFFC0C4D6) else Color(0xFF6B7280),
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
                 }
-                Box(modifier = Modifier.weight(1f)) {
-                    ClassyDarkInput(
-                        value = entry,
-                        onValueChange = { entry = it },
-                        label = "Entry Fee",
-                        placeholder = "₹10 / Free"
-                    )
+            }
+
+            // Sub-options based on Entry Type
+            when (entryType) {
+                "FREE" -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color(0xFF10B981).copy(alpha = 0.12f))
+                            .border(1.dp, Color(0xFF10B981).copy(alpha = 0.4f), RoundedCornerShape(10.dp))
+                            .padding(12.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF10B981), modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                "100% Free Match: Players can join directly with 0 coins and no ads.",
+                                color = Color(0xFFD1FAE5),
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
+                }
+                "AD" -> {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        ClassyDarkInput(
+                            value = requiredAdsInput,
+                            onValueChange = { requiredAdsInput = it },
+                            label = "Number of Sponsor Ads to Watch (No limit, edit any number)",
+                            placeholder = "e.g. 1, 2, 3, 5"
+                        )
+                        // Quick chips for common ad counts
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            listOf("1 Ad", "2 Ads", "3 Ads", "5 Ads").forEach { adPreset ->
+                                val num = adPreset.filter { it.isDigit() }
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(if (requiredAdsInput == num) Color(0xFF2A2D3D) else Color(0xFF161922))
+                                        .border(1.dp, if (requiredAdsInput == num) Color(0xFFFFD700) else Color(0xFF2C3042), RoundedCornerShape(8.dp))
+                                        .clickable { requiredAdsInput = num }
+                                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                                ) {
+                                    Text(adPreset, color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                }
+                            }
+                        }
+                    }
+                }
+                "PAID" -> {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        ClassyDarkInput(
+                            value = paidEntryFee,
+                            onValueChange = { paidEntryFee = it },
+                            label = "Entry Fee (₹ / Coins - No limit, edit any amount)",
+                            placeholder = "e.g. 10, 20, 50, 100, 500"
+                        )
+                        // Quick chips for common entry amounts
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            listOf("₹5", "₹10", "₹20", "₹50", "₹100").forEach { feePreset ->
+                                val num = feePreset.filter { it.isDigit() }
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(if (paidEntryFee == num || paidEntryFee == feePreset) Color(0xFF2A2D3D) else Color(0xFF161922))
+                                        .border(1.dp, if (paidEntryFee == num || paidEntryFee == feePreset) Color(0xFFFFD700) else Color(0xFF2C3042), RoundedCornerShape(8.dp))
+                                        .clickable { paidEntryFee = num }
+                                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                                ) {
+                                    Text(feePreset, color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
@@ -415,12 +525,24 @@ fun AdminCreateMatchScreen(navController: NavController) {
                             else -> 12
                         }
 
+                        val computedEntry = when (entryType) {
+                            "FREE" -> "FREE"
+                            "AD" -> {
+                                val adsCount = requiredAdsInput.toIntOrNull()?.coerceAtLeast(1) ?: 1
+                                "🎬 Free ($adsCount Ad${if (adsCount > 1) "s" else ""})"
+                            }
+                            else -> "₹${paidEntryFee.trim().removePrefix("₹").ifBlank { "10" }}"
+                        }
+                        val computedRequiredAds = if (entryType == "AD") (requiredAdsInput.toIntOrNull()?.coerceAtLeast(1) ?: 1) else 0
+
                         val newMatch = MatchData(
                             id = newId,
                             title = if (title.isNotBlank()) title else "$customMap $selectedMode Match",
                             time = time,
                             prize = prize,
-                            entry = entry,
+                            entry = computedEntry,
+                            entryType = entryType,
+                            requiredAds = computedRequiredAds,
                             badge = badge,
                             status = status,
                             roomId = roomId.trim(),

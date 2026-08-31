@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 import com.example.FirebaseHelper
+import com.example.security.AppSecurityGuard
 
 data class UserProfile(
     val uid: String = "",
@@ -79,8 +80,8 @@ class UserViewModel : ViewModel() {
                                 needsUpdate = true
                             }
 
-                            // 👑 Automatic Pro Milestone: 10+ Tournament Wins or Creator Email unlocks [X] Badge
-                            if (!p.hasXBadge && (p.totalWins >= 10 || p.email.equals("omiq0534@gmail.com", ignoreCase = true))) {
+                            // 👑 Automatic Pro Milestone: 10+ Tournament Wins or Verified Owner unlocks [X] Badge
+                            if (!p.hasXBadge && (p.totalWins >= 10 || AppSecurityGuard.isSuperOwner(p.email))) {
                                 p = p.copy(hasXBadge = true)
                                 updates["hasXBadge"] = true
                                 needsUpdate = true

@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,9 +28,25 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.FirebaseHelper
+import com.example.security.AppSecurityGuard
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 import com.example.ui.components.XBadge
 import com.example.ui.components.XBadgeSize
+
+data class SecurityAlertData(
+    val id: String = "",
+    val uid: String = "",
+    val email: String = "",
+    val incidentType: String = "",
+    val details: String = "",
+    val timestamp: Long = 0L,
+    val deviceModel: String = "",
+    val androidVersion: Int = 0,
+    val status: String = "CRITICAL_SUSPECT"
+)
 
 data class BannedUserData(
     val uid: String = "",
@@ -53,6 +70,8 @@ fun AdminUserSecurityScreen(navController: NavController) {
     val db = remember { FirebaseHelper.getFirestore() }
 
     var usersList by remember { mutableStateOf<List<BannedUserData>>(emptyList()) }
+    var securityAlerts by remember { mutableStateOf<List<SecurityAlertData>>(emptyList()) }
+    var selectedTab by remember { mutableStateOf(0) } // 0 = Users & Bans, 1 = Hacker Intrusion Alerts
     var searchQuery by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(true) }
 
@@ -112,6 +131,75 @@ fun AdminUserSecurityScreen(navController: NavController) {
 
     LaunchedEffect(Unit) {
         loadUsers()
+        db?.collection("security_alerts")
+            ?.orderBy("timestamp", com.google.firebase.firestore.Query.Direction.DESCENDING)
+            ?.addSnapshotListener { snap, _ ->
+                if (snap != null) {
+                    securityAlerts = snap.documents.mapNotNull { doc ->
+                        val id = doc.id
+                        val uid = doc.getString("uid") ?: ""
+                        val email = doc.getString("email") ?: ""
+                        val incidentType = doc.getString("incidentType") ?: "SECURITY_ALERT"
+                        val details = doc.getString("details") ?: ""
+                        val timestamp = doc.getLong("timestamp") ?: 0L
+                        val deviceModel = doc.getString("deviceModel") ?: "Unknown Device"
+                        val androidVersion = doc.getLong("androidVersion")?.toInt() ?: 0
+                        val status = doc.getString("status") ?: "CRITICAL_SUSPECT"
+                        SecurityAlertData(
+                            id = id,
+                            uid = uid,
+                            email = email,
+                            incidentType = incidentType,
+                            details = details,
+                            timestamp = timestamp,
+                            deviceModel = deviceModel,
+                            androidVersion = androidVersion,
+                            status = status
+                        )
+                    }
+                }
+            }
+    }
+
+    fun dismissAlert(alertId: String) {
+        db?.collection("security_alerts")?.document(alertId)?.delete()
+            ?.addOnSuccessListener {
+                Toast.makeText(context, "Security Alert Cleared", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    fun banHackerDirectly(alert: SecurityAlertData) {
+        if (alert.uid.isBlank() && alert.email.isBlank()) {
+            Toast.makeText(context, "Cannot ban: No UID/Email present", Toast.LENGTH_SHORT).show()
+            return
+        }
+        if (alert.uid.isNotBlank()) {
+            val updates = hashMapOf<String, Any>(
+                "isBanned" to true,
+                "banType" to "permanent",
+                "banReason" to "Hardware Intrusion / Tampering: ${alert.incidentType} from ${alert.deviceModel}",
+                "banUntil" to 0L
+            )
+            db?.collection("users")?.document(alert.uid)?.update(updates)
+                ?.addOnSuccessListener {
+                    Toast.makeText(context, "🔨 Hacker permanently banned! (${alert.email.ifBlank { alert.uid }})", Toast.LENGTH_LONG).show()
+                    loadUsers()
+                }
+                ?.addOnFailureListener { e ->
+                    Toast.makeText(context, "Failed to ban: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+        }
+    }
+
+    fun triggerTestAlertSimulation() {
+        val auth = FirebaseHelper.getAuth()
+        AppSecurityGuard.logSecurityIncident(
+            db = db,
+            auth = auth,
+            incidentType = "TEST_SIMULATED_BREACH",
+            details = "Manual intrusion test simulated by Owner from Admin Console"
+        )
+        Toast.makeText(context, "🧪 Test Hacker Intrusion alert generated! Check the Alerts tab.", Toast.LENGTH_LONG).show()
     }
 
     fun toggleXBadge(user: BannedUserData) {
@@ -240,13 +328,62 @@ fun AdminUserSecurityScreen(navController: NavController) {
                     Icon(Icons.Default.Gavel, contentDescription = null, tint = Color(0xFFA78BFA), modifier = Modifier.size(28.dp))
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
-                        Text("BAN & SECURITY ENFORCER", color = Color(0xFFDDD6FE), fontSize = 11.sp, fontWeight = FontWeight.Black, letterSpacing = 0.5.sp)
-                        Text("Apply Temporary or Permanent bans to violators & unauthorized APK bypassers.", color = Color(0xFFC4B5FD), fontSize = 11.sp)
+                        Text("ANTI-CHEAT & SECURITY ENFORCER", color = Color(0xFFDDD6FE), fontSize = 11.sp, fontWeight = FontWeight.Black, letterSpacing = 0.5.sp)
+                        Text("Live hacker detection, device fingerprinting, and 1-click ban enforcer.", color = Color(0xFFC4B5FD), fontSize = 11.sp)
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Tab Row
+            TabRow(
+                selectedTabIndex = selectedTab,
+                containerColor = Color(0xFF14161F),
+                contentColor = Color(0xFFFF3366),
+                indicator = { tabPositions ->
+                    TabRowDefaults.SecondaryIndicator(
+                        Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
+                        color = Color(0xFFFF3366)
+                    )
+                }
+            ) {
+                Tab(
+                    selected = selectedTab == 0,
+                    onClick = { selectedTab = 0 },
+                    text = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.People, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("USERS (${usersList.size})", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        }
+                    },
+                    selectedContentColor = Color(0xFFFF3366),
+                    unselectedContentColor = Color(0xFF8E92A4)
+                )
+                Tab(
+                    selected = selectedTab == 1,
+                    onClick = { selectedTab = 1 },
+                    text = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Warning, contentDescription = null, tint = if (securityAlerts.isNotEmpty()) Color(0xFFFF0055) else Color(0xFF8E92A4), modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                "🚨 HACKER LOGS (${securityAlerts.size})",
+                                fontWeight = FontWeight.Black,
+                                fontSize = 12.sp,
+                                color = if (selectedTab == 1) Color(0xFFFF0055) else if (securityAlerts.isNotEmpty()) Color(0xFFFF5252) else Color(0xFF8E92A4)
+                            )
+                        }
+                    },
+                    selectedContentColor = Color(0xFFFF0055),
+                    unselectedContentColor = Color(0xFF8E92A4)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            if (selectedTab == 0) {
 
             // Search Bar
             OutlinedTextField(
@@ -462,6 +599,180 @@ fun AdminUserSecurityScreen(navController: NavController) {
                                             contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
                                         ) {
                                             Text("BAN", color = Color.White, fontWeight = FontWeight.Black, fontSize = 10.sp)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            // Tab 1: Hacker Intrusion Logs
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        "LIVE INTRUSION SENSORS",
+                        color = Color.White,
+                        fontWeight = FontWeight.Black,
+                        fontSize = 13.sp,
+                        letterSpacing = 0.5.sp
+                    )
+
+                    Button(
+                        onClick = { triggerTestAlertSimulation() },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6366F1)),
+                        shape = RoundedCornerShape(10.dp),
+                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
+                    ) {
+                        Icon(Icons.Default.Science, contentDescription = null, tint = Color.White, modifier = Modifier.size(14.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("🧪 Test Simulator", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Black)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                if (securityAlerts.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(24.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(Icons.Default.Shield, contentDescription = null, tint = Color(0xFF00E676), modifier = Modifier.size(56.dp))
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text("SYSTEM CLEAN & SECURE", color = Color.White, fontWeight = FontWeight.Black, fontSize = 16.sp)
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                "No unauthorized tamper attempts detected. Press 'Test Simulator' above to simulate a live hacker detection!",
+                                color = Color(0xFF94A3B8),
+                                fontSize = 12.sp,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
+                        }
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        contentPadding = PaddingValues(bottom = 20.dp)
+                    ) {
+                        items(securityAlerts, key = { it.id }) { alert ->
+                            val timeFormatted = remember(alert.timestamp) {
+                                try {
+                                    SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault()).format(Date(alert.timestamp))
+                                } catch (e: Exception) {
+                                    "Just now"
+                                }
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .background(Color(0xFF230C14))
+                                    .border(1.dp, Color(0xFFFF0055).copy(alpha = 0.7f), RoundedCornerShape(16.dp))
+                                    .padding(14.dp)
+                            ) {
+                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(10.dp)
+                                                    .clip(CircleShape)
+                                                    .background(Color(0xFFFF0055))
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(
+                                                alert.incidentType,
+                                                color = Color(0xFFFF5252),
+                                                fontWeight = FontWeight.Black,
+                                                fontSize = 13.sp
+                                            )
+                                        }
+
+                                        IconButton(
+                                            onClick = { dismissAlert(alert.id) },
+                                            modifier = Modifier.size(28.dp)
+                                        ) {
+                                            Icon(Icons.Default.Close, contentDescription = "Dismiss", tint = Color(0xFF8E92A4), modifier = Modifier.size(18.dp))
+                                        }
+                                    }
+
+                                    // Device & Hardware Info
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clip(RoundedCornerShape(10.dp))
+                                            .background(Color(0xFF14161F))
+                                            .padding(10.dp)
+                                    ) {
+                                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Icon(Icons.Default.PhoneAndroid, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(16.dp))
+                                                Spacer(modifier = Modifier.width(6.dp))
+                                                Text(
+                                                    "Device: ${alert.deviceModel.ifBlank { "Unknown Android Device" }} (API ${alert.androidVersion})",
+                                                    color = Color(0xFFFFD700),
+                                                    fontSize = 11.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }
+
+                                            Text(
+                                                "📧 Email: ${alert.email.ifBlank { "Not Logged In / Fake DEX" }}",
+                                                color = Color.White,
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.SemiBold
+                                            )
+
+                                            Text(
+                                                "🔑 UID: ${alert.uid}",
+                                                color = Color(0xFF94A3B8),
+                                                fontSize = 10.sp
+                                            )
+
+                                            Text(
+                                                "🕒 Time: $timeFormatted",
+                                                color = Color(0xFF64748B),
+                                                fontSize = 10.sp
+                                            )
+
+                                            if (alert.details.isNotBlank()) {
+                                                Text(
+                                                    "📝 Details: ${alert.details}",
+                                                    color = Color(0xFFFF8A80),
+                                                    fontSize = 11.sp
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                    // Quick Ban Button
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.End,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Button(
+                                            onClick = { banHackerDirectly(alert) },
+                                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF0055)),
+                                            shape = RoundedCornerShape(10.dp),
+                                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp)
+                                        ) {
+                                            Icon(Icons.Default.Gavel, contentDescription = null, tint = Color.White, modifier = Modifier.size(14.dp))
+                                            Spacer(modifier = Modifier.width(6.dp))
+                                            Text("🔨 1-Click Ban Hacker", color = Color.White, fontWeight = FontWeight.Black, fontSize = 11.sp)
                                         }
                                     }
                                 }

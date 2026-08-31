@@ -27,6 +27,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import androidx.compose.ui.platform.LocalContext
 import android.widget.Toast
 import com.example.FirebaseHelper
+import com.example.security.AppSecurityGuard
 import com.example.ui.components.AdminMasterBadge
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -36,8 +37,8 @@ fun AdminScreen(navController: NavController) {
     val db = remember { FirebaseHelper.getFirestore() }
     val auth = remember { FirebaseHelper.getAuth() }
     val currentUserEmail = auth?.currentUser?.email?.lowercase() ?: ""
-    val isOwner = currentUserEmail == "omiq0534@gmail.com"
-    var isModerator by remember { mutableStateOf(!isOwner) }
+    val isOwner = remember(currentUserEmail) { AppSecurityGuard.isSuperOwner(currentUserEmail) }
+    var isModerator by remember { mutableStateOf(false) }
 
     var totalMatches by remember { mutableStateOf(0) }
     var liveMatches by remember { mutableStateOf(0) }
@@ -53,9 +54,26 @@ fun AdminScreen(navController: NavController) {
                     if (doc != null && doc.exists()) {
                         val role = doc.getString("role") ?: "player"
                         val isMod = doc.getBoolean("isModerator") ?: false
-                        isModerator = isMod || role == "moderator"
+                        val verifiedMod = isMod || role.equals("moderator", ignoreCase = true)
+                        isModerator = verifiedMod
+
+                        // If user is neither owner nor moderator, kick them out immediately and log alert!
+                        if (!isOwner && !verifiedMod) {
+                            AppSecurityGuard.logSecurityIncident(
+                                db = db,
+                                auth = auth,
+                                incidentType = "UNAUTHORIZED_ADMIN_PANEL_BREACH",
+                                details = "User attempted to open Admin Screen with email: $currentUserEmail"
+                            )
+                            Toast.makeText(context, "Access Denied: Security Violation Logged!", Toast.LENGTH_LONG).show()
+                            navController.popBackStack()
+                        }
+                    } else if (!isOwner) {
+                        navController.popBackStack()
                     }
                 }
+            } else if (!isOwner) {
+                navController.popBackStack()
             }
 
             db.collection("matches").addSnapshotListener { snap, _ ->
@@ -282,6 +300,16 @@ fun AdminScreen(navController: NavController) {
                     iconTint = Color(0xFFFF3366),
                     badge = "🔒 Owner",
                     onClick = { navController.navigate("admin_user_security") }
+                )
+
+                // 8. Unity Ads Monetization Control
+                ClassyAdminActionCard(
+                    title = "Unity Ads & Monetization Control",
+                    subtitle = "Configure Game ID (6183190), Rewarded Video Coins, Placements & Test Mode",
+                    icon = Icons.Default.MonetizationOn,
+                    iconTint = Color(0xFFFFD700),
+                    badge = "💰 Revenue",
+                    onClick = { navController.navigate("admin_unity_ads") }
                 )
             } else {
                 Box(

@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
@@ -27,6 +28,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
+import com.example.ads.UnityAdsManager
+import com.example.security.AppSecurityGuard
 import com.example.ui.components.AdminMasterBadge
 import com.example.ui.components.XBadge
 import com.example.ui.components.XBadgeSize
@@ -49,6 +52,8 @@ fun MatchDetailsScreen(
     var showBookingDialog by remember { mutableStateOf(false) }
     var inputPlayerOrTeamName by remember { mutableStateOf("") }
     var inputInGameUid by remember { mutableStateOf("") }
+    var adsWatchedForSlot by remember { mutableIntStateOf(0) }
+    var isAdLoading by remember { mutableStateOf(false) }
     
     LaunchedEffect(matchId) {
         viewModel.listenToMatchDetails(matchId)
@@ -116,9 +121,17 @@ fun MatchDetailsScreen(
         val nameLabel = if (isSquad) "Team Name" else "Player In-Game Name (IGN)"
         val namePlaceholder = if (isSquad) "e.g. Total Gaming / GodLike" else "e.g. ProSniper_99"
 
+        val isAdMatch = match.entryType.equals("AD", ignoreCase = true) || match.entry.contains("Ad", ignoreCase = true)
+        val isFreeMatch = match.entryType.equals("FREE", ignoreCase = true) || match.entry.equals("Free", ignoreCase = true)
+        val requiredAdsCount = if (match.requiredAds > 0) {
+            match.requiredAds
+        } else if (isAdMatch) {
+            match.entry.filter { it.isDigit() }.toIntOrNull() ?: 1
+        } else 0
+
         AlertDialog(
             containerColor = Color(0xFF14151B),
-            onDismissRequest = { if (!isBooking) showBookingDialog = false },
+            onDismissRequest = { if (!isBooking && !isAdLoading) showBookingDialog = false },
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
@@ -199,6 +212,7 @@ fun MatchDetailsScreen(
                         singleLine = true
                     )
 
+                    // Entry Requirements Box
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -206,60 +220,180 @@ fun MatchDetailsScreen(
                             .background(Color(0xFF1F222C))
                             .padding(12.dp)
                     ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text("Entry Deductible", color = Color(0xFFAAAAAA), fontSize = 12.sp)
-                            Text(match.entry, color = Color(0xFFFFD700), fontWeight = FontWeight.Black, fontSize = 15.sp)
+                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    if (isAdMatch) "Entry Method" else if (isFreeMatch) "Entry Type" else "Entry Deductible",
+                                    color = Color(0xFFAAAAAA),
+                                    fontSize = 12.sp
+                                )
+                                Text(
+                                    when {
+                                        isFreeMatch -> "🆓 100% Free"
+                                        isAdMatch -> "🎬 Watch Ad to Join"
+                                        else -> match.entry
+                                    },
+                                    color = if (isFreeMatch) Color(0xFF10B981) else Color(0xFFFFD700),
+                                    fontWeight = FontWeight.Black,
+                                    fontSize = 14.sp
+                                )
+                            }
+
+                            if (isAdMatch) {
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text("Ads Progress:", fontSize = 11.sp, color = Color(0xFF8E92A4))
+                                    Text("$adsWatchedForSlot / $requiredAdsCount Completed", fontSize = 11.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                                }
+                                LinearProgressIndicator(
+                                    progress = { if (requiredAdsCount > 0) adsWatchedForSlot.toFloat() / requiredAdsCount.toFloat() else 1f },
+                                    modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)),
+                                    color = Color(0xFFFFD700),
+                                    trackColor = Color(0xFF2C3042)
+                                )
+                            }
                         }
                     }
                 }
             },
             confirmButton = {
-                Button(
-                    onClick = {
-                        val slotToBook = selectedSlot ?: return@Button
-                        if (inputPlayerOrTeamName.isBlank()) {
-                            Toast.makeText(context, "Please enter ${if (isSquad) "Team Name" else "Player Name"}", Toast.LENGTH_SHORT).show()
-                            return@Button
-                        }
-                        isBooking = true
-                        errorMessage = null
-                        viewModel.bookSlot(
-                            matchId = match.id,
-                            slotNumber = slotToBook,
-                            playerNameOrTeam = inputPlayerOrTeamName.trim(),
-                            inGameUid = inputInGameUid.trim(),
-                            onSuccess = {
-                                isBooking = false
-                                showBookingDialog = false
-                                selectedSlot = null
-                                inputPlayerOrTeamName = ""
-                                inputInGameUid = ""
-                                Toast.makeText(context, "Slot $slotToBook Booked Successfully!", Toast.LENGTH_SHORT).show()
-                            },
-                            onError = { err ->
-                                isBooking = false
-                                errorMessage = err
-                                Toast.makeText(context, err, Toast.LENGTH_LONG).show()
+                val slotToBook = selectedSlot ?: return@AlertDialog
+                val isFormValid = inputPlayerOrTeamName.isNotBlank()
+
+                if (isAdMatch && adsWatchedForSlot < requiredAdsCount) {
+                    // Watch Ad Action Button
+                    Button(
+                        onClick = {
+                            if (!isFormValid) {
+                                Toast.makeText(context, "Please enter ${if (isSquad) "Team Name" else "Player Name"} first", Toast.LENGTH_SHORT).show()
+                                return@Button
                             }
-                        )
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700)),
-                    shape = RoundedCornerShape(10.dp),
-                    enabled = !isBooking && inputPlayerOrTeamName.isNotBlank()
-                ) {
-                    if (isBooking) {
-                        CircularProgressIndicator(color = Color.Black, modifier = Modifier.size(18.dp))
-                    } else {
-                        Text("CONFIRM & PAY", color = Color.Black, fontWeight = FontWeight.Black)
+                            val activity = context as? Activity
+                            if (activity == null) {
+                                Toast.makeText(context, "Activity not available for Ads", Toast.LENGTH_SHORT).show()
+                                return@Button
+                            }
+                            isAdLoading = true
+                            UnityAdsManager.showRewardedAd(
+                                activity = activity,
+                                onRewardEarned = {
+                                    isAdLoading = false
+                                    val newCount = adsWatchedForSlot + 1
+                                    adsWatchedForSlot = newCount
+                                    Toast.makeText(context, "✅ Ad $newCount/$requiredAdsCount completed!", Toast.LENGTH_SHORT).show()
+                                    
+                                    if (newCount >= requiredAdsCount) {
+                                        // Completed all required ads -> Auto book slot!
+                                        isBooking = true
+                                        viewModel.bookSlot(
+                                            matchId = match.id,
+                                            slotNumber = slotToBook,
+                                            playerNameOrTeam = inputPlayerOrTeamName.trim(),
+                                            inGameUid = inputInGameUid.trim(),
+                                            onSuccess = {
+                                                isBooking = false
+                                                showBookingDialog = false
+                                                selectedSlot = null
+                                                adsWatchedForSlot = 0
+                                                inputPlayerOrTeamName = ""
+                                                inputInGameUid = ""
+                                                Toast.makeText(context, "🎉 Slot $slotToBook Booked Successfully via Free Ad Entry!", Toast.LENGTH_LONG).show()
+                                            },
+                                            onError = { err ->
+                                                isBooking = false
+                                                errorMessage = err
+                                                Toast.makeText(context, err, Toast.LENGTH_LONG).show()
+                                            }
+                                        )
+                                    }
+                                },
+                                onAdSkipped = {
+                                    isAdLoading = false
+                                    Toast.makeText(context, "⚠️ Video skipped! Slot unlock karne ke liye poora ad dekhna zaroori hai.", Toast.LENGTH_LONG).show()
+                                },
+                                onAdFailed = { err ->
+                                    isAdLoading = false
+                                    Toast.makeText(context, "⚠️ Ad loading: $err. Please tap again.", Toast.LENGTH_SHORT).show()
+                                }
+                            )
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700)),
+                        shape = RoundedCornerShape(10.dp),
+                        enabled = !isBooking && !isAdLoading && isFormValid
+                    ) {
+                        if (isAdLoading || isBooking) {
+                            CircularProgressIndicator(color = Color.Black, modifier = Modifier.size(18.dp))
+                        } else {
+                            Icon(Icons.Default.PlayCircle, contentDescription = null, tint = Color.Black, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                "WATCH AD (${adsWatchedForSlot + 1}/$requiredAdsCount)",
+                                color = Color.Black,
+                                fontWeight = FontWeight.Black
+                            )
+                        }
+                    }
+                } else {
+                    // Standard Free or Paid Confirm Button
+                    Button(
+                        onClick = {
+                            if (!isFormValid) {
+                                Toast.makeText(context, "Please enter ${if (isSquad) "Team Name" else "Player Name"}", Toast.LENGTH_SHORT).show()
+                                return@Button
+                            }
+                            isBooking = true
+                            errorMessage = null
+                            viewModel.bookSlot(
+                                matchId = match.id,
+                                slotNumber = slotToBook,
+                                playerNameOrTeam = inputPlayerOrTeamName.trim(),
+                                inGameUid = inputInGameUid.trim(),
+                                onSuccess = {
+                                    isBooking = false
+                                    showBookingDialog = false
+                                    selectedSlot = null
+                                    adsWatchedForSlot = 0
+                                    inputPlayerOrTeamName = ""
+                                    inputInGameUid = ""
+                                    Toast.makeText(context, "Slot $slotToBook Booked Successfully!", Toast.LENGTH_SHORT).show()
+                                },
+                                onError = { err ->
+                                    isBooking = false
+                                    errorMessage = err
+                                    Toast.makeText(context, err, Toast.LENGTH_LONG).show()
+                                }
+                            )
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = if (isFreeMatch) Color(0xFF10B981) else Color(0xFFFFD700)),
+                        shape = RoundedCornerShape(10.dp),
+                        enabled = !isBooking && isFormValid
+                    ) {
+                        if (isBooking) {
+                            CircularProgressIndicator(color = Color.Black, modifier = Modifier.size(18.dp))
+                        } else {
+                            Text(
+                                when {
+                                    isFreeMatch -> "CONFIRM & JOIN (FREE)"
+                                    isAdMatch -> "CONFIRM & JOIN (FREE)"
+                                    else -> "CONFIRM & PAY"
+                                },
+                                color = if (isFreeMatch) Color.White else Color.Black,
+                                fontWeight = FontWeight.Black
+                            )
+                        }
                     }
                 }
             },
             dismissButton = {
-                TextButton(onClick = { if (!isBooking) showBookingDialog = false }) {
+                TextButton(onClick = { if (!isBooking && !isAdLoading) showBookingDialog = false }) {
                     Text("Cancel", color = Color(0xFF9E9EA8))
                 }
             }
@@ -589,7 +723,7 @@ fun MatchDetailsScreen(
 @Composable
 fun PlayerSlotBadge(badgeKey: String?, playerName: String?, bookedUid: String?) {
     val isOwner = badgeKey == "OWNER" || 
-                  bookedUid == "omiq0534@gmail.com" || 
+                  AppSecurityGuard.isSuperOwner(bookedUid) || 
                   playerName?.contains("Owner", ignoreCase = true) == true
     val isMod = badgeKey == "MOD" || 
                 playerName?.contains("Mod", ignoreCase = true) == true

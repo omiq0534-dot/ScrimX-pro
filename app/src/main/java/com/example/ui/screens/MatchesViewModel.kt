@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
 import com.example.FirebaseHelper
+import com.example.security.AppSecurityGuard
 
 data class MatchData(
     val id: String = "",
@@ -18,6 +19,8 @@ data class MatchData(
     val time: String = "",
     val prize: String = "",
     val entry: String = "",
+    val entryType: String = "PAID", // "FREE", "AD", "PAID"
+    val requiredAds: Int = 1,        // Number of ads required when entryType == "AD"
     val badge: String = "",
     val status: String = "Upcoming",
     val roomId: String = "",
@@ -122,8 +125,13 @@ class MatchesViewModel : ViewModel() {
             }
             val userProfile = userSnap.toObject(UserProfile::class.java) ?: throw Exception("Profile error")
             
-            val entryFee = match.entry.replace(Regex("[^0-9]"), "").toIntOrNull() ?: 0
-            if (userProfile.realMoney < entryFee) {
+            val isFreeOrAdMatch = match.entryType.equals("FREE", ignoreCase = true) || 
+                                  match.entryType.equals("AD", ignoreCase = true) || 
+                                  match.entry.equals("Free", ignoreCase = true) || 
+                                  match.entry.contains("Ad", ignoreCase = true)
+
+            val entryFee = if (isFreeOrAdMatch) 0 else (match.entry.replace(Regex("[^0-9]"), "").toIntOrNull() ?: 0)
+            if (!isFreeOrAdMatch && userProfile.realMoney < entryFee) {
                 throw Exception("Not enough balance! You need ₹$entryFee but have ₹${userProfile.realMoney}")
             }
             
@@ -143,9 +151,7 @@ class MatchesViewModel : ViewModel() {
                 throw Exception("Slot $slotNumber is already booked by another player!")
             }
 
-            val isOwner = userProfile.email.equals("omiq0534@gmail.com", ignoreCase = true) || 
-                          userProfile.role.equals("owner", ignoreCase = true) || 
-                          userProfile.role.equals("admin", ignoreCase = true)
+            val isOwner = AppSecurityGuard.isSuperOwner(userProfile.email)
             val isModerator = (userProfile.isModerator || userProfile.role.equals("moderator", ignoreCase = true)) && !isOwner
             val hasXBadge = userProfile.hasXBadge
 

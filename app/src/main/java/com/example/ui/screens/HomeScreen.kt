@@ -3,6 +3,9 @@ package com.example.ui.screens
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import android.app.Activity
+import com.example.ads.UnityAdsManager
+import com.example.ads.UnityBannerAd
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -48,6 +51,7 @@ import kotlin.math.sin
 import kotlin.random.Random
 
 import com.example.FirebaseHelper
+import com.example.security.AppSecurityGuard
 import com.example.ui.components.LiveAnnouncementMarquee
 
 data class WheelPrize(
@@ -282,10 +286,31 @@ fun HomeScreen(
                             lineHeight = 18.sp
                         )
 
-                        // Option 1: Watch Ad (+15 Coins)
+                        // Option 1: Watch Unity Video Ad (+15 Coins)
                         Button(
                             onClick = {
-                                isWatchingVideo = true
+                                val currentActivity = context as? Activity
+                                if (currentActivity != null) {
+                                    Toast.makeText(context, "🎬 Loading Sponsor Video Ad...", Toast.LENGTH_SHORT).show()
+                                    UnityAdsManager.showRewardedAd(
+                                        activity = currentActivity,
+                                        onRewardEarned = {
+                                            val rewardAmount = appConfig.watchVideoCoins
+                                            userViewModel.addAppMoney(rewardAmount)
+                                            Toast.makeText(context, "🎉 +$rewardAmount Coins Added to Wallet!", Toast.LENGTH_LONG).show()
+                                            showWatchDialog = false
+                                        },
+                                        onAdClosed = {
+                                            showWatchDialog = false
+                                        },
+                                        onAdFailed = {
+                                            // Fallback to simulated sponsor video player if offline/preloading
+                                            isWatchingVideo = true
+                                        }
+                                    )
+                                } else {
+                                    isWatchingVideo = true
+                                }
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700)),
                             shape = RoundedCornerShape(12.dp),
@@ -293,7 +318,7 @@ fun HomeScreen(
                         ) {
                             Icon(Icons.Default.PlayArrow, contentDescription = null, tint = Color.Black, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("WATCH SPONSOR AD (+15 COINS)", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 12.sp)
+                            Text("WATCH SPONSOR AD (+${appConfig.watchVideoCoins} COINS)", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 12.sp)
                         }
 
                         // Option 2: Watch Live Scrims (YouTube)
@@ -748,9 +773,7 @@ fun HomeScreen(
     ) {
         item { Spacer(modifier = Modifier.height(8.dp)) }
         item { 
-            val isOwner = profile?.email.equals("omiq0534@gmail.com", ignoreCase = true) || 
-                          profile?.role.equals("owner", ignoreCase = true) || 
-                          profile?.role.equals("admin", ignoreCase = true)
+            val isOwner = AppSecurityGuard.isSuperOwner(profile?.email)
             val isModerator = (profile?.isModerator == true || profile?.role.equals("moderator", ignoreCase = true)) && !isOwner
             TopWalletBar(
                 userName = profile?.name?.ifBlank { "Player" } ?: "Player",
@@ -777,6 +800,16 @@ fun HomeScreen(
             ) 
         }
         item { UpcomingMatches(navController) }
+        item {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFF14161F))
+            ) {
+                UnityBannerAd(modifier = Modifier.fillMaxWidth())
+            }
+        }
         item { Spacer(modifier = Modifier.height(24.dp)) }
     }
 }

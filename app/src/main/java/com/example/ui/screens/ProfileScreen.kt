@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.security.AppSecurityGuard
 import com.example.ui.components.XBadge
 import com.example.ui.components.XBadgeSize
 import com.example.ui.components.AdminMasterBadge
@@ -139,9 +140,7 @@ fun ProfileScreen(navController: NavController, userViewModel: UserViewModel = v
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             Spacer(modifier = Modifier.height(4.dp))
-            val isOwner = profile?.email.equals("omiq0534@gmail.com", ignoreCase = true) || 
-                          profile?.role.equals("owner", ignoreCase = true) || 
-                          profile?.role.equals("admin", ignoreCase = true)
+            val isOwner = AppSecurityGuard.isSuperOwner(profile?.email)
             val isModerator = (profile?.isModerator == true || profile?.role.equals("moderator", ignoreCase = true)) && !isOwner
 
             ProfileHeader(

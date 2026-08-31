@@ -35,13 +35,18 @@ import java.util.Date
 import java.util.Locale
 
 import com.example.FirebaseHelper
+import com.example.security.AppSecurityGuard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminManageWalletsScreen(navController: NavController) {
     val db = remember { FirebaseHelper.getFirestore() }
+    val auth = remember { FirebaseHelper.getAuth() }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+
+    val currentEmail = auth?.currentUser?.email ?: ""
+    val isOwner = remember(currentEmail) { AppSecurityGuard.isSuperOwner(currentEmail) }
 
     var selectedTab by remember { mutableStateOf(0) } // 0 = Deposit Requests, 1 = Withdraw Requests, 2 = Manual Edit, 3 = UPI Settings
 
@@ -67,6 +72,23 @@ fun AdminManageWalletsScreen(navController: NavController) {
     // Listen to real-time transactions and users
     LaunchedEffect(Unit) {
         if (db != null) {
+            val uid = auth?.currentUser?.uid
+            if (uid != null) {
+                AppSecurityGuard.verifyServerAdminStatus(db, uid, currentEmail) { owner, mod ->
+                    if (!owner && !mod) {
+                        AppSecurityGuard.logSecurityIncident(
+                            db = db,
+                            auth = auth,
+                            incidentType = "WALLET_ADMIN_BREACH_ATTEMPT",
+                            details = "Unauthorized wallet access attempt by email: $currentEmail"
+                        )
+                        Toast.makeText(context, "Access Denied: Admin privileges required!", Toast.LENGTH_LONG).show()
+                        navController.popBackStack()
+                    }
+                }
+            } else if (!isOwner) {
+                navController.popBackStack()
+            }
             db.collection("transactions").addSnapshotListener { snap, _ ->
                 if (snap != null) {
                     val allTx = snap.documents.mapNotNull { it.toObject(TransactionRecord::class.java)?.copy(id = it.id) }
