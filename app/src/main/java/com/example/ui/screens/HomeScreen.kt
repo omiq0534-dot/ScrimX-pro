@@ -740,14 +740,7 @@ fun HomeScreen(
         }
         item { UpcomingMatches(navController) }
         item {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFF14161F))
-            ) {
-                UnityBannerAd(modifier = Modifier.fillMaxWidth())
-            }
+            UnityBannerAd(modifier = Modifier.fillMaxWidth())
         }
         item { Spacer(modifier = Modifier.height(24.dp)) }
     }

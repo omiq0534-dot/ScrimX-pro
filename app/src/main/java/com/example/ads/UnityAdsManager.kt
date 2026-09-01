@@ -4,9 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,13 +25,13 @@ import com.unity3d.services.banners.UnityBannerSize
 object UnityAdsManager {
     private const val TAG = "UnityAdsManager"
     
-    // Default configured with Owner's Game ID
-    var gameId: String = "6183190"
+    // Default configured with Owner's Game ID & Placements
+    var gameId: String = "6183191"
     var testMode: Boolean = true // Test mode for safe testing (can be toggled in Admin settings)
     
-    var rewardedPlacementId: String = "Rewarded_Android"
-    var interstitialPlacementId: String = "Interstitial_Android"
-    var bannerPlacementId: String = "Banner_Android"
+    var rewardedPlacementId: String = "Rewarded_Android1"
+    var interstitialPlacementId: String = "Interstitial_Android2"
+    var bannerPlacementId: String = "Banner_Android3"
     
     var isInitialized = false
         private set
@@ -49,43 +47,58 @@ object UnityAdsManager {
         db.collection("settings").document("unity_ads").get()
             .addOnSuccessListener { doc ->
                 if (doc != null && doc.exists()) {
-                    val savedGameId = doc.getString("gameId") ?: "6183190"
+                    val savedGameId = doc.getString("gameId") ?: "6183191"
                     val savedTestMode = doc.getBoolean("testMode") ?: true
-                    val savedRewarded = doc.getString("rewardedPlacement") ?: "Rewarded_Android"
-                    val savedInterstitial = doc.getString("interstitialPlacement") ?: "Interstitial_Android"
-                    val savedBanner = doc.getString("bannerPlacement") ?: "Banner_Android"
+                    val savedRewarded = doc.getString("rewardedPlacement") ?: "Rewarded_Android1"
+                    val savedInterstitial = doc.getString("interstitialPlacement") ?: "Interstitial_Android2"
+                    val savedBanner = doc.getString("bannerPlacement") ?: "Banner_Android3"
 
-                    rewardedPlacementId = savedRewarded
-                    interstitialPlacementId = savedInterstitial
-                    bannerPlacementId = savedBanner
+                    // If Firestore has old legacy IDs like rewardedVideo or video, sanitize to our new custom ones
+                    val cleanRewarded = if (savedRewarded == "rewardedVideo" || savedRewarded == "Rewarded_Android") "Rewarded_Android1" else savedRewarded
+                    val cleanInterstitial = if (savedInterstitial == "video" || savedInterstitial == "Interstitial_Android") "Interstitial_Android2" else savedInterstitial
+                    val cleanBanner = if (savedBanner == "banner" || savedBanner == "Banner_Android") "Banner_Android3" else savedBanner
 
-                    initialize(context, customGameId = savedGameId, isTest = savedTestMode)
+                    rewardedPlacementId = cleanRewarded
+                    interstitialPlacementId = cleanInterstitial
+                    bannerPlacementId = cleanBanner
+
+                    initialize(context, customGameId = savedGameId, isTest = savedTestMode, forceReinit = true)
                 } else {
-                    initialize(context, customGameId = "6183190", isTest = true)
+                    rewardedPlacementId = "Rewarded_Android1"
+                    interstitialPlacementId = "Interstitial_Android2"
+                    bannerPlacementId = "Banner_Android3"
+                    initialize(context, customGameId = "6183191", isTest = true, forceReinit = true)
                 }
             }
             .addOnFailureListener {
-                initialize(context, customGameId = "6183190", isTest = true)
+                rewardedPlacementId = "Rewarded_Android1"
+                interstitialPlacementId = "Interstitial_Android2"
+                bannerPlacementId = "Banner_Android3"
+                initialize(context, customGameId = "6183191", isTest = true, forceReinit = true)
             }
     }
 
-    fun initialize(context: Context, customGameId: String = "6183190", isTest: Boolean = true) {
+    fun initialize(
+        context: Context,
+        customGameId: String = gameId,
+        isTest: Boolean = testMode,
+        forceReinit: Boolean = false,
+        onComplete: (() -> Unit)? = null,
+        onFailed: ((String) -> Unit)? = null
+    ) {
         val cleanGameId = customGameId.trim().ifBlank { "6183190" }
+        val idChanged = cleanGameId != gameId
         gameId = cleanGameId
         testMode = isTest
         
-        if (UnityAds.isInitialized) {
+        if (!forceReinit && !idChanged && UnityAds.isInitialized) {
             isInitialized = true
             isInitializing = false
             lastInitErrorMessage = null
-            Log.d(TAG, "Unity Ads already initialized")
+            Log.d(TAG, "Unity Ads already initialized for Game ID: $gameId")
             loadRewardedAd()
             loadInterstitialAd()
-            return
-        }
-
-        if (isInitializing) {
-            Log.d(TAG, "Unity Ads initialization already in progress...")
+            onComplete?.invoke()
             return
         }
 
@@ -99,14 +112,16 @@ object UnityAdsManager {
                     Log.d(TAG, "Unity Ads Initialized Successfully with Game ID: $gameId (TestMode: $testMode)")
                     loadRewardedAd()
                     loadInterstitialAd()
+                    onComplete?.invoke()
                 }
 
                 override fun onInitializationFailed(error: UnityAds.UnityAdsInitializationError?, message: String?) {
                     isInitialized = false
                     isInitializing = false
-                    val errStr = message ?: error?.name ?: "Unknown Unity Ads Config Error"
+                    val errStr = message ?: error?.name ?: "Unity Ads Initialization Error"
                     lastInitErrorMessage = errStr
                     Log.w(TAG, "Unity Ads Initialization Notice: $error - $message")
+                    onFailed?.invoke(errStr)
                 }
             })
         } catch (e: Exception) {
@@ -114,6 +129,7 @@ object UnityAdsManager {
             isInitializing = false
             lastInitErrorMessage = e.message
             Log.w(TAG, "Unity Ads init caught exception: ${e.message}")
+            onFailed?.invoke(e.message ?: "Exception initializing Unity Ads")
         }
     }
 
@@ -227,22 +243,10 @@ object UnityAdsManager {
                 UnityAds.show(activity, placementId, UnityAdsShowOptions(), showListener)
             }
             override fun onUnityAdsFailedToLoad(pId: String, error: UnityAds.UnityAdsLoadError, message: String) {
-                // If load fails, try direct show in case it was preloaded
-                UnityAds.show(activity, placementId, UnityAdsShowOptions(), object : IUnityAdsShowListener {
-                    override fun onUnityAdsShowFailure(placementId: String, error: UnityAds.UnityAdsShowError, message: String) {
-                        isAdShowing = false
-                        onAdFailed(message ?: "No ads available currently. Please try again.")
-                    }
-                    override fun onUnityAdsShowStart(placementId: String) {
-                        showListener.onUnityAdsShowStart(placementId)
-                    }
-                    override fun onUnityAdsShowClick(placementId: String) {
-                        showListener.onUnityAdsShowClick(placementId)
-                    }
-                    override fun onUnityAdsShowComplete(placementId: String, state: UnityAds.UnityAdsShowCompletionState) {
-                        showListener.onUnityAdsShowComplete(placementId, state)
-                    }
-                })
+                isAdShowing = false
+                val detailedErr = if (message.isNotBlank()) message else "Unity Ads Load Error: $error"
+                Log.e(TAG, "Rewarded Ad Load Failed for placement '$placementId': $detailedErr")
+                onAdFailed("$detailedErr (Placement: '$placementId')")
             }
         })
     }
@@ -341,6 +345,7 @@ fun UnityBannerAd(
     modifier: Modifier = Modifier,
     placementId: String = UnityAdsManager.bannerPlacementId
 ) {
+    var isLoaded by remember { mutableStateOf(false) }
     var bannerView by remember { mutableStateOf<BannerView?>(null) }
 
     DisposableEffect(placementId) {
@@ -351,14 +356,11 @@ fun UnityBannerAd(
     }
 
     Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(50.dp)
-            .background(Color(0xFF14161F)),
+        modifier = if (isLoaded) modifier.fillMaxWidth().height(52.dp) else Modifier.size(0.dp),
         contentAlignment = Alignment.Center
     ) {
         AndroidView(
-            modifier = Modifier.fillMaxWidth().height(50.dp),
+            modifier = if (isLoaded) Modifier.fillMaxWidth().height(50.dp) else Modifier.size(0.dp),
             factory = { context ->
                 val activity = context as? Activity
                 if (activity != null && UnityAds.isInitialized) {
@@ -366,6 +368,7 @@ fun UnityBannerAd(
                     view.listener = object : BannerView.IListener {
                         override fun onBannerLoaded(bannerAdView: BannerView?) {
                             Log.d("UnityAds", "Banner loaded successfully")
+                            isLoaded = true
                         }
 
                         override fun onBannerShown(bannerAdView: BannerView?) {
@@ -378,6 +381,7 @@ fun UnityBannerAd(
 
                         override fun onBannerFailedToLoad(bannerAdView: BannerView?, errorInfo: BannerErrorInfo?) {
                             Log.w("UnityAds", "Banner notice: ${errorInfo?.errorMessage}")
+                            isLoaded = false
                         }
 
                         override fun onBannerLeftApplication(bannerAdView: BannerView?) {
@@ -388,6 +392,7 @@ fun UnityBannerAd(
                         view.load()
                     } catch (e: Exception) {
                         Log.w("UnityAds", "Banner load exception: ${e.message}")
+                        isLoaded = false
                     }
                     bannerView = view
                     view

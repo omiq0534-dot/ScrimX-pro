@@ -829,8 +829,8 @@ fun WalletScreen(
                                         userViewModel.addAppMoney(15)
                                         Toast.makeText(context, "🎉 +15 Free Coins Credited to Wallet!", Toast.LENGTH_LONG).show()
                                     },
-                                    onAdFailed = {
-                                        Toast.makeText(context, "Ad loading... Please try again in 5 seconds", Toast.LENGTH_SHORT).show()
+                                    onAdFailed = { err ->
+                                        Toast.makeText(context, "Ad Status: $err", Toast.LENGTH_LONG).show()
                                     }
                                 )
                             }

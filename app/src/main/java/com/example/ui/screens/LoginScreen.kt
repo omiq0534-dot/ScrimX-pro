@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.R
+import com.example.ui.components.LegalDisclaimerDialog
 
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.LaunchedEffect
@@ -49,6 +50,7 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var showForgotPasswordDialog by remember { mutableStateOf(false) }
+    var showLegalDialog by remember { mutableStateOf(false) }
     var resetEmailInput by remember { mutableStateOf("") }
     var resetStatusMessage by remember { mutableStateOf<String?>(null) }
     var isResetLoading by remember { mutableStateOf(false) }
@@ -432,7 +434,37 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            // 📜 Legal & Fair Play Disclaimer Footer Link
+            Row(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable { showLegalDialog = true }
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "By continuing, you accept our ",
+                    fontSize = 10.5.sp,
+                    color = Color(0xFF6B7280)
+                )
+                Text(
+                    text = "Legal Terms & Fair Play Policy",
+                    fontSize = 10.5.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF00E5FF)
+                )
+            }
         }
+    }
+
+    if (showLegalDialog) {
+        LegalDisclaimerDialog(
+            onDismiss = { showLegalDialog = false }
+        )
     }
 
     if (showForgotPasswordDialog) {

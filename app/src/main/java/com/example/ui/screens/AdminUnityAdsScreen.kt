@@ -40,11 +40,11 @@ fun AdminUnityAdsScreen(navController: NavController) {
     val currentUserEmail = auth?.currentUser?.email?.lowercase() ?: ""
     val isOwner = remember(currentUserEmail) { AppSecurityGuard.isSuperOwner(currentUserEmail) }
 
-    var gameId by remember { mutableStateOf("6183190") }
+    var gameId by remember { mutableStateOf("6183191") }
     var testMode by remember { mutableStateOf(true) }
-    var rewardedPlacement by remember { mutableStateOf("Rewarded_Android") }
-    var interstitialPlacement by remember { mutableStateOf("Interstitial_Android") }
-    var bannerPlacement by remember { mutableStateOf("Banner_Android") }
+    var rewardedPlacement by remember { mutableStateOf("Rewarded_Android1") }
+    var interstitialPlacement by remember { mutableStateOf("Interstitial_Android2") }
+    var bannerPlacement by remember { mutableStateOf("Banner_Android3") }
     var rewardCoinsPerAd by remember { mutableStateOf("15") }
     var adsEnabled by remember { mutableStateOf(true) }
 
@@ -62,18 +62,23 @@ fun AdminUnityAdsScreen(navController: NavController) {
         db?.collection("settings")?.document("unity_ads")?.get()?.addOnSuccessListener { doc ->
             isLoading = false
             if (doc != null && doc.exists()) {
-                gameId = doc.getString("gameId") ?: "6183190"
+                gameId = doc.getString("gameId") ?: "6183191"
                 testMode = doc.getBoolean("testMode") ?: true
-                rewardedPlacement = doc.getString("rewardedPlacement") ?: "Rewarded_Android"
-                interstitialPlacement = doc.getString("interstitialPlacement") ?: "Interstitial_Android"
-                bannerPlacement = doc.getString("bannerPlacement") ?: "Banner_Android"
+                val r = doc.getString("rewardedPlacement") ?: "Rewarded_Android1"
+                val i = doc.getString("interstitialPlacement") ?: "Interstitial_Android2"
+                val b = doc.getString("bannerPlacement") ?: "Banner_Android3"
+                
+                rewardedPlacement = if (r == "rewardedVideo" || r == "Rewarded_Android") "Rewarded_Android1" else r
+                interstitialPlacement = if (i == "video" || i == "Interstitial_Android") "Interstitial_Android2" else i
+                bannerPlacement = if (b == "banner" || b == "Banner_Android") "Banner_Android3" else b
+
                 rewardCoinsPerAd = (doc.getLong("rewardCoinsPerAd") ?: 15L).toString()
                 adsEnabled = doc.getBoolean("adsEnabled") ?: true
 
-                UnityAdsManager.initialize(context, customGameId = gameId, isTest = testMode)
                 UnityAdsManager.rewardedPlacementId = rewardedPlacement
                 UnityAdsManager.interstitialPlacementId = interstitialPlacement
                 UnityAdsManager.bannerPlacementId = bannerPlacement
+                UnityAdsManager.initialize(context, customGameId = gameId, isTest = testMode, forceReinit = true)
             }
         }?.addOnFailureListener {
             isLoading = false
@@ -253,13 +258,45 @@ fun AdminUnityAdsScreen(navController: NavController) {
                 }
 
                 // Placement IDs
-                Text("PLACEMENT IDs", color = Color(0xFF8E92A4), fontSize = 11.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("PLACEMENT IDs", color = Color(0xFF8E92A4), fontSize = 11.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Button(
+                            onClick = {
+                                rewardedPlacement = "Rewarded_Android1"
+                                interstitialPlacement = "Interstitial_Android2"
+                                bannerPlacement = "Banner_Android3"
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E2230)),
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                            shape = RoundedCornerShape(6.dp)
+                        ) {
+                            Text("My Units", fontSize = 10.sp, color = Color(0xFF00E5FF))
+                        }
+                        Button(
+                            onClick = {
+                                rewardedPlacement = "Rewarded_Android"
+                                interstitialPlacement = "Interstitial_Android"
+                                bannerPlacement = "Banner_Android"
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E2230)),
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                            shape = RoundedCornerShape(6.dp)
+                        ) {
+                            Text("Standard", fontSize = 10.sp, color = Color(0xFFFFD700))
+                        }
+                    }
+                }
 
                 ClassyDarkField(
                     value = rewardedPlacement,
                     onValueChange = { rewardedPlacement = it },
                     label = "Rewarded Video Placement ID",
-                    placeholder = "Rewarded_Android",
+                    placeholder = "Rewarded_Android or rewardedVideo",
                     leadingIcon = Icons.Default.PlayCircle
                 )
 
@@ -267,7 +304,7 @@ fun AdminUnityAdsScreen(navController: NavController) {
                     value = interstitialPlacement,
                     onValueChange = { interstitialPlacement = it },
                     label = "Interstitial Ad Placement ID",
-                    placeholder = "Interstitial_Android",
+                    placeholder = "Interstitial_Android or video",
                     leadingIcon = Icons.Default.Fullscreen
                 )
 
@@ -275,7 +312,7 @@ fun AdminUnityAdsScreen(navController: NavController) {
                     value = bannerPlacement,
                     onValueChange = { bannerPlacement = it },
                     label = "Banner Ad Placement ID",
-                    placeholder = "Banner_Android",
+                    placeholder = "Banner_Android or banner",
                     leadingIcon = Icons.Default.ViewStream
                 )
 
@@ -287,45 +324,82 @@ fun AdminUnityAdsScreen(navController: NavController) {
                     leadingIcon = Icons.Default.Stars
                 )
 
-                // Save Button
-                Button(
-                    onClick = {
-                        isSaving = true
-                        statusMessage = null
-                        val data = hashMapOf<String, Any>(
-                            "gameId" to gameId.trim(),
-                            "testMode" to testMode,
-                            "rewardedPlacement" to rewardedPlacement.trim(),
-                            "interstitialPlacement" to interstitialPlacement.trim(),
-                            "bannerPlacement" to bannerPlacement.trim(),
-                            "rewardCoinsPerAd" to (rewardCoinsPerAd.toLongOrNull() ?: 15L),
-                            "adsEnabled" to adsEnabled,
-                            "updatedAt" to System.currentTimeMillis()
-                        )
+                // Save Button & Force Re-Init
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Button(
+                        onClick = {
+                            isSaving = true
+                            statusMessage = null
+                            val data = hashMapOf<String, Any>(
+                                "gameId" to gameId.trim(),
+                                "testMode" to testMode,
+                                "rewardedPlacement" to rewardedPlacement.trim(),
+                                "interstitialPlacement" to interstitialPlacement.trim(),
+                                "bannerPlacement" to bannerPlacement.trim(),
+                                "rewardCoinsPerAd" to (rewardCoinsPerAd.toLongOrNull() ?: 15L),
+                                "adsEnabled" to adsEnabled,
+                                "updatedAt" to System.currentTimeMillis()
+                            )
 
-                        db?.collection("settings")?.document("unity_ads")?.set(data)?.addOnSuccessListener {
-                            isSaving = false
-                            UnityAdsManager.initialize(context, customGameId = gameId.trim(), isTest = testMode)
-                            UnityAdsManager.rewardedPlacementId = rewardedPlacement.trim()
-                            UnityAdsManager.interstitialPlacementId = interstitialPlacement.trim()
-                            UnityAdsManager.bannerPlacementId = bannerPlacement.trim()
-                            Toast.makeText(context, "Unity Ads Settings Saved Successfully!", Toast.LENGTH_SHORT).show()
-                        }?.addOnFailureListener { e ->
-                            isSaving = false
-                            Toast.makeText(context, "Failed to save: ${e.message}", Toast.LENGTH_SHORT).show()
+                            db?.collection("settings")?.document("unity_ads")?.set(data)?.addOnSuccessListener {
+                                isSaving = false
+                                UnityAdsManager.rewardedPlacementId = rewardedPlacement.trim()
+                                UnityAdsManager.interstitialPlacementId = interstitialPlacement.trim()
+                                UnityAdsManager.bannerPlacementId = bannerPlacement.trim()
+                                UnityAdsManager.initialize(
+                                    context,
+                                    customGameId = gameId.trim(),
+                                    isTest = testMode,
+                                    forceReinit = true,
+                                    onComplete = {
+                                        Toast.makeText(context, "Unity Ads Saved & Re-Initialized Successfully!", Toast.LENGTH_SHORT).show()
+                                    },
+                                    onFailed = { err ->
+                                        Toast.makeText(context, "Saved, but Unity Init Notice: $err", Toast.LENGTH_LONG).show()
+                                    }
+                                )
+                            }?.addOnFailureListener { e ->
+                                isSaving = false
+                                Toast.makeText(context, "Failed to save: ${e.message}", Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E5FF)),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.weight(1f).height(50.dp),
+                        enabled = !isSaving
+                    ) {
+                        if (isSaving) {
+                            CircularProgressIndicator(color = Color.Black, modifier = Modifier.size(20.dp))
+                        } else {
+                            Icon(Icons.Default.Save, contentDescription = null, tint = Color.Black)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("SAVE CONFIG", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 12.sp)
                         }
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E5FF)),
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.fillMaxWidth().height(50.dp),
-                    enabled = !isSaving
-                ) {
-                    if (isSaving) {
-                        CircularProgressIndicator(color = Color.Black, modifier = Modifier.size(20.dp))
-                    } else {
-                        Icon(Icons.Default.Save, contentDescription = null, tint = Color.Black)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("SAVE UNITY ADS CONFIG", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 13.sp)
+                    }
+
+                    Button(
+                        onClick = {
+                            Toast.makeText(context, "Re-connecting Unity SDK...", Toast.LENGTH_SHORT).show()
+                            UnityAdsManager.initialize(
+                                context,
+                                customGameId = gameId.trim(),
+                                isTest = testMode,
+                                forceReinit = true,
+                                onComplete = {
+                                    Toast.makeText(context, "Connected! Unity Ads Initialized.", Toast.LENGTH_SHORT).show()
+                                },
+                                onFailed = { err ->
+                                    Toast.makeText(context, "Init Failed: $err", Toast.LENGTH_LONG).show()
+                                }
+                            )
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E2230)),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.height(50.dp)
+                    ) {
+                        Icon(Icons.Default.Refresh, contentDescription = null, tint = Color(0xFF00E5FF))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("RE-INIT", color = Color(0xFF00E5FF), fontWeight = FontWeight.Bold, fontSize = 11.sp)
                     }
                 }
 

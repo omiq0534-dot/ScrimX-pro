@@ -529,7 +529,7 @@ fun AdminCreateMatchScreen(navController: NavController) {
                             "FREE" -> "FREE"
                             "AD" -> {
                                 val adsCount = requiredAdsInput.toIntOrNull()?.coerceAtLeast(1) ?: 1
-                                "🎬 Free ($adsCount Ad${if (adsCount > 1) "s" else ""})"
+                                "Free ($adsCount Ad${if (adsCount > 1) "s" else ""})"
                             }
                             else -> "₹${paidEntryFee.trim().removePrefix("₹").ifBlank { "10" }}"
                         }

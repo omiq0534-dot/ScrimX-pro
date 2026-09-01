@@ -216,7 +216,7 @@ fun AdminManageMatchesScreen(
                             "FREE" -> "FREE"
                             "AD" -> {
                                 val adsCount = editRequiredAds.toIntOrNull()?.coerceAtLeast(1) ?: 1
-                                "🎬 Free ($adsCount Ad${if (adsCount > 1) "s" else ""})"
+                                "Free ($adsCount Ad${if (adsCount > 1) "s" else ""})"
                             }
                             else -> "₹${editPaidEntryFee.trim().removePrefix("₹").ifBlank { "10" }}"
                         }

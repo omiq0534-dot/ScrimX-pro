@@ -35,6 +35,7 @@ import com.example.security.AppSecurityGuard
 import com.example.ui.components.XBadge
 import com.example.ui.components.XBadgeSize
 import com.example.ui.components.AdminMasterBadge
+import com.example.ui.components.LegalDisclaimerDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,6 +45,7 @@ fun ProfileScreen(navController: NavController, userViewModel: UserViewModel = v
     var showEditDialog by remember { mutableStateOf(false) }
     var showLogoutDialog by remember { mutableStateOf(false) }
     var showReferDialog by remember { mutableStateOf(false) }
+    var showLegalDialog by remember { mutableStateOf(false) }
     var editNameText by remember { mutableStateOf("") }
     
     if (showLogoutDialog) {
@@ -119,6 +121,12 @@ fun ProfileScreen(navController: NavController, userViewModel: UserViewModel = v
         )
     }
 
+    if (showLegalDialog) {
+        LegalDisclaimerDialog(
+            onDismiss = { showLegalDialog = false }
+        )
+    }
+
     Scaffold(
         containerColor = Color(0xFFFAFAFA),
         topBar = {
@@ -179,6 +187,9 @@ fun ProfileScreen(navController: NavController, userViewModel: UserViewModel = v
                 },
                 onSupportClick = {
                     navController.navigate("customer_support")
+                },
+                onLegalClick = {
+                    showLegalDialog = true
                 },
                 onLogoutClick = {
                     showLogoutDialog = true
@@ -748,6 +759,7 @@ fun SettingsList(
     onReferClick: () -> Unit,
     onEditProfileClick: () -> Unit,
     onSupportClick: () -> Unit,
+    onLegalClick: () -> Unit,
     onLogoutClick: () -> Unit
 ) {
     Column(
@@ -772,6 +784,8 @@ fun SettingsList(
         SettingsRow(icon = Icons.Default.Edit, title = "Edit Profile Name", onClick = onEditProfileClick)
         HorizontalDivider(color = Color(0xFFF3F4F6), modifier = Modifier.padding(horizontal = 12.dp))
         SettingsRow(icon = Icons.Default.HeadsetMic, title = "Customer Support & FAQs", badge = "24/7", onClick = onSupportClick)
+        HorizontalDivider(color = Color(0xFFF3F4F6), modifier = Modifier.padding(horizontal = 12.dp))
+        SettingsRow(icon = Icons.Default.Gavel, title = "Legal Terms & Fair Play", badge = "📜 100% Legal", onClick = onLegalClick)
         HorizontalDivider(color = Color(0xFFF3F4F6), modifier = Modifier.padding(horizontal = 12.dp))
         SettingsRow(icon = Icons.AutoMirrored.Filled.Logout, title = "Log Out", isDestructive = true, onClick = onLogoutClick)
     }
