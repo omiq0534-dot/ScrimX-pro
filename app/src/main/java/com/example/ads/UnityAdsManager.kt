@@ -38,6 +38,9 @@ object UnityAdsManager {
     var isInitialized = false
         private set
 
+    var lastInitErrorMessage: String? = null
+        private set
+
     private var isAdShowing = false
     private var isInitializing = false
 
@@ -67,12 +70,14 @@ object UnityAdsManager {
     }
 
     fun initialize(context: Context, customGameId: String = "6183190", isTest: Boolean = true) {
-        gameId = customGameId.trim().ifBlank { "6183190" }
+        val cleanGameId = customGameId.trim().ifBlank { "6183190" }
+        gameId = cleanGameId
         testMode = isTest
         
         if (UnityAds.isInitialized) {
             isInitialized = true
             isInitializing = false
+            lastInitErrorMessage = null
             Log.d(TAG, "Unity Ads already initialized")
             loadRewardedAd()
             loadInterstitialAd()
@@ -85,21 +90,31 @@ object UnityAdsManager {
         }
 
         isInitializing = true
-        UnityAds.initialize(context.applicationContext, gameId, testMode, object : IUnityAdsInitializationListener {
-            override fun onInitializationComplete() {
-                isInitialized = true
-                isInitializing = false
-                Log.d(TAG, "✅ Unity Ads Initialized Successfully with Game ID: $gameId (TestMode: $testMode)")
-                loadRewardedAd()
-                loadInterstitialAd()
-            }
+        try {
+            UnityAds.initialize(context.applicationContext, gameId, testMode, object : IUnityAdsInitializationListener {
+                override fun onInitializationComplete() {
+                    isInitialized = true
+                    isInitializing = false
+                    lastInitErrorMessage = null
+                    Log.d(TAG, "Unity Ads Initialized Successfully with Game ID: $gameId (TestMode: $testMode)")
+                    loadRewardedAd()
+                    loadInterstitialAd()
+                }
 
-            override fun onInitializationFailed(error: UnityAds.UnityAdsInitializationError?, message: String?) {
-                isInitialized = false
-                isInitializing = false
-                Log.e(TAG, "❌ Unity Ads Initialization Failed: $error - $message")
-            }
-        })
+                override fun onInitializationFailed(error: UnityAds.UnityAdsInitializationError?, message: String?) {
+                    isInitialized = false
+                    isInitializing = false
+                    val errStr = message ?: error?.name ?: "Unknown Unity Ads Config Error"
+                    lastInitErrorMessage = errStr
+                    Log.w(TAG, "Unity Ads Initialization Notice: $error - $message")
+                }
+            })
+        } catch (e: Exception) {
+            isInitialized = false
+            isInitializing = false
+            lastInitErrorMessage = e.message
+            Log.w(TAG, "Unity Ads init caught exception: ${e.message}")
+        }
     }
 
     fun loadRewardedAd(placementId: String = rewardedPlacementId, onLoaded: (() -> Unit)? = null, onFailed: ((String) -> Unit)? = null) {
@@ -346,7 +361,7 @@ fun UnityBannerAd(
             modifier = Modifier.fillMaxWidth().height(50.dp),
             factory = { context ->
                 val activity = context as? Activity
-                if (activity != null) {
+                if (activity != null && UnityAds.isInitialized) {
                     val view = BannerView(activity, placementId, UnityBannerSize(320, 50))
                     view.listener = object : BannerView.IListener {
                         override fun onBannerLoaded(bannerAdView: BannerView?) {
@@ -362,14 +377,18 @@ fun UnityBannerAd(
                         }
 
                         override fun onBannerFailedToLoad(bannerAdView: BannerView?, errorInfo: BannerErrorInfo?) {
-                            Log.e("UnityAds", "Banner failed: ${errorInfo?.errorMessage}")
+                            Log.w("UnityAds", "Banner notice: ${errorInfo?.errorMessage}")
                         }
 
                         override fun onBannerLeftApplication(bannerAdView: BannerView?) {
                             Log.d("UnityAds", "Banner left application")
                         }
                     }
-                    view.load()
+                    try {
+                        view.load()
+                    } catch (e: Exception) {
+                        Log.w("UnityAds", "Banner load exception: ${e.message}")
+                    }
                     bannerView = view
                     view
                 } else {

@@ -5,8 +5,13 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
+import android.util.Base64
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import com.example.ads.UnityAdsManager
 import com.example.ads.UnityBannerAd
 import androidx.compose.foundation.Image
@@ -46,6 +51,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import java.io.ByteArrayOutputStream
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.text.SimpleDateFormat
@@ -58,14 +64,45 @@ data class TransactionRecord(
     val id: String = "",
     val userId: String = "",
     val userEmail: String = "",
-    val type: String = "DEPOSIT", // "DEPOSIT", "WITHDRAW", "ENTRY_FEE", "WINNING", "CONVERT"
+    val type: String = "DEPOSIT", // "DEPOSIT", "WITHDRAW", "ENTRY_FEE", "WINNING", "CONVERT", "REDEEM"
     val amount: Int = 0,
     val status: String = "SUCCESS", // "PENDING", "SUCCESS", "REJECTED"
     val utrOrUpi: String = "",
     val upiId: String = "",
+    val screenshotBase64: String = "",
+    val screenshotUrl: String = "",
     val timestamp: Long = System.currentTimeMillis(),
     val note: String = ""
 )
+
+fun compressUriToBase64(context: Context, uri: Uri): String {
+    return try {
+        val inputStream = context.contentResolver.openInputStream(uri)
+        val bitmap = BitmapFactory.decodeStream(inputStream)
+        inputStream?.close()
+        if (bitmap == null) return ""
+        val maxDimension = 800
+        val scale = Math.min(1.0, maxDimension.toDouble() / Math.max(bitmap.width, bitmap.height))
+        val newWidth = (bitmap.width * scale).toInt().coerceAtLeast(1)
+        val newHeight = (bitmap.height * scale).toInt().coerceAtLeast(1)
+        val resized = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true)
+        val outputStream = ByteArrayOutputStream()
+        resized.compress(Bitmap.CompressFormat.JPEG, 70, outputStream)
+        val bytes = outputStream.toByteArray()
+        Base64.encodeToString(bytes, Base64.NO_WRAP)
+    } catch (e: Exception) {
+        ""
+    }
+}
+
+fun decodeBase64ToBitmap(base64Str: String): Bitmap? {
+    return try {
+        val decodedBytes = Base64.decode(base64Str, Base64.DEFAULT)
+        BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+    } catch (e: Exception) {
+        null
+    }
+}
 
 data class PaymentSettings(
     val upiId: String = "6375615586@fam",
@@ -143,6 +180,7 @@ class WalletViewModel : ViewModel() {
     fun submitDepositRequest(
         amount: Int,
         utr: String,
+        screenshotBase64: String = "",
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
@@ -160,8 +198,9 @@ class WalletViewModel : ViewModel() {
             amount = amount,
             status = "PENDING",
             utrOrUpi = utr.trim(),
+            screenshotBase64 = screenshotBase64,
             timestamp = System.currentTimeMillis(),
-            note = "UPI Deposit Request (Pending Admin Approval)"
+            note = if (screenshotBase64.isNotBlank()) "UPI Deposit Request (Screenshot Attached)" else "UPI Deposit Request (Pending Admin Verification)"
         )
 
         currentDb.collection("transactions").document(recordId).set(record)
@@ -283,7 +322,22 @@ fun WalletScreen(
     var showDepositDialog by remember { mutableStateOf(false) }
     var depositAmount by remember { mutableStateOf("50") }
     var depositUtr by remember { mutableStateOf("") }
+    var depositScreenshotBase64 by remember { mutableStateOf("") }
     var isSubmittingDeposit by remember { mutableStateOf(false) }
+
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            val b64 = compressUriToBase64(context, uri)
+            if (b64.isNotEmpty()) {
+                depositScreenshotBase64 = b64
+                Toast.makeText(context, "✅ Payment Screenshot Attached!", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(context, "Could not load image, please try another file", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
     var showWithdrawDialog by remember { mutableStateOf(false) }
     var withdrawAmount by remember { mutableStateOf("100") }
@@ -447,6 +501,66 @@ fun WalletScreen(
                         label = "12-Digit UTR / Transaction Ref ID",
                         placeholder = "e.g. 423871928374"
                     )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        "Step 3: Attach Payment Screenshot (Recommended for Instant Approval):",
+                        color = Color(0xFFC0C4D6),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    if (depositScreenshotBase64.isNotEmpty()) {
+                        val previewBitmap = remember(depositScreenshotBase64) { decodeBase64ToBitmap(depositScreenshotBase64) }
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color(0xFF0C0D12))
+                                .border(1.dp, Color(0xFF00E676), RoundedCornerShape(12.dp))
+                                .padding(10.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                                    if (previewBitmap != null) {
+                                        Image(
+                                            bitmap = previewBitmap.asImageBitmap(),
+                                            contentDescription = "Receipt Preview",
+                                            modifier = Modifier.size(48.dp).clip(RoundedCornerShape(8.dp))
+                                        )
+                                        Spacer(modifier = Modifier.width(10.dp))
+                                    }
+                                    Column {
+                                        Text("Screenshot Attached ✅", color = Color(0xFF00E676), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                        Text("Ready to submit with deposit", color = Color(0xFF8E92A4), fontSize = 10.sp)
+                                    }
+                                }
+                                IconButton(
+                                    onClick = { depositScreenshotBase64 = "" },
+                                    modifier = Modifier.size(32.dp).background(Color(0xFF262112), CircleShape)
+                                ) {
+                                    Icon(Icons.Default.Close, contentDescription = "Remove", tint = Color.Red, modifier = Modifier.size(16.dp))
+                                }
+                            }
+                        }
+                    } else {
+                        OutlinedButton(
+                            onClick = { photoPickerLauncher.launch("image/*") },
+                            modifier = Modifier.fillMaxWidth().height(44.dp),
+                            shape = RoundedCornerShape(10.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFFFD700)),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFFFD700).copy(alpha = 0.6f))
+                        ) {
+                            Icon(Icons.Default.PhotoCamera, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("UPLOAD PAYMENT SCREENSHOT 📸", fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                        }
+                    }
                 }
             },
             confirmButton = {
@@ -457,10 +571,12 @@ fun WalletScreen(
                         walletViewModel.submitDepositRequest(
                             amount = amt,
                             utr = depositUtr,
+                            screenshotBase64 = depositScreenshotBase64,
                             onSuccess = {
                                 isSubmittingDeposit = false
                                 showDepositDialog = false
                                 depositUtr = ""
+                                depositScreenshotBase64 = ""
                                 Toast.makeText(context, "Deposit Request Submitted! Admin will verify and add cash.", Toast.LENGTH_LONG).show()
                             },
                             onError = { err ->
@@ -582,75 +698,59 @@ fun WalletScreen(
         )
     }
 
-    // 3. Convert Coins Dialog
+    // 3. Coin Perks & Discount Info Dialog
     if (showConvertDialog) {
         val userCoins = profile?.appMoney ?: 0
-        val rate = paymentSettings.coinConversionRate
-        val maxConvertibleCash = userCoins / rate
 
         AlertDialog(
             containerColor = Color(0xFF14161F),
             onDismissRequest = { showConvertDialog = false },
             title = {
-                Text("CONVERT COINS TO REAL CASH 🪙", fontWeight = FontWeight.Black, color = Color.White, fontSize = 16.sp)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("🪙 VIRTUAL GAME COINS", fontWeight = FontWeight.Black, color = Color(0xFFFFD700), fontSize = 16.sp)
+                }
             },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(
-                        "Conversion Rate: $rate Coins = ₹1 Real Cash",
-                        color = Color(0xFFFFD700),
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-
+                Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
+                            .clip(RoundedCornerShape(14.dp))
                             .background(Color(0xFF0C0D12))
+                            .border(1.dp, Color(0xFFFFD700).copy(alpha = 0.4f), RoundedCornerShape(14.dp))
                             .padding(14.dp)
                     ) {
-                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                Text("Your Coins:", color = Color(0xFF8E92A4), fontSize = 12.sp)
-                                Text("$userCoins Coins", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                Text("Your Free Coins:", color = Color(0xFF8E92A4), fontSize = 12.sp)
+                                Text("$userCoins 🪙", color = Color(0xFFFFD700), fontWeight = FontWeight.Black, fontSize = 15.sp)
                             }
-                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                Text("You will get:", color = Color(0xFF8E92A4), fontSize = 12.sp)
-                                Text("₹$maxConvertibleCash Real Cash", color = Color(0xFF00E676), fontWeight = FontWeight.Black, fontSize = 14.sp)
-                            }
+                            Divider(color = Color(0xFF262938))
+                            Text(
+                                "🎁 HOW TO USE YOUR COINS:",
+                                color = Color.White,
+                                fontWeight = FontWeight.Black,
+                                fontSize = 12.sp
+                            )
+                            Text(
+                                "1. 🏷️ Tournament Entry Discounts:\nWhen joining paid matches (e.g. ₹20 Entry), apply your coins to get up to ₹3 - ₹5 OFF! Remaining entry is paid from your deposit balance.\n\n" +
+                                "2. 🎟️ Google Play & Redeem Codes:\nRedeem special gaming gift vouchers and passes when available in the store.\n\n" +
+                                "3. 🛡️ Safe & Fair Policy:\nCoins are virtual skill perks and cannot be directly withdrawn to bank/UPI. Real match prizes are won from tournament gameplay!",
+                                color = Color(0xFFC0C4D6),
+                                fontSize = 11.sp,
+                                lineHeight = 16.sp
+                            )
                         }
-                    }
-
-                    if (userCoins < rate) {
-                        Text("You need at least $rate Coins to convert to cash. Earn more from the Earning Zone!", color = Color(0xFFFF5252), fontSize = 11.sp)
                     }
                 }
             },
             confirmButton = {
                 Button(
-                    onClick = {
-                        walletViewModel.convertCoinsToCash(
-                            coinsToConvert = userCoins,
-                            onSuccess = { cash ->
-                                showConvertDialog = false
-                                Toast.makeText(context, "🎉 Converted to ₹$cash Real Cash!", Toast.LENGTH_SHORT).show()
-                            },
-                            onError = { err ->
-                                Toast.makeText(context, err, Toast.LENGTH_SHORT).show()
-                            }
-                        )
-                    },
+                    onClick = { showConvertDialog = false },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700)),
-                    shape = RoundedCornerShape(10.dp),
-                    enabled = userCoins >= rate
+                    shape = RoundedCornerShape(10.dp)
                 ) {
-                    Text("CONVERT ALL COINS", color = Color.Black, fontWeight = FontWeight.Black)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showConvertDialog = false }) {
-                    Text("Cancel", color = Color(0xFF8E92A4))
+                    Text("GOT IT", color = Color.Black, fontWeight = FontWeight.Black)
                 }
             }
         )
@@ -685,6 +785,7 @@ fun WalletScreen(
             // App Money (Coins) Card
             AppMoneyCardV2(
                 balance = profile?.appMoney ?: 0,
+                onOpenStore = { navController.navigate("store") },
                 onConvert = { showConvertDialog = true }
             )
 
@@ -886,7 +987,7 @@ fun RealMoneyCardV2(balance: Int, onAddCash: () -> Unit, onWithdraw: () -> Unit)
 }
 
 @Composable
-fun AppMoneyCardV2(balance: Int, onConvert: () -> Unit) {
+fun AppMoneyCardV2(balance: Int, onOpenStore: () -> Unit = {}, onConvert: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -927,17 +1028,31 @@ fun AppMoneyCardV2(balance: Int, onConvert: () -> Unit) {
         }
         
         Spacer(modifier = Modifier.height(16.dp))
+
+        // Big Prominent Button: Redeem Google Play & VIP Discount Cards
+        Button(
+            onClick = onOpenStore,
+            modifier = Modifier.fillMaxWidth().height(48.dp),
+            shape = CircleShape,
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700))
+        ) {
+            Icon(Icons.Default.Storefront, contentDescription = null, tint = Color.Black, modifier = Modifier.size(18.dp))
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("OPEN REWARDS & CARDS STORE 🛍️", fontWeight = FontWeight.Black, fontSize = 12.5.sp, color = Color.Black)
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
         
         OutlinedButton(
             onClick = onConvert,
-            modifier = Modifier.fillMaxWidth().height(48.dp),
+            modifier = Modifier.fillMaxWidth().height(44.dp),
             shape = CircleShape,
             colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
-            border = androidx.compose.foundation.BorderStroke(1.5.dp, Color(0xFF2D3244))
+            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF2E3348))
         ) {
-            Icon(Icons.Default.SwapHoriz, contentDescription = null, modifier = Modifier.size(18.dp))
+            Icon(Icons.Default.Info, contentDescription = null, tint = Color(0xFF8E92A4), modifier = Modifier.size(16.dp))
             Spacer(modifier = Modifier.width(6.dp))
-            Text("Convert Coins to Real Cash", fontWeight = FontWeight.Black, fontSize = 13.sp)
+            Text("How to use Coins for Match Discounts", fontWeight = FontWeight.Bold, fontSize = 11.5.sp, color = Color(0xFF8E92A4))
         }
     }
 }

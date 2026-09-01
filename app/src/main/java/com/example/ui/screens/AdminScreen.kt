@@ -311,6 +311,16 @@ fun AdminScreen(navController: NavController) {
                     badge = "💰 Revenue",
                     onClick = { navController.navigate("admin_unity_ads") }
                 )
+
+                // 9. Store Codes & Stock Manager
+                ClassyAdminActionCard(
+                    title = "Store Codes & Stock Manager",
+                    subtitle = "Add real Google Play codes, VIP passes, set item limits & coin prices",
+                    icon = Icons.Default.CardGiftcard,
+                    iconTint = Color(0xFF00E5FF),
+                    badge = "🎁 Rewards",
+                    onClick = { navController.navigate("admin_store_codes") }
+                )
             } else {
                 Box(
                     modifier = Modifier

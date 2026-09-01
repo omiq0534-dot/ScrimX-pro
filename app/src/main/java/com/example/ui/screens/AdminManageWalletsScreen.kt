@@ -3,7 +3,10 @@ package com.example.ui.screens
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.graphics.BitmapFactory
+import android.util.Base64
 import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -21,10 +24,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -867,6 +873,57 @@ fun AdminManageWalletsScreen(navController: NavController) {
 fun DepositRequestCard(tx: TransactionRecord, onApprove: () -> Unit, onReject: () -> Unit) {
     val context = LocalContext.current
     val dateStr = SimpleDateFormat("dd MMM, hh:mm a", Locale.getDefault()).format(Date(tx.timestamp))
+    var showFullScreenshot by remember { mutableStateOf(false) }
+
+    val screenshotBitmap = remember(tx.screenshotBase64) {
+        if (!tx.screenshotBase64.isNullOrBlank()) {
+            try {
+                val decodedBytes = Base64.decode(tx.screenshotBase64, Base64.DEFAULT)
+                BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+            } catch (e: Exception) {
+                null
+            }
+        } else null
+    }
+
+    if (showFullScreenshot && screenshotBitmap != null) {
+        Dialog(onDismissRequest = { showFullScreenshot = false }) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Color(0xFF14161F))
+                    .padding(16.dp)
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Payment Proof Screenshot", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        IconButton(onClick = { showFullScreenshot = false }, modifier = Modifier.size(28.dp)) {
+                            Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.White)
+                        }
+                    }
+                    Image(
+                        bitmap = screenshotBitmap.asImageBitmap(),
+                        contentDescription = "Full Payment Screenshot",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 420.dp)
+                            .clip(RoundedCornerShape(12.dp)),
+                        contentScale = ContentScale.Fit
+                    )
+                    Text("UTR: ${tx.utrOrUpi} | ₹${tx.amount}", color = Color(0xFFFFD700), fontWeight = FontWeight.Black, fontSize = 13.sp)
+                }
+            }
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -902,6 +959,52 @@ fun DepositRequestCard(tx: TransactionRecord, onApprove: () -> Unit, onReject: (
                     modifier = Modifier.size(24.dp)
                 ) {
                     Icon(Icons.Default.ContentCopy, contentDescription = "Copy UTR", tint = Color.White, modifier = Modifier.size(14.dp))
+                }
+            }
+
+            // Payment Proof Screenshot Thumbnail
+            if (screenshotBitmap != null) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color(0xFF0C0D12))
+                        .border(1.dp, Color(0xFF2E3244), RoundedCornerShape(10.dp))
+                        .clickable { showFullScreenshot = true }
+                        .padding(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Image(
+                        bitmap = screenshotBitmap.asImageBitmap(),
+                        contentDescription = "Payment Screenshot Thumbnail",
+                        modifier = Modifier
+                            .size(54.dp)
+                            .clip(RoundedCornerShape(6.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Receipt, contentDescription = null, tint = Color(0xFF00E676), modifier = Modifier.size(14.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Payment Screenshot Attached", color = Color(0xFF00E676), fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                        }
+                        Text("Tap to view full receipt & verify UTR", color = Color(0xFF8E92A4), fontSize = 10.sp)
+                    }
+                    Icon(Icons.Default.Visibility, contentDescription = "View", tint = Color(0xFFFFD700), modifier = Modifier.size(18.dp))
+                }
+            } else {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color(0xFF1B1D26))
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Default.Info, contentDescription = null, tint = Color(0xFF8E92A4), modifier = Modifier.size(12.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("No screenshot attached (Manual UTR Verification)", color = Color(0xFF8E92A4), fontSize = 10.sp)
                 }
             }
 

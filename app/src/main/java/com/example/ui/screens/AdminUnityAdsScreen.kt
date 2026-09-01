@@ -28,6 +28,7 @@ import com.example.FirebaseHelper
 import com.example.ads.UnityAdsManager
 import com.example.ads.UnityBannerAd
 import com.example.security.AppSecurityGuard
+import com.unity3d.ads.UnityAds
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -151,13 +152,54 @@ fun AdminUnityAdsScreen(navController: NavController) {
                     CircularProgressIndicator(color = Color(0xFF00E5FF))
                 }
             } else {
+                // Live Status Badge
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(if (UnityAds.isInitialized) Color(0xFF00E676).copy(alpha = 0.12f) else Color(0xFFFF5252).copy(alpha = 0.12f))
+                        .border(1.dp, if (UnityAds.isInitialized) Color(0xFF00E676).copy(alpha = 0.4f) else Color(0xFFFF5252).copy(alpha = 0.4f), RoundedCornerShape(12.dp))
+                        .padding(14.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        if (UnityAds.isInitialized) Icons.Default.CheckCircle else Icons.Default.Warning,
+                        contentDescription = null,
+                        tint = if (UnityAds.isInitialized) Color(0xFF00E676) else Color(0xFFFF5252),
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Column {
+                        Text(
+                            if (UnityAds.isInitialized) "UNITY ADS SDK ACTIVE" else "UNITY ADS SDK STANDBY",
+                            color = if (UnityAds.isInitialized) Color(0xFF00E676) else Color(0xFFFF5252),
+                            fontWeight = FontWeight.Black,
+                            fontSize = 12.sp
+                        )
+                        val errorInfo = UnityAdsManager.lastInitErrorMessage
+                        Text(
+                            if (UnityAds.isInitialized) "SDK Initialized with Game ID: ${UnityAdsManager.gameId}"
+                            else if (!errorInfo.isNullOrBlank()) "Status: $errorInfo (Make sure to enter Android Game ID, not iOS)"
+                            else "Ready to initialize with Android Game ID",
+                            color = Color.White.copy(alpha = 0.8f),
+                            fontSize = 10.5.sp
+                        )
+                    }
+                }
+
                 // Game ID Input
                 ClassyDarkField(
                     value = gameId,
                     onValueChange = { gameId = it },
                     label = "Unity Game ID (Android)",
-                    placeholder = "6183190",
+                    placeholder = "e.g. 6183190 / 6183191",
                     leadingIcon = Icons.Default.Tag
+                )
+                Text(
+                    "Note: Unity Dashboard me 'Monetization' -> 'Android' ka specific Game ID dalein (iOS Game ID dalne par mismatched platform error aayega).",
+                    color = Color(0xFF00E5FF).copy(alpha = 0.8f),
+                    fontSize = 11.sp,
+                    lineHeight = 15.sp
                 )
 
                 // Master Toggle
@@ -267,7 +309,7 @@ fun AdminUnityAdsScreen(navController: NavController) {
                             UnityAdsManager.rewardedPlacementId = rewardedPlacement.trim()
                             UnityAdsManager.interstitialPlacementId = interstitialPlacement.trim()
                             UnityAdsManager.bannerPlacementId = bannerPlacement.trim()
-                            Toast.makeText(context, "✅ Unity Ads Settings Saved Successfully!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Unity Ads Settings Saved Successfully!", Toast.LENGTH_SHORT).show()
                         }?.addOnFailureListener { e ->
                             isSaving = false
                             Toast.makeText(context, "Failed to save: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -304,7 +346,7 @@ fun AdminUnityAdsScreen(navController: NavController) {
                                     activity = activity,
                                     placementId = rewardedPlacement.trim(),
                                     onRewardEarned = {
-                                        Toast.makeText(context, "🎉 Rewarded Ad Completed! (+Coins credited)", Toast.LENGTH_LONG).show()
+                                        Toast.makeText(context, "Rewarded Ad Completed! (+Coins credited)", Toast.LENGTH_LONG).show()
                                     },
                                     onAdClosed = {
                                         Toast.makeText(context, "Rewarded Ad Closed", Toast.LENGTH_SHORT).show()
@@ -321,7 +363,7 @@ fun AdminUnityAdsScreen(navController: NavController) {
                     ) {
                         Icon(Icons.Default.PlayArrow, contentDescription = null, tint = Color.Black, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("🎬 Rewarded Ad", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                        Text("Rewarded Ad", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                     }
 
                     Button(
@@ -346,7 +388,7 @@ fun AdminUnityAdsScreen(navController: NavController) {
                     ) {
                         Icon(Icons.Default.Fullscreen, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("📺 Interstitial", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                        Text("Interstitial", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                     }
                 }
 

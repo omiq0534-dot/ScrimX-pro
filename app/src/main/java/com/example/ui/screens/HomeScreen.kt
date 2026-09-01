@@ -733,6 +733,11 @@ fun HomeScreen(
                 onWatchClick = { showWatchDialog = true }
             ) 
         }
+        item {
+            HomeRewardsStoreBanner(
+                onClick = { navController.navigate("store") }
+            )
+        }
         item { UpcomingMatches(navController) }
         item {
             Box(
@@ -1032,3 +1037,96 @@ fun UpcomingMatches(navController: NavController, viewModel: MatchesViewModel = 
         }
     }
 }
+
+@Composable
+fun HomeRewardsStoreBanner(onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(
+                Brush.linearGradient(
+                    colors = listOf(Color(0xFF0F172A), Color(0xFF18112E), Color(0xFF0B1020))
+                )
+            )
+            .border(
+                1.dp,
+                Brush.horizontalGradient(
+                    listOf(Color(0xFF00E5FF).copy(alpha = 0.5f), Color(0xFFFFD700).copy(alpha = 0.5f), Color(0xFF00E676).copy(alpha = 0.5f))
+                ),
+                RoundedCornerShape(20.dp)
+            )
+            .clickable { onClick() }
+            .padding(14.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                modifier = Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(
+                            Brush.linearGradient(
+                                listOf(Color(0xFFFFD700), Color(0xFFFF8F00))
+                            )
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(Icons.Default.Storefront, contentDescription = "Store", tint = Color.Black, modifier = Modifier.size(24.dp))
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Column {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            "REWARDS STORE",
+                            color = Color.White,
+                            fontWeight = FontWeight.Black,
+                            fontSize = 13.5.sp,
+                            letterSpacing = 0.5.sp
+                        )
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(Color(0xFF00E676).copy(alpha = 0.2f))
+                                .border(0.8.dp, Color(0xFF00E676), RoundedCornerShape(6.dp))
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text("HOT 🔥", color = Color(0xFF00E676), fontWeight = FontWeight.Black, fontSize = 8.5.sp)
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        "Redeem Google Play Codes & VIP Passes with Coins",
+                        color = Color(0xFFB0B5C9),
+                        fontSize = 11.sp,
+                        lineHeight = 14.sp,
+                        maxLines = 2
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(CircleShape)
+                    .background(Color.White.copy(alpha = 0.08f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(Icons.Default.ChevronRight, contentDescription = "Open Store", tint = Color(0xFFFFD700), modifier = Modifier.size(18.dp))
+            }
+        }
+    }
+}
+

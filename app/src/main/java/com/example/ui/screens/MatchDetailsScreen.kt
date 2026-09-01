@@ -39,10 +39,12 @@ import com.example.ui.components.XBadgeSize
 fun MatchDetailsScreen(
     matchId: String,
     navController: NavController,
-    viewModel: MatchesViewModel = viewModel()
+    viewModel: MatchesViewModel = viewModel(),
+    userViewModel: UserViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val matchState by viewModel.currentMatch.collectAsState()
+    val profile by userViewModel.profile.collectAsState()
     
     var selectedSlot by remember { mutableStateOf<Int?>(null) }
     var isBooking by remember { mutableStateOf(false) }
@@ -54,6 +56,7 @@ fun MatchDetailsScreen(
     var inputInGameUid by remember { mutableStateOf("") }
     var adsWatchedForSlot by remember { mutableIntStateOf(0) }
     var isAdLoading by remember { mutableStateOf(false) }
+    var applyCoinDiscount by remember { mutableStateOf(false) }
     
     LaunchedEffect(matchId) {
         viewModel.listenToMatchDetails(matchId)
@@ -213,6 +216,15 @@ fun MatchDetailsScreen(
                     )
 
                     // Entry Requirements Box
+                    val rawEntryFee = match.entry.replace(Regex("[^0-9]"), "").toIntOrNull() ?: 0
+                    val userCoins = profile?.appMoney ?: 0
+                    val userReal = profile?.realMoney ?: 0
+                    val maxDiscountRupees = if (!isFreeMatch && !isAdMatch && rawEntryFee > 0) minOf(userCoins / 10, rawEntryFee / 2) else 0
+                    val isDiscountActive = applyCoinDiscount && maxDiscountRupees > 0
+                    val discountRupees = if (isDiscountActive) maxDiscountRupees else 0
+                    val discountCoins = if (isDiscountActive) maxDiscountRupees * 10 else 0
+                    val finalPayable = (rawEntryFee - discountRupees).coerceAtLeast(0)
+
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -227,20 +239,92 @@ fun MatchDetailsScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    if (isAdMatch) "Entry Method" else if (isFreeMatch) "Entry Type" else "Entry Deductible",
+                                    if (isAdMatch) "Entry Method" else if (isFreeMatch) "Entry Type" else "Base Entry Fee",
                                     color = Color(0xFFAAAAAA),
                                     fontSize = 12.sp
                                 )
                                 Text(
                                     when {
-                                        isFreeMatch -> "🆓 100% Free"
-                                        isAdMatch -> "🎬 Watch Ad to Join"
-                                        else -> match.entry
+                                        isFreeMatch -> "100% Free"
+                                        isAdMatch -> "Watch Ad to Join"
+                                        else -> "₹$rawEntryFee"
                                     },
                                     color = if (isFreeMatch) Color(0xFF10B981) else Color(0xFFFFD700),
                                     fontWeight = FontWeight.Black,
                                     fontSize = 14.sp
                                 )
+                            }
+
+                            if (!isFreeMatch && !isAdMatch && maxDiscountRupees > 0) {
+                                Divider(color = Color(0xFF2E313D), modifier = Modifier.padding(vertical = 4.dp))
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(if (applyCoinDiscount) Color(0xFF2B2513) else Color(0xFF14151B))
+                                        .border(1.dp, if (applyCoinDiscount) Color(0xFFFFD700) else Color(0xFF2E313D), RoundedCornerShape(8.dp))
+                                        .clickable { applyCoinDiscount = !applyCoinDiscount }
+                                        .padding(horizontal = 10.dp, vertical = 8.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                                        Icon(
+                                            Icons.Default.CardGiftcard,
+                                            contentDescription = null,
+                                            tint = Color(0xFFFFD700),
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Column {
+                                            Text(
+                                                "Apply Coin Discount (-₹$maxDiscountRupees)",
+                                                color = Color.White,
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 12.sp
+                                            )
+                                            Text(
+                                                "Uses ${maxDiscountRupees * 10} Coins (Balance: $userCoins Coins)",
+                                                color = Color(0xFFFFD700),
+                                                fontSize = 10.sp
+                                            )
+                                        }
+                                    }
+                                    Checkbox(
+                                        checked = applyCoinDiscount,
+                                        onCheckedChange = { applyCoinDiscount = it },
+                                        colors = CheckboxDefaults.colors(
+                                            checkedColor = Color(0xFFFFD700),
+                                            checkmarkColor = Color.Black
+                                        )
+                                    )
+                                }
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text("Payable from Tournament Balance:", color = Color(0xFFAAAAAA), fontSize = 11.sp)
+                                    Text("₹$finalPayable", color = Color(0xFF00E676), fontWeight = FontWeight.Black, fontSize = 15.sp)
+                                }
+                            }
+
+                            if (!isFreeMatch && !isAdMatch) {
+                                if (userReal < finalPayable) {
+                                    Text(
+                                        "Low tournament balance (₹$userReal). Please add cash in Wallet to join.",
+                                        color = Color(0xFFFF5252),
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                } else {
+                                    Text(
+                                        "Tournament Balance: ₹$userReal (Sufficient)",
+                                        color = Color(0xFF00E676),
+                                        fontSize = 10.sp
+                                    )
+                                }
                             }
 
                             if (isAdMatch) {
@@ -268,6 +352,14 @@ fun MatchDetailsScreen(
                 val slotToBook = selectedSlot ?: return@AlertDialog
                 val isFormValid = inputPlayerOrTeamName.isNotBlank()
 
+                val rawEntryFee = match.entry.replace(Regex("[^0-9]"), "").toIntOrNull() ?: 0
+                val userCoins = profile?.appMoney ?: 0
+                val maxDiscountRupees = if (!isFreeMatch && !isAdMatch && rawEntryFee > 0) minOf(userCoins / 10, rawEntryFee / 2) else 0
+                val isDiscountActive = applyCoinDiscount && maxDiscountRupees > 0
+                val discountRupees = if (isDiscountActive) maxDiscountRupees else 0
+                val discountCoins = if (isDiscountActive) maxDiscountRupees * 10 else 0
+                val finalPayable = (rawEntryFee - discountRupees).coerceAtLeast(0)
+
                 if (isAdMatch && adsWatchedForSlot < requiredAdsCount) {
                     // Watch Ad Action Button
                     Button(
@@ -288,7 +380,7 @@ fun MatchDetailsScreen(
                                     isAdLoading = false
                                     val newCount = adsWatchedForSlot + 1
                                     adsWatchedForSlot = newCount
-                                    Toast.makeText(context, "✅ Ad $newCount/$requiredAdsCount completed!", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "Ad $newCount/$requiredAdsCount completed!", Toast.LENGTH_SHORT).show()
                                     
                                     if (newCount >= requiredAdsCount) {
                                         // Completed all required ads -> Auto book slot!
@@ -298,6 +390,8 @@ fun MatchDetailsScreen(
                                             slotNumber = slotToBook,
                                             playerNameOrTeam = inputPlayerOrTeamName.trim(),
                                             inGameUid = inputInGameUid.trim(),
+                                            coinsDiscountUsed = 0,
+                                            cashDiscountRupees = 0,
                                             onSuccess = {
                                                 isBooking = false
                                                 showBookingDialog = false
@@ -305,7 +399,7 @@ fun MatchDetailsScreen(
                                                 adsWatchedForSlot = 0
                                                 inputPlayerOrTeamName = ""
                                                 inputInGameUid = ""
-                                                Toast.makeText(context, "🎉 Slot $slotToBook Booked Successfully via Free Ad Entry!", Toast.LENGTH_LONG).show()
+                                                Toast.makeText(context, "Slot $slotToBook Booked Successfully via Free Ad Entry!", Toast.LENGTH_LONG).show()
                                             },
                                             onError = { err ->
                                                 isBooking = false
@@ -317,11 +411,11 @@ fun MatchDetailsScreen(
                                 },
                                 onAdSkipped = {
                                     isAdLoading = false
-                                    Toast.makeText(context, "⚠️ Video skipped! Slot unlock karne ke liye poora ad dekhna zaroori hai.", Toast.LENGTH_LONG).show()
+                                    Toast.makeText(context, "Video skipped! Slot unlock karne ke liye poora ad dekhna zaroori hai.", Toast.LENGTH_LONG).show()
                                 },
                                 onAdFailed = { err ->
                                     isAdLoading = false
-                                    Toast.makeText(context, "⚠️ Ad loading: $err. Please tap again.", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "Ad loading: $err. Please tap again.", Toast.LENGTH_SHORT).show()
                                 }
                             )
                         },
@@ -356,11 +450,14 @@ fun MatchDetailsScreen(
                                 slotNumber = slotToBook,
                                 playerNameOrTeam = inputPlayerOrTeamName.trim(),
                                 inGameUid = inputInGameUid.trim(),
+                                coinsDiscountUsed = discountCoins,
+                                cashDiscountRupees = discountRupees,
                                 onSuccess = {
                                     isBooking = false
                                     showBookingDialog = false
                                     selectedSlot = null
                                     adsWatchedForSlot = 0
+                                    applyCoinDiscount = false
                                     inputPlayerOrTeamName = ""
                                     inputInGameUid = ""
                                     Toast.makeText(context, "Slot $slotToBook Booked Successfully!", Toast.LENGTH_SHORT).show()
@@ -383,7 +480,8 @@ fun MatchDetailsScreen(
                                 when {
                                     isFreeMatch -> "CONFIRM & JOIN (FREE)"
                                     isAdMatch -> "CONFIRM & JOIN (FREE)"
-                                    else -> "CONFIRM & PAY"
+                                    discountRupees > 0 -> "PAY ₹$finalPayable & JOIN (-₹$discountRupees OFF)"
+                                    else -> "CONFIRM & PAY ₹$finalPayable"
                                 },
                                 color = if (isFreeMatch) Color.White else Color.Black,
                                 fontWeight = FontWeight.Black

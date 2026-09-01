@@ -167,6 +167,9 @@ fun ProfileScreen(navController: NavController, userViewModel: UserViewModel = v
                 onAdminClick = {
                     navController.navigate("admin_dashboard")
                 },
+                onStoreClick = {
+                    navController.navigate("store")
+                },
                 onReferClick = {
                     showReferDialog = true
                 },
@@ -741,6 +744,7 @@ fun SettingsList(
     isOwner: Boolean,
     isModerator: Boolean,
     onAdminClick: () -> Unit,
+    onStoreClick: () -> Unit,
     onReferClick: () -> Unit,
     onEditProfileClick: () -> Unit,
     onSupportClick: () -> Unit,
@@ -754,6 +758,8 @@ fun SettingsList(
             .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(24.dp))
             .padding(12.dp)
     ) {
+        SettingsRow(icon = Icons.Default.Storefront, title = "Rewards & Codes Store", badge = "🛍️ Redeem", onClick = onStoreClick)
+        HorizontalDivider(color = Color(0xFFF3F4F6), modifier = Modifier.padding(horizontal = 12.dp))
         if (isOwner) {
             SettingsRow(icon = Icons.Default.Security, title = "Admin HQ Command", badge = "👑 Owner", onClick = onAdminClick)
             HorizontalDivider(color = Color(0xFFF3F4F6), modifier = Modifier.padding(horizontal = 12.dp))

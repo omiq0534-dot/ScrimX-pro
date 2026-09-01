@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import java.util.UUID
 
 import com.example.FirebaseHelper
 import com.example.security.AppSecurityGuard
@@ -90,6 +91,8 @@ class MatchesViewModel : ViewModel() {
         slotNumber: Int,
         playerNameOrTeam: String,
         inGameUid: String,
+        coinsDiscountUsed: Int = 0,
+        cashDiscountRupees: Int = 0,
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
@@ -130,9 +133,16 @@ class MatchesViewModel : ViewModel() {
                                   match.entry.equals("Free", ignoreCase = true) || 
                                   match.entry.contains("Ad", ignoreCase = true)
 
-            val entryFee = if (isFreeOrAdMatch) 0 else (match.entry.replace(Regex("[^0-9]"), "").toIntOrNull() ?: 0)
-            if (!isFreeOrAdMatch && userProfile.realMoney < entryFee) {
-                throw Exception("Not enough balance! You need ₹$entryFee but have ₹${userProfile.realMoney}")
+            val rawEntryFee = if (isFreeOrAdMatch) 0 else (match.entry.replace(Regex("[^0-9]"), "").toIntOrNull() ?: 0)
+            val finalCashEntryFee = if (isFreeOrAdMatch) 0 else (rawEntryFee - cashDiscountRupees).coerceAtLeast(0)
+
+            if (!isFreeOrAdMatch) {
+                if (coinsDiscountUsed > 0 && userProfile.appMoney < coinsDiscountUsed) {
+                    throw Exception("Not enough coins for discount! You have ${userProfile.appMoney} coins.")
+                }
+                if (userProfile.realMoney < finalCashEntryFee) {
+                    throw Exception("Not enough balance! You need ₹$finalCashEntryFee but have ₹${userProfile.realMoney}")
+                }
             }
             
             val currentSlots = match.bookedSlots.toMutableMap()
@@ -177,13 +187,38 @@ class MatchesViewModel : ViewModel() {
                     "slotBadges" to currentBadges
                 )
             )
+
+            val updatedReal = if (isFreeOrAdMatch) userProfile.realMoney else (userProfile.realMoney - finalCashEntryFee).coerceAtLeast(0)
+            val updatedCoins = if (coinsDiscountUsed > 0) (userProfile.appMoney - coinsDiscountUsed).coerceAtLeast(0) else userProfile.appMoney
+
             transaction.update(
                 userRef,
                 mapOf(
-                    "realMoney" to (userProfile.realMoney - entryFee),
+                    "realMoney" to updatedReal,
+                    "appMoney" to updatedCoins,
                     "totalMatches" to (userProfile.totalMatches + 1)
                 )
             )
+
+            if (finalCashEntryFee > 0 || coinsDiscountUsed > 0) {
+                val txId = UUID.randomUUID().toString()
+                val noteStr = if (coinsDiscountUsed > 0) {
+                    "Match Entry: ${match.title} (Slot $slotNumber) [Coupon: ₹$cashDiscountRupees OFF via $coinsDiscountUsed Coins]"
+                } else {
+                    "Match Entry: ${match.title} (Slot $slotNumber)"
+                }
+                val txRecord = mapOf(
+                    "id" to txId,
+                    "userId" to user.uid,
+                    "userEmail" to (user.email ?: ""),
+                    "type" to "ENTRY_FEE",
+                    "amount" to finalCashEntryFee,
+                    "status" to "SUCCESS",
+                    "timestamp" to System.currentTimeMillis(),
+                    "note" to noteStr
+                )
+                transaction.set(currentDb.collection("transactions").document(txId), txRecord)
+            }
             
         }.addOnSuccessListener {
             onSuccess()
