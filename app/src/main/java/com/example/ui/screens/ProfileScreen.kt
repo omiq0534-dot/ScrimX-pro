@@ -195,6 +195,29 @@ fun ProfileScreen(navController: NavController, userViewModel: UserViewModel = v
                     showLogoutDialog = true
                 }
             )
+
+            // App Version & Security Badge
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "SCRIMX ESPORTS • ${AppControlViewModel.CURRENT_APP_VERSION_NAME} (Build ${AppControlViewModel.CURRENT_APP_VERSION_CODE})",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF94A3B8),
+                    letterSpacing = 0.5.sp
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "Fair Play Certified & Secure",
+                    fontSize = 10.sp,
+                    color = Color(0xFFB0BEC5)
+                )
+            }
+
             Spacer(modifier = Modifier.height(100.dp))
         }
     }

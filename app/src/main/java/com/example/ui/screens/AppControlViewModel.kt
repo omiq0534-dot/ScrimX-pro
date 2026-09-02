@@ -30,8 +30,8 @@ data class AppControlConfig(
 
 class AppControlViewModel : ViewModel() {
     companion object {
-        const val CURRENT_APP_VERSION_CODE = 2
-        const val CURRENT_APP_VERSION_NAME = "v1.1.0"
+        const val CURRENT_APP_VERSION_CODE = 3
+        const val CURRENT_APP_VERSION_NAME = "v1.2.0"
         val ADMIN_EMAIL = AppSecurityGuard.MASTER_SUPPORT_EMAIL
     }
 
