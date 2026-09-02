@@ -60,7 +60,9 @@ data class BannedUserData(
     val totalWins: Int = 0,
     val totalKills: Int = 0,
     val realMoney: Int = 0,
-    val hasXBadge: Boolean = false
+    val hasXBadge: Boolean = false,
+    val role: String = "player",
+    val isModerator: Boolean = false
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -90,6 +92,10 @@ fun AdminUserSecurityScreen(navController: NavController) {
     var editWalletInput by remember { mutableStateOf("0") }
     var isSavingStats by remember { mutableStateOf(false) }
 
+    // Delete User / Duplicate Cleanup State
+    var userToDelete by remember { mutableStateOf<BannedUserData?>(null) }
+    var isDeletingUser by remember { mutableStateOf(false) }
+
     fun loadUsers() {
         isLoading = true
         db?.collection("users")?.get()?.addOnSuccessListener { snap ->
@@ -106,6 +112,8 @@ fun AdminUserSecurityScreen(navController: NavController) {
                 val totalKills = doc.getLong("totalKills")?.toInt() ?: 0
                 val realMoney = doc.getLong("realMoney")?.toInt() ?: 0
                 val hasXBadge = doc.getBoolean("hasXBadge") ?: false
+                val role = doc.getString("role") ?: "player"
+                val isModerator = doc.getBoolean("isModerator") ?: false
 
                 BannedUserData(
                     uid = uid,
@@ -119,7 +127,9 @@ fun AdminUserSecurityScreen(navController: NavController) {
                     totalWins = totalWins,
                     totalKills = totalKills,
                     realMoney = realMoney,
-                    hasXBadge = hasXBadge
+                    hasXBadge = hasXBadge,
+                    role = role,
+                    isModerator = isModerator
                 )
             }
             usersList = list
@@ -258,6 +268,22 @@ fun AdminUserSecurityScreen(navController: NavController) {
             Toast.makeText(context, "User ${user.name} unbanned!", Toast.LENGTH_SHORT).show()
             loadUsers()
         }
+    }
+
+    fun deleteUserAccount(user: BannedUserData) {
+        if (db == null) return
+        isDeletingUser = true
+        db.collection("users").document(user.uid).delete()
+            .addOnSuccessListener {
+                isDeletingUser = false
+                userToDelete = null
+                Toast.makeText(context, "Account deleted: ${user.name} (${user.email})", Toast.LENGTH_SHORT).show()
+                loadUsers()
+            }
+            .addOnFailureListener { e ->
+                isDeletingUser = false
+                Toast.makeText(context, "Error deleting user: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
     }
 
     val filteredList = remember(usersList, searchQuery) {
@@ -600,6 +626,23 @@ fun AdminUserSecurityScreen(navController: NavController) {
                                         ) {
                                             Text("BAN", color = Color.White, fontWeight = FontWeight.Black, fontSize = 10.sp)
                                         }
+                                    }
+
+                                    // Delete / Clean Duplicate Account Button
+                                    IconButton(
+                                        onClick = { userToDelete = user },
+                                        modifier = Modifier
+                                            .size(34.dp)
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .background(Color(0xFFEF4444).copy(alpha = 0.15f))
+                                            .border(1.dp, Color(0xFFEF4444).copy(alpha = 0.4f), RoundedCornerShape(8.dp))
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = "Delete Account",
+                                            tint = Color(0xFFFF5252),
+                                            modifier = Modifier.size(16.dp)
+                                        )
                                     }
                                 }
                             }
@@ -1039,6 +1082,79 @@ fun AdminUserSecurityScreen(navController: NavController) {
             },
             dismissButton = {
                 TextButton(onClick = { selectedUserForStats = null }, enabled = !isSavingStats) {
+                    Text("CANCEL", color = Color.Gray)
+                }
+            }
+        )
+    }
+
+    // 🗑️ Confirmation Dialog for Deleting / Cleaning Duplicate User Account
+    userToDelete?.let { target ->
+        AlertDialog(
+            onDismissRequest = { if (!isDeletingUser) userToDelete = null },
+            containerColor = Color(0xFF161922),
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.DeleteForever,
+                        contentDescription = null,
+                        tint = Color(0xFFFF3366),
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        "Delete User Account?",
+                        color = Color.White,
+                        fontWeight = FontWeight.Black,
+                        fontSize = 18.sp
+                    )
+                }
+            },
+            text = {
+                Column {
+                    Text(
+                        "Are you sure you want to delete this user document from the database?",
+                        color = Color(0xFFCBD5E1),
+                        fontSize = 13.sp
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Surface(
+                        color = Color(0xFF0F1117),
+                        shape = RoundedCornerShape(8.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF2A2E3D)),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Text("Player Name: ${target.name}", color = Color(0xFFFFD700), fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text("Email: ${target.email.ifBlank { "No Email" }}", color = Color.White, fontSize = 12.sp)
+                            Text("UID: ${target.uid}", color = Color(0xFF94A3B8), fontSize = 10.sp)
+                            Text("Role: ${target.role}", color = Color(0xFF94A3B8), fontSize = 11.sp)
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(
+                        "⚠️ This is permanent. Use this to delete duplicate IDs or test accounts to fix player counts.",
+                        color = Color(0xFFFF9100),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { deleteUserAccount(target) },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF3366)),
+                    enabled = !isDeletingUser
+                ) {
+                    if (isDeletingUser) {
+                        CircularProgressIndicator(modifier = Modifier.size(16.dp), color = Color.White, strokeWidth = 2.dp)
+                    } else {
+                        Text("DELETE PERMANENTLY", color = Color.White, fontWeight = FontWeight.Black, fontSize = 12.sp)
+                    }
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { userToDelete = null }, enabled = !isDeletingUser) {
                     Text("CANCEL", color = Color.Gray)
                 }
             }

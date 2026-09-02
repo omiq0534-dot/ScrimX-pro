@@ -186,7 +186,18 @@ class WalletViewModel : ViewModel() {
     ) {
         val user = getAuth()?.currentUser ?: return onError("Please login first")
         val currentDb = getDb() ?: return onError("Database not available")
-        if (utr.isBlank() || utr.length < 6) return onError("Please enter valid 12-digit UTR / Ref Number")
+        val cleanUtr = utr.trim().filter { it.isDigit() }
+        
+        // Strict 12-digit UTR validation
+        if (cleanUtr.length != 12) {
+            return onError("Invalid UTR! Exactly 12-digit UTR number is required from your payment receipt.")
+        }
+        
+        // Mandatory Payment Screenshot validation
+        if (screenshotBase64.isBlank()) {
+            return onError("Payment Screenshot is required! Please attach receipt screenshot before submitting.")
+        }
+
         if (amount < _paymentSettings.value.minDeposit) return onError("Minimum deposit is ₹${_paymentSettings.value.minDeposit}")
 
         val recordId = UUID.randomUUID().toString()
@@ -197,10 +208,10 @@ class WalletViewModel : ViewModel() {
             type = "DEPOSIT",
             amount = amount,
             status = "PENDING",
-            utrOrUpi = utr.trim(),
+            utrOrUpi = cleanUtr,
             screenshotBase64 = screenshotBase64,
             timestamp = System.currentTimeMillis(),
-            note = if (screenshotBase64.isNotBlank()) "UPI Deposit Request (Screenshot Attached)" else "UPI Deposit Request (Pending Admin Verification)"
+            note = "UPI Deposit (12-Digit UTR + Screenshot Attached)"
         )
 
         currentDb.collection("transactions").document(recordId).set(record)
@@ -487,27 +498,55 @@ fun WalletScreen(
                     }
 
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        "Step 2: Enter the 12-digit UTR / Ref Number from payment receipt:",
-                        color = Color(0xFFC0C4D6),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "Step 2: Enter 12-Digit UTR Number (Mandatory):",
+                            color = Color(0xFFC0C4D6),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        val utrDigitsCount = depositUtr.filter { it.isDigit() }.length
+                        Text(
+                            "$utrDigitsCount / 12 Digits",
+                            color = if (utrDigitsCount == 12) Color(0xFF00E676) else Color(0xFFFF9800),
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Black
+                        )
+                    }
 
                     ClassyDarkInput(
                         value = depositUtr,
-                        onValueChange = { depositUtr = it },
-                        label = "12-Digit UTR / Transaction Ref ID",
+                        onValueChange = { input ->
+                            // Only allow digits up to 12 characters
+                            val filtered = input.filter { it.isDigit() }
+                            if (filtered.length <= 12) {
+                                depositUtr = filtered
+                            }
+                        },
+                        label = "12-Digit UTR / Ref Number",
                         placeholder = "e.g. 423871928374"
                     )
 
+                    if (depositUtr.isNotEmpty() && depositUtr.length != 12) {
+                        Text(
+                            "⚠️ UTR must be exactly 12 digits (currently ${depositUtr.length} digits)",
+                            color = Color(0xFFFF7043),
+                            fontSize = 10.5.sp,
+                            fontWeight = FontWeight.Medium,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        "Step 3: Attach Payment Screenshot (Recommended for Instant Approval):",
+                        "Step 3: Attach Payment Screenshot (Mandatory):",
                         color = Color(0xFFC0C4D6),
                         fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium,
+                        fontWeight = FontWeight.Bold,
                         modifier = Modifier.fillMaxWidth()
                     )
 
@@ -537,7 +576,7 @@ fun WalletScreen(
                                     }
                                     Column {
                                         Text("Screenshot Attached ✅", color = Color(0xFF00E676), fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                                        Text("Ready to submit with deposit", color = Color(0xFF8E92A4), fontSize = 10.sp)
+                                        Text("Ready for instant admin verification", color = Color(0xFF8E92A4), fontSize = 10.sp)
                                     }
                                 }
                                 IconButton(
@@ -549,24 +588,44 @@ fun WalletScreen(
                             }
                         }
                     } else {
-                        OutlinedButton(
-                            onClick = { photoPickerLauncher.launch("image/*") },
-                            modifier = Modifier.fillMaxWidth().height(44.dp),
-                            shape = RoundedCornerShape(10.dp),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFFFD700)),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFFFD700).copy(alpha = 0.6f))
-                        ) {
-                            Icon(Icons.Default.PhotoCamera, contentDescription = null, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("UPLOAD PAYMENT SCREENSHOT 📸", fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                        Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            OutlinedButton(
+                                onClick = { photoPickerLauncher.launch("image/*") },
+                                modifier = Modifier.fillMaxWidth().height(46.dp),
+                                shape = RoundedCornerShape(10.dp),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFFFD700)),
+                                border = androidx.compose.foundation.BorderStroke(1.5.dp, Color(0xFFFFD700).copy(alpha = 0.7f))
+                            ) {
+                                Icon(Icons.Default.PhotoCamera, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("SELECT PAYMENT SCREENSHOT 📸", fontWeight = FontWeight.Black, fontSize = 11.5.sp)
+                            }
+                            Text(
+                                "⚠️ Screenshot is required to submit deposit request",
+                                color = Color(0xFFFFB74D),
+                                fontSize = 10.5.sp,
+                                fontWeight = FontWeight.Medium
+                            )
                         }
                     }
                 }
             },
             confirmButton = {
+                val isUtrValid = depositUtr.length == 12
+                val isScreenshotAttached = depositScreenshotBase64.isNotBlank()
+                val canSubmit = !isSubmittingDeposit && isUtrValid && isScreenshotAttached
+
                 Button(
                     onClick = {
                         val amt = depositAmount.toIntOrNull() ?: 0
+                        if (depositUtr.length != 12) {
+                            Toast.makeText(context, "Please enter full 12-digit UTR number!", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+                        if (depositScreenshotBase64.isBlank()) {
+                            Toast.makeText(context, "Please upload payment screenshot!", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
                         isSubmittingDeposit = true
                         walletViewModel.submitDepositRequest(
                             amount = amt,
@@ -577,7 +636,7 @@ fun WalletScreen(
                                 showDepositDialog = false
                                 depositUtr = ""
                                 depositScreenshotBase64 = ""
-                                Toast.makeText(context, "Deposit Request Submitted! Admin will verify and add cash.", Toast.LENGTH_LONG).show()
+                                Toast.makeText(context, "✅ Deposit Request Submitted! Admin will verify and add cash.", Toast.LENGTH_LONG).show()
                             },
                             onError = { err ->
                                 isSubmittingDeposit = false
@@ -585,14 +644,18 @@ fun WalletScreen(
                             }
                         )
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700)),
+                    colors = ButtonDefaults.buttonColors(containerColor = if (canSubmit) Color(0xFFFFD700) else Color(0xFF2A2D3C)),
                     shape = RoundedCornerShape(10.dp),
-                    enabled = !isSubmittingDeposit && depositUtr.isNotBlank()
+                    enabled = canSubmit
                 ) {
                     if (isSubmittingDeposit) {
                         CircularProgressIndicator(color = Color.Black, modifier = Modifier.size(18.dp))
                     } else {
-                        Text("SUBMIT DEPOSIT", color = Color.Black, fontWeight = FontWeight.Black)
+                        Text(
+                            "SUBMIT DEPOSIT",
+                            color = if (canSubmit) Color.Black else Color(0xFF75798E),
+                            fontWeight = FontWeight.Black
+                        )
                     }
                 }
             },
@@ -607,6 +670,12 @@ fun WalletScreen(
     // 2. Withdrawal Dialog
     if (showWithdrawDialog) {
         val currentBalance = profile?.realMoney ?: 0
+        val withdrawAmtInt = withdrawAmount.toIntOrNull() ?: 0
+        val isMinSatisfied = withdrawAmtInt >= paymentSettings.minWithdraw
+        val isBalanceSatisfied = currentBalance >= withdrawAmtInt && withdrawAmtInt > 0
+        val isUpiValid = withdrawUpiId.isNotBlank() && withdrawUpiId.contains("@") && withdrawUpiId.length >= 5
+        val canWithdraw = !isSubmittingWithdraw && isMinSatisfied && isBalanceSatisfied && isUpiValid
+
         AlertDialog(
             containerColor = Color(0xFF14161F),
             onDismissRequest = { if (!isSubmittingWithdraw) showWithdrawDialog = false },
@@ -614,7 +683,7 @@ fun WalletScreen(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(Color(0xFF00E676)))
                     Spacer(modifier = Modifier.width(10.dp))
-                    Text("INSTANT WITHDRAWAL", fontWeight = FontWeight.Black, color = Color.White, fontSize = 16.sp)
+                    Text("WITHDRAW WINNINGS", fontWeight = FontWeight.Black, color = Color.White, fontSize = 16.sp)
                 }
             },
             text = {
@@ -631,27 +700,55 @@ fun WalletScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Available Real Balance", color = Color(0xFF75798E), fontSize = 12.sp)
+                            Text("Withdrawable Real Balance", color = Color(0xFF75798E), fontSize = 12.sp)
                             Text("₹$currentBalance", color = Color(0xFF00E676), fontWeight = FontWeight.Black, fontSize = 16.sp)
                         }
                     }
 
                     ClassyDarkInput(
                         value = withdrawAmount,
-                        onValueChange = { withdrawAmount = it },
-                        label = "Withdraw Amount (₹)",
+                        onValueChange = { input ->
+                            val filtered = input.filter { it.isDigit() }
+                            withdrawAmount = filtered
+                        },
+                        label = "Withdrawal Amount (₹)",
                         placeholder = "Min ₹${paymentSettings.minWithdraw}"
                     )
 
+                    if (withdrawAmount.isNotEmpty() && !isMinSatisfied) {
+                        Text(
+                            "⚠️ Minimum withdrawal limit is ₹${paymentSettings.minWithdraw}",
+                            color = Color(0xFFFF9800),
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    } else if (withdrawAmtInt > currentBalance) {
+                        Text(
+                            "⚠️ Insufficient balance! You only have ₹$currentBalance",
+                            color = Color(0xFFFF5252),
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+
                     ClassyDarkInput(
                         value = withdrawUpiId,
-                        onValueChange = { withdrawUpiId = it },
-                        label = "Your UPI ID (GPay/PhonePe)",
-                        placeholder = "e.g. mobile@upi or name@okaxis"
+                        onValueChange = { withdrawUpiId = it.trim() },
+                        label = "Your UPI ID (GPay / PhonePe / Paytm)",
+                        placeholder = "e.g. yourname@okaxis or 9876543210@upi"
                     )
 
+                    if (withdrawUpiId.isNotEmpty() && !isUpiValid) {
+                        Text(
+                            "⚠️ Enter valid UPI ID containing '@' (e.g. mobile@upi)",
+                            color = Color(0xFFFF9800),
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+
                     Text(
-                        "• Minimum withdrawal limit is ₹${paymentSettings.minWithdraw}.\n• Funds will be credited directly to your UPI address.",
+                        "• Minimum withdrawal limit is ₹${paymentSettings.minWithdraw}.\n• Funds will be credited directly to your UPI ID within minutes.",
                         color = Color(0xFF8E92A4),
                         fontSize = 11.sp,
                         lineHeight = 16.sp
@@ -662,6 +759,19 @@ fun WalletScreen(
                 Button(
                     onClick = {
                         val amt = withdrawAmount.toIntOrNull() ?: 0
+                        if (amt < paymentSettings.minWithdraw) {
+                            Toast.makeText(context, "Minimum withdrawal is ₹${paymentSettings.minWithdraw}", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+                        if (amt > currentBalance) {
+                            Toast.makeText(context, "Insufficient balance!", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+                        if (!withdrawUpiId.contains("@")) {
+                            Toast.makeText(context, "Please enter valid UPI ID (e.g. mobile@upi)", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+
                         isSubmittingWithdraw = true
                         walletViewModel.submitWithdrawRequest(
                             amount = amt,
@@ -671,7 +781,7 @@ fun WalletScreen(
                                 isSubmittingWithdraw = false
                                 showWithdrawDialog = false
                                 withdrawUpiId = ""
-                                Toast.makeText(context, "Withdraw Request Placed Successfully!", Toast.LENGTH_LONG).show()
+                                Toast.makeText(context, "✅ Withdrawal Request Placed Successfully!", Toast.LENGTH_LONG).show()
                             },
                             onError = { err ->
                                 isSubmittingWithdraw = false
@@ -679,14 +789,18 @@ fun WalletScreen(
                             }
                         )
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E676)),
+                    colors = ButtonDefaults.buttonColors(containerColor = if (canWithdraw) Color(0xFF00E676) else Color(0xFF232736)),
                     shape = RoundedCornerShape(10.dp),
-                    enabled = !isSubmittingWithdraw && withdrawAmount.isNotBlank() && withdrawUpiId.isNotBlank()
+                    enabled = canWithdraw
                 ) {
                     if (isSubmittingWithdraw) {
                         CircularProgressIndicator(color = Color.Black, modifier = Modifier.size(18.dp))
                     } else {
-                        Text("CONFIRM WITHDRAW", color = Color.Black, fontWeight = FontWeight.Black)
+                        Text(
+                            "REQUEST WITHDRAWAL",
+                            color = if (canWithdraw) Color.Black else Color(0xFF75798E),
+                            fontWeight = FontWeight.Black
+                        )
                     }
                 }
             },

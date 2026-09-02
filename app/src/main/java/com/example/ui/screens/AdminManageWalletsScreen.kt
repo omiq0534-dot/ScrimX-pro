@@ -170,9 +170,9 @@ fun AdminManageWalletsScreen(navController: NavController) {
             ) {
                 listOf(
                     "Deposits (${pendingDeposits.size})",
-                    "Withdraws (${pendingWithdraws.size})",
-                    "Manual",
-                    "UPI Setup"
+                    "Withdrawals (${pendingWithdraws.size})",
+                    "Edit Wallet",
+                    "UPI Gateway"
                 ).forEachIndexed { index, title ->
                     val isSelected = selectedTab == index
                     Box(
@@ -1014,23 +1014,23 @@ fun DepositRequestCard(tx: TransactionRecord, onApprove: () -> Unit, onReject: (
                 Button(
                     onClick = onApprove,
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E676)),
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.weight(1f).height(40.dp)
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.weight(1f).height(44.dp)
                 ) {
-                    Icon(Icons.Default.Check, contentDescription = null, tint = Color.Black, modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("APPROVE", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 11.sp)
+                    Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color.Black, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("APPROVE DEPOSIT", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 12.sp)
                 }
 
                 Button(
                     onClick = onReject,
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5252)),
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.weight(1f).height(40.dp)
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE11D48)),
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.weight(1f).height(44.dp)
                 ) {
-                    Icon(Icons.Default.Close, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("REJECT", color = Color.White, fontWeight = FontWeight.Black, fontSize = 11.sp)
+                    Icon(Icons.Default.Cancel, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("REJECT DEPOSIT", color = Color.White, fontWeight = FontWeight.Black, fontSize = 12.sp)
                 }
             }
         }
@@ -1085,23 +1085,23 @@ fun WithdrawRequestCard(tx: TransactionRecord, onComplete: () -> Unit, onReject:
                 Button(
                     onClick = onComplete,
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E676)),
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.weight(1f).height(40.dp)
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.weight(1f).height(44.dp)
                 ) {
-                    Icon(Icons.Default.Check, contentDescription = null, tint = Color.Black, modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("MARK PAID", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 11.sp)
+                    Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color.Black, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("APPROVE & PAID", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 12.sp)
                 }
 
                 Button(
                     onClick = onReject,
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5252)),
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.weight(1f).height(40.dp)
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE11D48)),
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.weight(1f).height(44.dp)
                 ) {
-                    Icon(Icons.Default.Close, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("REJECT & REFUND", color = Color.White, fontWeight = FontWeight.Black, fontSize = 11.sp)
+                    Icon(Icons.Default.Cancel, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("REJECT & REFUND", color = Color.White, fontWeight = FontWeight.Black, fontSize = 12.sp)
                 }
             }
         }
