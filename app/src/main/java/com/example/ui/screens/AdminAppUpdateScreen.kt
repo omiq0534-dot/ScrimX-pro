@@ -1,6 +1,7 @@
 package com.example.ui.screens
 
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -32,9 +33,9 @@ fun AdminAppUpdateScreen(navController: NavController) {
     val context = LocalContext.current
     val db = remember { FirebaseHelper.getFirestore() }
 
-    // APK Version Update State
+    // APK Version Update State (Current App is Build 3, Version 1.2.1)
     var latestVersionCode by remember { mutableStateOf("3") }
-    var latestVersionName by remember { mutableStateOf("v1.2.0") }
+    var latestVersionName by remember { mutableStateOf("1.2.1") }
     var apkDownloadUrl by remember { mutableStateOf("https://website-scrim-x-pro.vercel.app/") }
     var whatsNewText by remember { mutableStateOf("• Bug fixes & performance improvements\n• Enhanced tournament room speed\n• New instant cashout options") }
     var isForceUpdate by remember { mutableStateOf(false) }
@@ -57,14 +58,22 @@ fun AdminAppUpdateScreen(navController: NavController) {
     var isLoading by remember { mutableStateOf(true) }
     var isSaving by remember { mutableStateOf(false) }
 
-    // Load initial settings
+    // Load initial settings with robust type parsing
     LaunchedEffect(Unit) {
         if (db != null) {
             db.collection("system_config").document("app_control").get()
                 .addOnSuccessListener { doc ->
                     if (doc != null && doc.exists()) {
-                        latestVersionCode = doc.getLong("latestVersionCode")?.toString() ?: "1"
-                        latestVersionName = doc.getString("latestVersionName") ?: "v1.0.0"
+                        val rawCode = doc.get("latestVersionCode") ?: doc.get("versionCode") ?: doc.get("version_code") ?: doc.get("build")
+                        latestVersionCode = when (rawCode) {
+                            is Number -> rawCode.toInt().toString()
+                            is String -> rawCode.trim().ifBlank { "3" }
+                            else -> "3"
+                        }
+
+                        val rawName = doc.getString("latestVersionName") ?: doc.getString("versionName") ?: doc.getString("version")
+                        latestVersionName = rawName?.trim()?.ifBlank { "1.2.1" } ?: "1.2.1"
+
                         apkDownloadUrl = doc.getString("apkDownloadUrl") ?: ""
                         whatsNewText = doc.getString("whatsNew") ?: whatsNewText
                         isForceUpdate = doc.getBoolean("isForceUpdate") ?: false
@@ -99,9 +108,14 @@ fun AdminAppUpdateScreen(navController: NavController) {
             return
         }
         isSaving = true
+        val targetCode = latestVersionCode.toIntOrNull() ?: 3
+        val targetName = latestVersionName.trim().ifBlank { "1.2.1" }
+
         val data = hashMapOf<String, Any>(
-            "latestVersionCode" to (latestVersionCode.toIntOrNull() ?: 1),
-            "latestVersionName" to latestVersionName.trim(),
+            "latestVersionCode" to targetCode,
+            "versionCode" to targetCode,
+            "latestVersionName" to targetName,
+            "versionName" to targetName,
             "apkDownloadUrl" to apkDownloadUrl.trim(),
             "whatsNew" to whatsNewText.trim(),
             "isForceUpdate" to isForceUpdate,
@@ -236,6 +250,121 @@ fun AdminAppUpdateScreen(navController: NavController) {
                     letterSpacing = 1.sp
                 )
 
+                // Diagnostics & Version Status Card
+                val serverCodeInt = latestVersionCode.toIntOrNull() ?: 3
+                val currentAppCode = AppControlViewModel.CURRENT_APP_VERSION_CODE
+                val currentAppName = AppControlViewModel.CURRENT_APP_VERSION_NAME
+                val isOutdatedActive = serverCodeInt > currentAppCode
+
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (isOutdatedActive) Color(0xFF2E1218) else Color(0xFF0E2218)
+                    ),
+                    shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(
+                        1.dp,
+                        if (isOutdatedActive) Color(0xFFFF5252).copy(alpha = 0.5f) else Color(0xFF00E676).copy(alpha = 0.5f)
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier.padding(14.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text(
+                                    "📱 Installed App Version",
+                                    fontSize = 11.sp,
+                                    color = Color(0xFF8E92A4)
+                                )
+                                Text(
+                                    "$currentAppName (Build $currentAppCode)",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                            }
+                            Column(horizontalAlignment = Alignment.End) {
+                                Text(
+                                    "🔥 Firebase Live Setting",
+                                    fontSize = 11.sp,
+                                    color = Color(0xFF8E92A4)
+                                )
+                                Text(
+                                    "$latestVersionName (Build $latestVersionCode)",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF00E5FF)
+                                )
+                            }
+                        }
+
+                        HorizontalDivider(color = Color.White.copy(alpha = 0.1f))
+
+                        Text(
+                            text = when {
+                                serverCodeInt > currentAppCode ->
+                                    "⚠️ UPDATE ACTIVE FOR BUILD $currentAppCode: Firebase build ($serverCodeInt) is HIGHER than app ($currentAppCode). This causes all Build $currentAppCode users to receive an update dialog! Click '⚡ Fix & Sync to Build 3' below to stop this prompt immediately."
+                                serverCodeInt == currentAppCode ->
+                                    "✅ PERFECT SYNC: Current App is Build $currentAppCode. Old users on Build 1 & 2 WILL see update prompt to get v1.2.1. Build $currentAppCode users will NOT see update prompt."
+                                else ->
+                                    "ℹ️ Firebase build code is $serverCodeInt (lower than current app build $currentAppCode). No users are asked to update."
+                            },
+                            fontSize = 12.sp,
+                            lineHeight = 16.sp,
+                            color = if (isOutdatedActive) Color(0xFFFF8A80) else Color(0xFFB9F6CA)
+                        )
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Button(
+                                onClick = {
+                                    latestVersionCode = "3"
+                                    latestVersionName = "1.2.1"
+                                    isForceUpdate = false
+                                    saveConfiguration()
+                                },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00C853)),
+                                shape = RoundedCornerShape(10.dp),
+                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp)
+                            ) {
+                                Text(
+                                    "⚡ Fix & Sync Build 3",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                            }
+
+                            OutlinedButton(
+                                onClick = {
+                                    latestVersionCode = "4"
+                                    latestVersionName = "1.2.2"
+                                },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF00E5FF)),
+                                border = BorderStroke(1.dp, Color(0xFF00E5FF)),
+                                shape = RoundedCornerShape(10.dp),
+                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp)
+                            ) {
+                                Text(
+                                    "🚀 Prep Build 4 Update",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+                }
+
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -252,8 +381,8 @@ fun AdminAppUpdateScreen(navController: NavController) {
                             OutlinedTextField(
                                 value = latestVersionCode,
                                 onValueChange = { latestVersionCode = it },
-                                label = { Text("Version Code (e.g. 2)") },
-                                placeholder = { Text("2") },
+                                label = { Text("Version Code (e.g. 3)") },
+                                placeholder = { Text("3") },
                                 singleLine = true,
                                 modifier = Modifier.weight(1f),
                                 colors = adminTextFieldColors()
@@ -262,7 +391,7 @@ fun AdminAppUpdateScreen(navController: NavController) {
                                 value = latestVersionName,
                                 onValueChange = { latestVersionName = it },
                                 label = { Text("Version Name") },
-                                placeholder = { Text("v2.0") },
+                                placeholder = { Text("1.2.1") },
                                 singleLine = true,
                                 modifier = Modifier.weight(1f),
                                 colors = adminTextFieldColors()

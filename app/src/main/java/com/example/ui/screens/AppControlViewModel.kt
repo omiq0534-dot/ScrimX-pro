@@ -8,8 +8,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 data class AppControlConfig(
-    val latestVersionCode: Int = 1,
-    val latestVersionName: String = "v1.0.0",
+    val latestVersionCode: Int = 3,
+    val latestVersionName: String = "1.2.1",
     val apkDownloadUrl: String = "https://website-scrim-x-pro.vercel.app/",
     val whatsNew: String = "• Regular performance updates\n• Fast tournament rooms",
     val isForceUpdate: Boolean = false,
@@ -31,7 +31,7 @@ data class AppControlConfig(
 class AppControlViewModel : ViewModel() {
     companion object {
         const val CURRENT_APP_VERSION_CODE = 3
-        const val CURRENT_APP_VERSION_NAME = "v1.2.0"
+        const val CURRENT_APP_VERSION_NAME = "1.2.1"
         val ADMIN_EMAIL = AppSecurityGuard.MASTER_SUPPORT_EMAIL
     }
 
@@ -49,9 +49,24 @@ class AppControlViewModel : ViewModel() {
         listener = db.collection("system_config").document("app_control")
             .addSnapshotListener { doc, _ ->
                 if (doc != null && doc.exists()) {
+                    val rawVersionCode = doc.get("latestVersionCode") 
+                        ?: doc.get("versionCode") 
+                        ?: doc.get("version_code") 
+                        ?: doc.get("build")
+                    val parsedVersionCode = when (rawVersionCode) {
+                        is Number -> rawVersionCode.toInt()
+                        is String -> rawVersionCode.trim().toIntOrNull() ?: 3
+                        else -> 3
+                    }
+
+                    val rawVersionName = doc.getString("latestVersionName") 
+                        ?: doc.getString("versionName") 
+                        ?: doc.getString("version")
+                    val parsedVersionName = rawVersionName?.trim()?.ifBlank { "1.2.1" } ?: "1.2.1"
+
                     _config.value = AppControlConfig(
-                        latestVersionCode = doc.getLong("latestVersionCode")?.toInt() ?: 1,
-                        latestVersionName = doc.getString("latestVersionName") ?: "v1.0.0",
+                        latestVersionCode = parsedVersionCode,
+                        latestVersionName = parsedVersionName,
                         apkDownloadUrl = doc.getString("apkDownloadUrl") ?: "",
                         whatsNew = doc.getString("whatsNew") ?: "• Bug fixes & improvements",
                         isForceUpdate = doc.getBoolean("isForceUpdate") ?: false,
