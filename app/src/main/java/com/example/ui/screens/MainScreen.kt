@@ -65,7 +65,9 @@ fun MainScreen(
             role = userProfile?.role
         )
     }
-    val isAppOutdated = appConfig.latestVersionCode > AppControlViewModel.CURRENT_APP_VERSION_CODE
+    val installedCode = remember(context) { AppControlViewModel.getInstalledVersionCode(context) }
+    val installedName = remember(context) { AppControlViewModel.getInstalledVersionName(context) }
+    val isAppOutdated = appConfig.latestVersionCode > installedCode
     var dismissUpdateDialog by remember { mutableStateOf(false) }
 
     // State for in-app Room Credentials Banner & Dialog
@@ -226,6 +228,8 @@ fun MainScreen(
             if (isAppOutdated && !isAdmin && !dismissUpdateDialog) {
                 AppUpdateDialog(
                     config = appConfig,
+                    installedVersionCode = installedCode,
+                    installedVersionName = installedName,
                     onDismiss = { dismissUpdateDialog = true }
                 )
             }

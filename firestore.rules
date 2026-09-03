@@ -63,10 +63,15 @@ service cloud.firestore {
       allow delete: if isOwner();
     }
 
-    // 4. App Remote Config & System Settings
+    // 4. App Remote Config & System Settings (Public read for update checks & maintenance)
+    match /system_config/{configId} {
+      allow read: if true;
+      allow write: if isOwner() || isAdminOrMod();
+    }
+
     match /settings/{settingId} {
       allow read: if true; // Public for maintenance and app update checks
-      allow write: if isOwner();
+      allow write: if isOwner() || isAdminOrMod();
     }
 
     // 5. Support Tickets

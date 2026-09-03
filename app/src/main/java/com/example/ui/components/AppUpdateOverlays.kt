@@ -31,6 +31,8 @@ import com.example.ui.screens.AppControlConfig
 @Composable
 fun AppUpdateDialog(
     config: AppControlConfig,
+    installedVersionCode: Int = com.example.BuildConfig.VERSION_CODE,
+    installedVersionName: String = com.example.BuildConfig.VERSION_NAME,
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
@@ -56,7 +58,7 @@ fun AppUpdateDialog(
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 // Header Icon with pulsing glow
                 Box(
@@ -86,11 +88,55 @@ fun AppUpdateDialog(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        "Version ${config.latestVersionName}",
-                        color = Color(0xFF00E5FF),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 13.sp
+                        "Please update ScrimX to continue playing",
+                        color = Color(0xFF8E92A4),
+                        fontSize = 12.sp,
+                        textAlign = TextAlign.Center
                     )
+                }
+
+                // Version comparison pill
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFF1B1E2D))
+                        .border(1.dp, Color(0xFF2C324B), RoundedCornerShape(12.dp))
+                        .padding(horizontal = 14.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            "YOUR INSTALLED",
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF8E92A4)
+                        )
+                        Text(
+                            "v$installedVersionName (Build $installedVersionCode)",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFFF8A80)
+                        )
+                    }
+
+                    Text("➔", color = Color(0xFF00E5FF), fontSize = 16.sp, fontWeight = FontWeight.Bold)
+
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(
+                            "NEW AVAILABLE",
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF8E92A4)
+                        )
+                        Text(
+                            "v${config.latestVersionName} (Build ${config.latestVersionCode})",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF00E676)
+                        )
+                    }
                 }
 
                 // Changelog Card

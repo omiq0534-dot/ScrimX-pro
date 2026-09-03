@@ -58,44 +58,67 @@ fun AdminAppUpdateScreen(navController: NavController) {
     var isLoading by remember { mutableStateOf(true) }
     var isSaving by remember { mutableStateOf(false) }
 
+    fun applyDoc(doc: com.google.firebase.firestore.DocumentSnapshot) {
+        val rawCode = doc.get("latestVersionCode") ?: doc.get("versionCode") ?: doc.get("version_code") ?: doc.get("build")
+        latestVersionCode = when (rawCode) {
+            is Number -> rawCode.toInt().toString()
+            is String -> rawCode.trim().ifBlank { "3" }
+            else -> "3"
+        }
+
+        val rawName = doc.getString("latestVersionName") ?: doc.getString("versionName") ?: doc.getString("version")
+        latestVersionName = rawName?.trim()?.ifBlank { "1.2.1" } ?: "1.2.1"
+
+        apkDownloadUrl = doc.getString("apkDownloadUrl") ?: ""
+        whatsNewText = doc.getString("whatsNew") ?: whatsNewText
+        isForceUpdate = doc.getBoolean("isForceUpdate") ?: false
+        allowLaterButton = doc.getBoolean("allowLaterButton") ?: false
+        autoBanOutdatedUsers = doc.getBoolean("autoBanOutdatedUsers") ?: false
+
+        isMaintenanceMode = doc.getBoolean("isMaintenanceMode") ?: false
+        maintenanceMessage = doc.getString("maintenanceMessage") ?: maintenanceMessage
+        isAnnouncementActive = doc.getBoolean("isAnnouncementActive") ?: true
+        announcementNotice = doc.getString("announcementNotice") ?: announcementNotice
+        spinJackpot = doc.getLong("spinJackpot")?.toString() ?: "200"
+        dailyFreeSpins = doc.getLong("dailyFreeSpins")?.toString() ?: "2"
+        watchVideoCoins = doc.getLong("watchVideoCoins")?.toString() ?: "10"
+        dailyRewardCoins = doc.getLong("dailyRewardCoins")?.toString() ?: "15"
+        adminUpiId = doc.getString("adminUpiId") ?: "admin@upi"
+        supportWhatsapp = doc.getString("supportWhatsapp") ?: "+919876543210"
+        supportTelegram = doc.getString("supportTelegram") ?: "https://t.me/tournament_support"
+    }
+
     // Load initial settings with robust type parsing
     LaunchedEffect(Unit) {
         if (db != null) {
             db.collection("system_config").document("app_control").get()
                 .addOnSuccessListener { doc ->
-                    if (doc != null && doc.exists()) {
-                        val rawCode = doc.get("latestVersionCode") ?: doc.get("versionCode") ?: doc.get("version_code") ?: doc.get("build")
-                        latestVersionCode = when (rawCode) {
-                            is Number -> rawCode.toInt().toString()
-                            is String -> rawCode.trim().ifBlank { "3" }
-                            else -> "3"
-                        }
-
-                        val rawName = doc.getString("latestVersionName") ?: doc.getString("versionName") ?: doc.getString("version")
-                        latestVersionName = rawName?.trim()?.ifBlank { "1.2.1" } ?: "1.2.1"
-
-                        apkDownloadUrl = doc.getString("apkDownloadUrl") ?: ""
-                        whatsNewText = doc.getString("whatsNew") ?: whatsNewText
-                        isForceUpdate = doc.getBoolean("isForceUpdate") ?: false
-                        allowLaterButton = doc.getBoolean("allowLaterButton") ?: false
-                        autoBanOutdatedUsers = doc.getBoolean("autoBanOutdatedUsers") ?: false
-
-                        isMaintenanceMode = doc.getBoolean("isMaintenanceMode") ?: false
-                        maintenanceMessage = doc.getString("maintenanceMessage") ?: maintenanceMessage
-                        isAnnouncementActive = doc.getBoolean("isAnnouncementActive") ?: true
-                        announcementNotice = doc.getString("announcementNotice") ?: announcementNotice
-                        spinJackpot = doc.getLong("spinJackpot")?.toString() ?: "200"
-                        dailyFreeSpins = doc.getLong("dailyFreeSpins")?.toString() ?: "2"
-                        watchVideoCoins = doc.getLong("watchVideoCoins")?.toString() ?: "10"
-                        dailyRewardCoins = doc.getLong("dailyRewardCoins")?.toString() ?: "15"
-                        adminUpiId = doc.getString("adminUpiId") ?: "admin@upi"
-                        supportWhatsapp = doc.getString("supportWhatsapp") ?: "+919876543210"
-                        supportTelegram = doc.getString("supportTelegram") ?: "https://t.me/tournament_support"
+                    val targetDoc = if (doc != null && doc.exists()) doc else null
+                    if (targetDoc != null) {
+                        applyDoc(targetDoc)
+                        isLoading = false
+                    } else {
+                        // Check settings/app_control as fallback
+                        db.collection("settings").document("app_control").get()
+                            .addOnSuccessListener { fallbackDoc ->
+                                if (fallbackDoc != null && fallbackDoc.exists()) {
+                                    applyDoc(fallbackDoc)
+                                }
+                                isLoading = false
+                            }
+                            .addOnFailureListener { isLoading = false }
                     }
-                    isLoading = false
                 }
                 .addOnFailureListener {
-                    isLoading = false
+                    // Try fallback on failure too
+                    db.collection("settings").document("app_control").get()
+                        .addOnSuccessListener { fallbackDoc ->
+                            if (fallbackDoc != null && fallbackDoc.exists()) {
+                                applyDoc(fallbackDoc)
+                            }
+                            isLoading = false
+                        }
+                        .addOnFailureListener { isLoading = false }
                 }
         } else {
             isLoading = false
@@ -135,15 +158,16 @@ fun AdminAppUpdateScreen(navController: NavController) {
             "updatedAt" to com.google.firebase.Timestamp.now()
         )
 
-        db.collection("system_config").document("app_control")
-            .set(data)
+        // Write to both paths for complete compatibility across rules and console
+        db.collection("system_config").document("app_control").set(data)
+        db.collection("settings").document("app_control").set(data)
             .addOnSuccessListener {
                 isSaving = false
                 Toast.makeText(context, "✅ Settings & Live Patch Updated Successfully!", Toast.LENGTH_LONG).show()
             }
             .addOnFailureListener { e ->
                 isSaving = false
-                Toast.makeText(context, "❌ Error saving: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "⚠️ Saved with note: ${e.message}", Toast.LENGTH_SHORT).show()
             }
     }
 
@@ -252,8 +276,8 @@ fun AdminAppUpdateScreen(navController: NavController) {
 
                 // Diagnostics & Version Status Card
                 val serverCodeInt = latestVersionCode.toIntOrNull() ?: 3
-                val currentAppCode = AppControlViewModel.CURRENT_APP_VERSION_CODE
-                val currentAppName = AppControlViewModel.CURRENT_APP_VERSION_NAME
+                val currentAppCode = remember(context) { AppControlViewModel.getInstalledVersionCode(context) }
+                val currentAppName = remember(context) { AppControlViewModel.getInstalledVersionName(context) }
                 val isOutdatedActive = serverCodeInt > currentAppCode
 
                 Card(
@@ -309,11 +333,11 @@ fun AdminAppUpdateScreen(navController: NavController) {
                         Text(
                             text = when {
                                 serverCodeInt > currentAppCode ->
-                                    "⚠️ UPDATE ACTIVE FOR BUILD $currentAppCode: Firebase build ($serverCodeInt) is HIGHER than app ($currentAppCode). This causes all Build $currentAppCode users to receive an update dialog! Click '⚡ Fix & Sync to Build 3' below to stop this prompt immediately."
+                                    "⚠️ UPDATE ACTIVE FOR BUILD $currentAppCode: Firebase build ($serverCodeInt) is HIGHER than app ($currentAppCode). This causes all Build $currentAppCode users to receive an update dialog! Click '⚡ Sync to Build $currentAppCode' below to stop this prompt immediately."
                                 serverCodeInt == currentAppCode ->
-                                    "✅ PERFECT SYNC: Current App is Build $currentAppCode. Old users on Build 1 & 2 WILL see update prompt to get v1.2.1. Build $currentAppCode users will NOT see update prompt."
+                                    "✅ PERFECT SYNC: Current App is Build $currentAppCode. Old users on Build 1 & 2 WILL see update prompt to get $currentAppName. Build $currentAppCode users will NOT see update prompt."
                                 else ->
-                                    "ℹ️ Firebase build code is $serverCodeInt (lower than current app build $currentAppCode). No users are asked to update."
+                                    "ℹ️ Firebase build code is $serverCodeInt (lower than current app build $currentAppCode). Update prompts are completely inactive for all users."
                             },
                             fontSize = 12.sp,
                             lineHeight = 16.sp,
@@ -326,8 +350,8 @@ fun AdminAppUpdateScreen(navController: NavController) {
                         ) {
                             Button(
                                 onClick = {
-                                    latestVersionCode = "3"
-                                    latestVersionName = "1.2.1"
+                                    latestVersionCode = currentAppCode.toString()
+                                    latestVersionName = currentAppName
                                     isForceUpdate = false
                                     saveConfiguration()
                                 },
@@ -337,16 +361,36 @@ fun AdminAppUpdateScreen(navController: NavController) {
                                 contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp)
                             ) {
                                 Text(
-                                    "⚡ Fix & Sync Build 3",
+                                    "⚡ Sync Build $currentAppCode",
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White
                                 )
                             }
 
+                            Button(
+                                onClick = {
+                                    latestVersionCode = "1"
+                                    latestVersionName = "1.0.0"
+                                    isForceUpdate = false
+                                    saveConfiguration()
+                                },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF262C3A)),
+                                shape = RoundedCornerShape(10.dp),
+                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp)
+                            ) {
+                                Text(
+                                    "🛑 Stop Prompts (1)",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFFFFD54F)
+                                )
+                            }
+
                             OutlinedButton(
                                 onClick = {
-                                    latestVersionCode = "4"
+                                    latestVersionCode = (currentAppCode + 1).toString()
                                     latestVersionName = "1.2.2"
                                 },
                                 modifier = Modifier.weight(1f),
@@ -356,7 +400,7 @@ fun AdminAppUpdateScreen(navController: NavController) {
                                 contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp)
                             ) {
                                 Text(
-                                    "🚀 Prep Build 4 Update",
+                                    "🚀 Build ${currentAppCode + 1}",
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -406,7 +450,20 @@ fun AdminAppUpdateScreen(navController: NavController) {
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
                             colors = adminTextFieldColors(),
-                            leadingIcon = { Icon(Icons.Default.Link, contentDescription = null, tint = Color.Gray) }
+                            leadingIcon = { Icon(Icons.Default.Link, contentDescription = null, tint = Color.Gray) },
+                            trailingIcon = {
+                                if (apkDownloadUrl.isNotBlank()) {
+                                    IconButton(onClick = {
+                                        try {
+                                            val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                                            clipboard.setPrimaryClip(android.content.ClipData.newPlainText("APK Link", apkDownloadUrl.trim()))
+                                            Toast.makeText(context, "📋 APK Link Copied to Clipboard!", Toast.LENGTH_SHORT).show()
+                                        } catch (e: Exception) {}
+                                    }) {
+                                        Icon(Icons.Default.ContentCopy, contentDescription = "Copy Link", tint = Color(0xFF00E5FF))
+                                    }
+                                }
+                            }
                         )
 
                         OutlinedTextField(

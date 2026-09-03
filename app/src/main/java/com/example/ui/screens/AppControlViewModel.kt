@@ -1,15 +1,19 @@
 package com.example.ui.screens
 
+import android.content.Context
+import android.os.Build
 import androidx.lifecycle.ViewModel
+import com.example.BuildConfig
 import com.example.FirebaseHelper
 import com.example.security.AppSecurityGuard
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 data class AppControlConfig(
-    val latestVersionCode: Int = 3,
-    val latestVersionName: String = "1.2.1",
+    val latestVersionCode: Int = BuildConfig.VERSION_CODE,
+    val latestVersionName: String = BuildConfig.VERSION_NAME,
     val apkDownloadUrl: String = "https://website-scrim-x-pro.vercel.app/",
     val whatsNew: String = "• Regular performance updates\n• Fast tournament rooms",
     val isForceUpdate: Boolean = false,
@@ -30,18 +34,78 @@ data class AppControlConfig(
 
 class AppControlViewModel : ViewModel() {
     companion object {
-        const val CURRENT_APP_VERSION_CODE = 3
-        const val CURRENT_APP_VERSION_NAME = "1.2.1"
+        const val CURRENT_APP_VERSION_CODE = BuildConfig.VERSION_CODE
+        const val CURRENT_APP_VERSION_NAME = BuildConfig.VERSION_NAME
         val ADMIN_EMAIL = AppSecurityGuard.MASTER_SUPPORT_EMAIL
+
+        fun getInstalledVersionCode(context: Context): Int {
+            return try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    context.packageManager.getPackageInfo(context.packageName, 0).longVersionCode.toInt()
+                } else {
+                    @Suppress("DEPRECATION")
+                    context.packageManager.getPackageInfo(context.packageName, 0).versionCode
+                }
+            } catch (e: Exception) {
+                BuildConfig.VERSION_CODE
+            }
+        }
+
+        fun getInstalledVersionName(context: Context): String {
+            return try {
+                context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: BuildConfig.VERSION_NAME
+            } catch (e: Exception) {
+                BuildConfig.VERSION_NAME
+            }
+        }
     }
 
     private val _config = MutableStateFlow(AppControlConfig())
     val config: StateFlow<AppControlConfig> = _config
 
     private var listener: ListenerRegistration? = null
+    private var fallbackListener: ListenerRegistration? = null
 
     init {
         listenToSystemConfig()
+    }
+
+    private fun parseConfigDoc(doc: DocumentSnapshot) {
+        val rawVersionCode = doc.get("latestVersionCode") 
+            ?: doc.get("versionCode") 
+            ?: doc.get("version_code") 
+            ?: doc.get("build")
+        val parsedVersionCode = when (rawVersionCode) {
+            is Number -> rawVersionCode.toInt()
+            is String -> rawVersionCode.trim().toIntOrNull() ?: BuildConfig.VERSION_CODE
+            else -> BuildConfig.VERSION_CODE
+        }
+
+        val rawVersionName = doc.getString("latestVersionName") 
+            ?: doc.getString("versionName") 
+            ?: doc.getString("version")
+        val parsedVersionName = rawVersionName?.trim()?.ifBlank { BuildConfig.VERSION_NAME } ?: BuildConfig.VERSION_NAME
+
+        _config.value = AppControlConfig(
+            latestVersionCode = parsedVersionCode,
+            latestVersionName = parsedVersionName,
+            apkDownloadUrl = doc.getString("apkDownloadUrl") ?: "",
+            whatsNew = doc.getString("whatsNew") ?: "• Bug fixes & improvements",
+            isForceUpdate = doc.getBoolean("isForceUpdate") ?: false,
+            allowLaterButton = doc.getBoolean("allowLaterButton") ?: false,
+            autoBanOutdatedUsers = doc.getBoolean("autoBanOutdatedUsers") ?: false,
+            isMaintenanceMode = doc.getBoolean("isMaintenanceMode") ?: false,
+            maintenanceMessage = doc.getString("maintenanceMessage") ?: "Server Maintenance in progress",
+            isAnnouncementActive = doc.getBoolean("isAnnouncementActive") ?: true,
+            announcementNotice = doc.getString("announcementNotice") ?: "",
+            spinJackpot = doc.getLong("spinJackpot")?.toInt() ?: 200,
+            dailyFreeSpins = doc.getLong("dailyFreeSpins")?.toInt() ?: 2,
+            watchVideoCoins = doc.getLong("watchVideoCoins")?.toInt() ?: 10,
+            dailyRewardCoins = doc.getLong("dailyRewardCoins")?.toInt() ?: 15,
+            adminUpiId = doc.getString("adminUpiId") ?: "admin@upi",
+            supportWhatsapp = doc.getString("supportWhatsapp") ?: "+919876543210",
+            supportTelegram = doc.getString("supportTelegram") ?: "https://t.me/tournament_support"
+        )
     }
 
     private fun listenToSystemConfig() {
@@ -49,41 +113,17 @@ class AppControlViewModel : ViewModel() {
         listener = db.collection("system_config").document("app_control")
             .addSnapshotListener { doc, _ ->
                 if (doc != null && doc.exists()) {
-                    val rawVersionCode = doc.get("latestVersionCode") 
-                        ?: doc.get("versionCode") 
-                        ?: doc.get("version_code") 
-                        ?: doc.get("build")
-                    val parsedVersionCode = when (rawVersionCode) {
-                        is Number -> rawVersionCode.toInt()
-                        is String -> rawVersionCode.trim().toIntOrNull() ?: 3
-                        else -> 3
+                    parseConfigDoc(doc)
+                } else {
+                    // Fallback to settings/app_control
+                    if (fallbackListener == null) {
+                        fallbackListener = db.collection("settings").document("app_control")
+                            .addSnapshotListener { fDoc, _ ->
+                                if (fDoc != null && fDoc.exists()) {
+                                    parseConfigDoc(fDoc)
+                                }
+                            }
                     }
-
-                    val rawVersionName = doc.getString("latestVersionName") 
-                        ?: doc.getString("versionName") 
-                        ?: doc.getString("version")
-                    val parsedVersionName = rawVersionName?.trim()?.ifBlank { "1.2.1" } ?: "1.2.1"
-
-                    _config.value = AppControlConfig(
-                        latestVersionCode = parsedVersionCode,
-                        latestVersionName = parsedVersionName,
-                        apkDownloadUrl = doc.getString("apkDownloadUrl") ?: "",
-                        whatsNew = doc.getString("whatsNew") ?: "• Bug fixes & improvements",
-                        isForceUpdate = doc.getBoolean("isForceUpdate") ?: false,
-                        allowLaterButton = doc.getBoolean("allowLaterButton") ?: false,
-                        autoBanOutdatedUsers = doc.getBoolean("autoBanOutdatedUsers") ?: false,
-                        isMaintenanceMode = doc.getBoolean("isMaintenanceMode") ?: false,
-                        maintenanceMessage = doc.getString("maintenanceMessage") ?: "Server Maintenance in progress",
-                        isAnnouncementActive = doc.getBoolean("isAnnouncementActive") ?: true,
-                        announcementNotice = doc.getString("announcementNotice") ?: "",
-                        spinJackpot = doc.getLong("spinJackpot")?.toInt() ?: 200,
-                        dailyFreeSpins = doc.getLong("dailyFreeSpins")?.toInt() ?: 2,
-                        watchVideoCoins = doc.getLong("watchVideoCoins")?.toInt() ?: 10,
-                        dailyRewardCoins = doc.getLong("dailyRewardCoins")?.toInt() ?: 15,
-                        adminUpiId = doc.getString("adminUpiId") ?: "admin@upi",
-                        supportWhatsapp = doc.getString("supportWhatsapp") ?: "+919876543210",
-                        supportTelegram = doc.getString("supportTelegram") ?: "https://t.me/tournament_support"
-                    )
                 }
             }
     }
@@ -91,5 +131,6 @@ class AppControlViewModel : ViewModel() {
     override fun onCleared() {
         super.onCleared()
         listener?.remove()
+        fallbackListener?.remove()
     }
 }
