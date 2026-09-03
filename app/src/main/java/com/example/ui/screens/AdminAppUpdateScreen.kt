@@ -332,21 +332,19 @@ fun AdminAppUpdateScreen(navController: NavController) {
 
                         Text(
                             text = when {
-                                serverCodeInt > currentAppCode ->
-                                    "⚠️ UPDATE ACTIVE FOR BUILD $currentAppCode: Firebase build ($serverCodeInt) is HIGHER than app ($currentAppCode). This causes all Build $currentAppCode users to receive an update dialog! Click '⚡ Sync to Build $currentAppCode' below to stop this prompt immediately."
-                                serverCodeInt == currentAppCode ->
-                                    "✅ PERFECT SYNC: Current App is Build $currentAppCode. Old users on Build 1 & 2 WILL see update prompt to get $currentAppName. Build $currentAppCode users will NOT see update prompt."
+                                serverCodeInt >= currentAppCode ->
+                                    "✅ TARGET BUILD: $serverCodeInt ($latestVersionName). Purane users (Build 1 & Build 2) ko Build 3 ka update prompt dikhega. Jo user naya Build 3 install kar chuke hain unhe koi popup nahi aayega."
                                 else ->
-                                    "ℹ️ Firebase build code is $serverCodeInt (lower than current app build $currentAppCode). Update prompts are completely inactive for all users."
+                                    "ℹ️ Update prompts band hain. Kisi bhi user ko koi popup nahi aayega."
                             },
                             fontSize = 12.sp,
                             lineHeight = 16.sp,
-                            color = if (isOutdatedActive) Color(0xFFFF8A80) else Color(0xFFB9F6CA)
+                            color = Color(0xFF00E5FF)
                         )
 
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             Button(
                                 onClick = {
@@ -358,11 +356,11 @@ fun AdminAppUpdateScreen(navController: NavController) {
                                 modifier = Modifier.weight(1f),
                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00C853)),
                                 shape = RoundedCornerShape(10.dp),
-                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp)
+                                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 8.dp)
                             ) {
                                 Text(
-                                    "⚡ Sync Build $currentAppCode",
-                                    fontSize = 11.sp,
+                                    "⚡ Push Update: Build $currentAppCode",
+                                    fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White
                                 )
@@ -378,31 +376,13 @@ fun AdminAppUpdateScreen(navController: NavController) {
                                 modifier = Modifier.weight(1f),
                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF262C3A)),
                                 shape = RoundedCornerShape(10.dp),
-                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp)
+                                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 8.dp)
                             ) {
                                 Text(
-                                    "🛑 Stop Prompts (1)",
-                                    fontSize = 11.sp,
+                                    "🛑 Turn Off Updates",
+                                    fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color(0xFFFFD54F)
-                                )
-                            }
-
-                            OutlinedButton(
-                                onClick = {
-                                    latestVersionCode = (currentAppCode + 1).toString()
-                                    latestVersionName = "1.2.2"
-                                },
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF00E5FF)),
-                                border = BorderStroke(1.dp, Color(0xFF00E5FF)),
-                                shape = RoundedCornerShape(10.dp),
-                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp)
-                            ) {
-                                Text(
-                                    "🚀 Build ${currentAppCode + 1}",
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold
                                 )
                             }
                         }

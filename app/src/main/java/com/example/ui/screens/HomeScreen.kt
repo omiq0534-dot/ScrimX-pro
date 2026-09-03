@@ -797,13 +797,13 @@ fun TopWalletBar(
                     Text(
                         if (isOwner) "👑 SUPREME OWNER" 
                         else if (isModerator) "🛡️ MODERATOR" 
-                        else if (hasXBadge) "VIP PRO GAMER" 
+                        else if (hasXBadge) "⚡ PRO [X] CONTENDER" 
                         else "GAMER",
                         fontSize = 9.5.sp,
                         fontWeight = FontWeight.Black,
                         color = if (isOwner) Color(0xFFFFD700) 
                                 else if (isModerator) Color(0xFF818CF8) 
-                                else if (hasXBadge) Color(0xFFFF1744) 
+                                else if (hasXBadge) Color(0xFFFF2A6D) 
                                 else Color(0xFF8E92A4),
                         letterSpacing = 0.5.sp,
                         maxLines = 1,

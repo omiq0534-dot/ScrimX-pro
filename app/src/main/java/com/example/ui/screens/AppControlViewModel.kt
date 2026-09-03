@@ -86,9 +86,34 @@ class AppControlViewModel : ViewModel() {
             ?: doc.getString("version")
         val parsedVersionName = rawVersionName?.trim()?.ifBlank { BuildConfig.VERSION_NAME } ?: BuildConfig.VERSION_NAME
 
+        // Clamp to current compiled release if server code was accidentally set to a non-existent build
+        val safeVersionCode = if (parsedVersionCode > BuildConfig.VERSION_CODE) {
+            // Auto-heal Firestore in background so ghost build (like Build 4) is reset to current Build 3
+            try {
+                val db = FirebaseHelper.getFirestore()
+                if (db != null) {
+                    val fixMap = mapOf(
+                        "latestVersionCode" to BuildConfig.VERSION_CODE,
+                        "latestVersionName" to BuildConfig.VERSION_NAME
+                    )
+                    db.collection("system_config").document("app_control").update(fixMap)
+                    db.collection("settings").document("app_control").update(fixMap)
+                }
+            } catch (e: Exception) {}
+            BuildConfig.VERSION_CODE
+        } else {
+            parsedVersionCode
+        }
+
+        val safeVersionName = if (parsedVersionCode > BuildConfig.VERSION_CODE) {
+            BuildConfig.VERSION_NAME
+        } else {
+            parsedVersionName
+        }
+
         _config.value = AppControlConfig(
-            latestVersionCode = parsedVersionCode,
-            latestVersionName = parsedVersionName,
+            latestVersionCode = safeVersionCode,
+            latestVersionName = safeVersionName,
             apkDownloadUrl = doc.getString("apkDownloadUrl") ?: "",
             whatsNew = doc.getString("whatsNew") ?: "• Bug fixes & improvements",
             isForceUpdate = doc.getBoolean("isForceUpdate") ?: false,

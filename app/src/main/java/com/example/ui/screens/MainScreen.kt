@@ -67,7 +67,9 @@ fun MainScreen(
     }
     val installedCode = remember(context) { AppControlViewModel.getInstalledVersionCode(context) }
     val installedName = remember(context) { AppControlViewModel.getInstalledVersionName(context) }
-    val isAppOutdated = appConfig.latestVersionCode > installedCode
+    // Only users with an old build (Build 1 or Build 2) will be prompted to update.
+    // Users who are already on Build 3 (or higher) will NEVER see the update dialog.
+    val isAppOutdated = installedCode < appConfig.latestVersionCode && installedCode < com.example.BuildConfig.VERSION_CODE
     var dismissUpdateDialog by remember { mutableStateOf(false) }
 
     // State for in-app Room Credentials Banner & Dialog

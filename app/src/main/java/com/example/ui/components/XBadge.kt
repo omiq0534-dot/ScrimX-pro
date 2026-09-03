@@ -140,11 +140,11 @@ fun GemstoneBadge(
     // Outer Bezel Rim Palette
     val rimColors = when (style) {
         BadgeGemStyle.RUBY_PRO_X -> listOf(
-            Color(0xFFFFF7C2), // Sparkling Gold
-            Color(0xFFFFD700), // Pure 24K Gold
-            Color(0xFFFF9100), // Amber Flare
-            Color(0xFFFF1744), // Crimson
-            Color(0xFF6B000B)  // Shadow Rim
+            Color(0xFFFFFDF0), // Platinum Light Top
+            Color(0xFFFFDF79), // 24K Champagne Gold
+            Color(0xFFFFB300), // Amber Gold
+            Color(0xFFFF1744), // Ruby Reflection
+            Color(0xFF5A2A00)  // Deep Bronze Shadow Rim
         )
         BadgeGemStyle.OWNER_CROWN -> listOf(
             Color(0xFFFFFFFF), // Platinum White
@@ -162,43 +162,6 @@ fun GemstoneBadge(
         )
     }
 
-    // Facet Palette
-    val topFacetColor = when (style) {
-        BadgeGemStyle.RUBY_PRO_X -> Color(0xFFFF80AB).copy(alpha = 0.65f)
-        BadgeGemStyle.OWNER_CROWN -> Color(0xFFFF80AB).copy(alpha = 0.75f)
-        BadgeGemStyle.MOD_SHIELD -> Color(0xFFA5B4FC).copy(alpha = 0.65f)
-    }
-
-    val leftFacetColor = when (style) {
-        BadgeGemStyle.RUBY_PRO_X -> Color(0xFFFF4081).copy(alpha = 0.45f)
-        BadgeGemStyle.OWNER_CROWN -> Color(0xFFFF4081).copy(alpha = 0.5f)
-        BadgeGemStyle.MOD_SHIELD -> Color(0xFF818CF8).copy(alpha = 0.45f)
-    }
-
-    val bottomFacetColor = when (style) {
-        BadgeGemStyle.RUBY_PRO_X -> Color(0xFF330005).copy(alpha = 0.75f)
-        BadgeGemStyle.OWNER_CROWN -> Color(0xFF280004).copy(alpha = 0.8f)
-        BadgeGemStyle.MOD_SHIELD -> Color(0xFF0F172A).copy(alpha = 0.75f)
-    }
-
-    val tableCenterColors = when (style) {
-        BadgeGemStyle.RUBY_PRO_X -> listOf(
-            Color(0xFFFF1744), // Bright Ruby Center
-            Color(0xFFD50000), // Deep Scarlet
-            Color(0xFF70000C)  // Dark Mineral Base
-        )
-        BadgeGemStyle.OWNER_CROWN -> listOf(
-            Color(0xFFFF2A55), // Imperial Crimson
-            Color(0xFFB71C1C), // Royal Dark Scarlet
-            Color(0xFF4D0008)  // Blood Diamond Shadow
-        )
-        BadgeGemStyle.MOD_SHIELD -> listOf(
-            Color(0xFF6366F1), // Royal Amethyst
-            Color(0xFF4338CA), // Deep Indigo
-            Color(0xFF1E1B4B)  // Midnight Sapphire
-        )
-    }
-
     Box(
         modifier = modifier
             .scale(pulseScale)
@@ -211,167 +174,431 @@ fun GemstoneBadge(
             },
         contentAlignment = Alignment.Center
     ) {
-        // High-Precision 3D Faceted Crystal Canvas
+        // High-Precision 3D Faceted Crystal Canvas with Authentic Ruby Diamond Physics
         Canvas(modifier = Modifier.fillMaxSize()) {
             val cW = this.size.width
             val cH = this.size.height
-            val cut = cW * 0.26f
+            val cx = cW * 0.5f
+            val cy = cH * 0.5f
 
-            // 1. Outer Gem Bezel (Octagon)
-            val outerPath = Path().apply {
-                moveTo(cut, 0f)
-                lineTo(cW - cut, 0f)
-                lineTo(cW, cut)
-                lineTo(cW, cH - cut)
-                lineTo(cW - cut, cH)
-                lineTo(cut, cH)
-                lineTo(0f, cH - cut)
-                lineTo(0f, cut)
+            // ====================================================================
+            // 0. RADIENT AURA GLOW (Intense Luminous Gemstone Corona)
+            // ====================================================================
+            if (style == BadgeGemStyle.RUBY_PRO_X || style == BadgeGemStyle.OWNER_CROWN) {
+                // Wide ambient fiery bloom
+                drawCircle(
+                    brush = Brush.radialGradient(
+                        colors = listOf(
+                            Color(0xFFFF1744).copy(alpha = 0.52f * pulseScale),
+                            Color(0xFFFF003C).copy(alpha = 0.35f * pulseScale),
+                            Color(0xFFD50000).copy(alpha = 0.18f),
+                            Color.Transparent
+                        ),
+                        center = Offset(cx, cy),
+                        radius = cW * 0.52f
+                    ),
+                    radius = cW * 0.52f,
+                    center = Offset(cx, cy)
+                )
+                // Core hot optical flare
+                drawCircle(
+                    brush = Brush.radialGradient(
+                        colors = listOf(
+                            Color(0xFFFF5277).copy(alpha = 0.35f * pulseScale),
+                            Color.Transparent
+                        ),
+                        center = Offset(cx, cy),
+                        radius = cW * 0.38f
+                    ),
+                    radius = cW * 0.38f,
+                    center = Offset(cx, cy)
+                )
+            } else {
+                drawCircle(
+                    brush = Brush.radialGradient(
+                        colors = listOf(
+                            Color(0xFF6366F1).copy(alpha = 0.50f * pulseScale),
+                            Color(0xFF00E5FF).copy(alpha = 0.25f * pulseScale),
+                            Color.Transparent
+                        ),
+                        center = Offset(cx, cy),
+                        radius = cW * 0.50f
+                    ),
+                    radius = cW * 0.50f,
+                    center = Offset(cx, cy)
+                )
+            }
+
+            // ====================================================================
+            // 1. OUTER GOLD & PLATINUM BEZEL (Octagon Jewellery Setting)
+            // ====================================================================
+            val pad = cW * 0.06f
+            val minX = pad
+            val minY = pad
+            val maxX = cW - pad
+            val maxY = cH - pad
+            val gW = maxX - minX
+            val gH = maxY - minY
+            val cut = gW * 0.26f
+
+            val outerBezelPath = Path().apply {
+                moveTo(minX + cut, minY)
+                lineTo(maxX - cut, minY)
+                lineTo(maxX, minY + cut)
+                lineTo(maxX, maxY - cut)
+                lineTo(maxX - cut, maxY)
+                lineTo(minX + cut, maxY)
+                lineTo(minX, maxY - cut)
+                lineTo(minX, minY + cut)
                 close()
             }
 
-            // Draw Metallic Rim
+            // Draw Beveled Metallic Setting
             drawPath(
-                path = outerPath,
+                path = outerBezelPath,
                 brush = Brush.linearGradient(
                     colors = rimColors,
-                    start = Offset(0f, 0f),
-                    end = Offset(cW, cH)
+                    start = Offset(minX, minY),
+                    end = Offset(maxX, maxY)
                 ),
                 style = Fill
             )
 
-            // Inner Crystal Body
-            val rimPad = cW * 0.07f
-            val rimCut = (cW - (rimPad * 2f)) * 0.26f
-            val gemPath = Path().apply {
-                moveTo(rimPad + rimCut, rimPad)
-                lineTo(cW - rimPad - rimCut, rimPad)
-                lineTo(cW - rimPad, rimPad + rimCut)
-                lineTo(cW - rimPad, cH - rimPad - rimCut)
-                lineTo(cW - rimPad - rimCut, cH - rimPad)
-                lineTo(rimPad + rimCut, cH - rimPad)
-                lineTo(rimPad, cH - rimPad - rimCut)
-                lineTo(rimPad, rimPad + rimCut)
+            // Inner Shadow Edge for the Bezel Rim
+            drawPath(
+                path = outerBezelPath,
+                color = Color.Black.copy(alpha = 0.45f),
+                style = Stroke(width = 1.2f)
+            )
+
+            // ====================================================================
+            // 2. INNER CRYSTAL BODY (Brilliant-Cut Faceted Ruby Mineral)
+            // ====================================================================
+            val rimPad = gW * 0.065f
+            val rMinX = minX + rimPad
+            val rMinY = minY + rimPad
+            val rMaxX = maxX - rimPad
+            val rMaxY = maxY - rimPad
+            val rCut = (rMaxX - rMinX) * 0.26f
+
+            val gemGirdlePath = Path().apply {
+                moveTo(rMinX + rCut, rMinY)
+                lineTo(rMaxX - rCut, rMinY)
+                lineTo(rMaxX, rMinY + rCut)
+                lineTo(rMaxX, rMaxY - rCut)
+                lineTo(rMaxX - rCut, rMaxY)
+                lineTo(rMinX + rCut, rMaxY)
+                lineTo(rMinX, rMaxY - rCut)
+                lineTo(rMinX, rMinY + rCut)
                 close()
             }
 
-            // CRITICAL: Clip EVERYTHING inside the crystal body so NO light or line ever spills outside!
-            clipPath(gemPath) {
-                // A. Base Crystal Depth
+            // Clip ALL internal crystal optics strictly to the gem body
+            clipPath(gemGirdlePath) {
+                // A. Base Crystal Pavilion Depth (Deep Pigeon Blood Ruby)
+                val crystalBaseColors = when (style) {
+                    BadgeGemStyle.RUBY_PRO_X -> listOf(
+                        Color(0xFFFF2A6D), // Hot electric ruby flare
+                        Color(0xFFFF0844), // Vivid radiant crimson
+                        Color(0xFFB30021), // Pure deep royal ruby
+                        Color(0xFF5A0010), // Velvet burgundy
+                        Color(0xFF1E0005)  // Deepest optical absorption
+                    )
+                    BadgeGemStyle.OWNER_CROWN -> listOf(
+                        Color(0xFFFF3366),
+                        Color(0xFFD50000),
+                        Color(0xFF800012),
+                        Color(0xFF280004)
+                    )
+                    BadgeGemStyle.MOD_SHIELD -> listOf(
+                        Color(0xFF818CF8),
+                        Color(0xFF4F46E5),
+                        Color(0xFF312E81),
+                        Color(0xFF0F172A)
+                    )
+                }
+
                 drawPath(
-                    path = gemPath,
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            Color(0xFFFF3366),
-                            Color(0xFFD50000),
-                            Color(0xFF59000A)
-                        )
+                    path = gemGirdlePath,
+                    brush = Brush.radialGradient(
+                        colors = crystalBaseColors,
+                        center = Offset(cx - (gW * 0.08f), cy - (gH * 0.10f)),
+                        radius = gW * 0.70f
                     ),
                     style = Fill
                 )
 
-                // B. Faceted Crown Bevels (3D Geometric Diamond Cut)
-                val tablePad = cW * 0.22f
-                val tableCut = (cW - (tablePad * 2f)) * 0.26f
+                // ================================================================
+                // B. BRILLIANT-CUT CROWN FACETS (3D Glass Geometric Refraction)
+                // ================================================================
+                val tablePad = gW * 0.22f
+                val tMinX = minX + tablePad
+                val tMinY = minY + tablePad
+                val tMaxX = maxX - tablePad
+                val tMaxY = maxY - tablePad
+                val tCut = (tMaxX - tMinX) * 0.26f
 
-                // Top Facet (High Glass Reflection)
-                val topFacet = Path().apply {
-                    moveTo(rimPad + rimCut, rimPad)
-                    lineTo(cW - rimPad - rimCut, rimPad)
-                    lineTo(cW - tablePad - tableCut, tablePad)
-                    lineTo(tablePad + tableCut, tablePad)
-                    close()
+                // 8 Girdle Outer Vertices
+                val g1 = Offset(rMinX + rCut, rMinY)
+                val g2 = Offset(rMaxX - rCut, rMinY)
+                val g3 = Offset(rMaxX, rMinY + rCut)
+                val g4 = Offset(rMaxX, rMaxY - rCut)
+                val g5 = Offset(rMaxX - rCut, rMaxY)
+                val g6 = Offset(rMinX + rCut, rMaxY)
+                val g7 = Offset(rMinX, rMaxY - rCut)
+                val g8 = Offset(rMinX, rMinY + rCut)
+
+                // 8 Table Inner Vertices
+                val t1 = Offset(tMinX + tCut, tMinY)
+                val t2 = Offset(tMaxX - tCut, tMinY)
+                val t3 = Offset(tMaxX, tMinY + tCut)
+                val t4 = Offset(tMaxX, tMaxY - tCut)
+                val t5 = Offset(tMaxX - tCut, tMaxY)
+                val t6 = Offset(tMinX + tCut, tMaxY)
+                val t7 = Offset(tMinX, tMaxY - tCut)
+                val t8 = Offset(tMinX, tMinY + tCut)
+
+                // Helper to draw a facet polygon
+                fun drawFacet(p1: Offset, p2: Offset, p3: Offset, p4: Offset, color: Color) {
+                    val p = Path().apply {
+                        moveTo(p1.x, p1.y)
+                        lineTo(p2.x, p2.y)
+                        lineTo(p3.x, p3.y)
+                        lineTo(p4.x, p4.y)
+                        close()
+                    }
+                    drawPath(path = p, color = color, style = Fill)
                 }
-                drawPath(path = topFacet, color = topFacetColor, style = Fill)
 
-                // Left Facet (Ambient Light Sheen)
-                val leftFacet = Path().apply {
-                    moveTo(rimPad, rimPad + rimCut)
-                    lineTo(rimPad + rimCut, rimPad)
-                    lineTo(tablePad + tableCut, tablePad)
-                    lineTo(tablePad, tablePad + tableCut)
-                    lineTo(tablePad, cH - tablePad - tableCut)
-                    lineTo(rimPad, cH - rimPad - rimCut)
-                    close()
-                }
-                drawPath(path = leftFacet, color = leftFacetColor, style = Fill)
+                // 1. Top Crown Facet (Receives direct ambient glass reflection)
+                drawFacet(g1, g2, t2, t1, Color(0xFFFFB3C6).copy(alpha = 0.65f))
+                // 2. Top-Right Facet (Specular angled light)
+                drawFacet(g2, g3, t3, t2, Color(0xFFFF6B8B).copy(alpha = 0.50f))
+                // 3. Right Facet (Mid-tone ruby)
+                drawFacet(g3, g4, t4, t3, Color(0xFF48000A).copy(alpha = 0.55f))
+                // 4. Bottom-Right Facet (Deep internal absorption shadow)
+                drawFacet(g4, g5, t5, t4, Color(0xFF140003).copy(alpha = 0.88f))
+                // 5. Bottom Facet (Dark pavilion shadow)
+                drawFacet(g5, g6, t6, t5, Color(0xFF250006).copy(alpha = 0.82f))
+                // 6. Bottom-Left Facet (Refracted ruby bounce)
+                drawFacet(g6, g7, t7, t6, Color(0xFF6B0014).copy(alpha = 0.60f))
+                // 7. Left Facet (Ambient crimson sheen)
+                drawFacet(g7, g8, t8, t7, Color(0xFFFF3366).copy(alpha = 0.42f))
+                // 8. Top-Left Facet (Primary glass flare facet)
+                drawFacet(g8, g1, t1, t8, Color(0xFFFFD6E4).copy(alpha = 0.72f))
 
-                // Right Facet (Mid-Shade Refraction)
-                val rightFacet = Path().apply {
-                    moveTo(cW - rimPad - rimCut, rimPad)
-                    lineTo(cW - rimPad, rimPad + rimCut)
-                    lineTo(cW - rimPad, cH - rimPad - rimCut)
-                    lineTo(cW - tablePad, cH - tablePad - tableCut)
-                    lineTo(cW - tablePad, tablePad + tableCut)
-                    lineTo(cW - tablePad - tableCut, tablePad)
-                    close()
-                }
-                drawPath(path = rightFacet, color = Color.Black.copy(alpha = 0.35f), style = Fill)
+                // Fine diamond cut crease lines across all facet junctions
+                val creaseColor = Color.White.copy(alpha = 0.38f)
+                val creaseStroke = Stroke(width = 0.95f)
+                drawLine(creaseColor, g1, t1, strokeWidth = creaseStroke.width)
+                drawLine(creaseColor, g2, t2, strokeWidth = creaseStroke.width)
+                drawLine(creaseColor, g3, t3, strokeWidth = creaseStroke.width)
+                drawLine(creaseColor, g4, t4, strokeWidth = creaseStroke.width)
+                drawLine(creaseColor, g5, t5, strokeWidth = creaseStroke.width)
+                drawLine(creaseColor, g6, t6, strokeWidth = creaseStroke.width)
+                drawLine(creaseColor, g7, t7, strokeWidth = creaseStroke.width)
+                drawLine(creaseColor, g8, t8, strokeWidth = creaseStroke.width)
 
-                // Bottom Facet (Deep Shadow Refraction)
-                val bottomFacet = Path().apply {
-                    moveTo(tablePad + tableCut, cH - tablePad)
-                    lineTo(cW - tablePad - tableCut, cH - tablePad)
-                    lineTo(cW - rimPad - rimCut, cH - rimPad)
-                    lineTo(rimPad + rimCut, cH - rimPad)
-                    close()
-                }
-                drawPath(path = bottomFacet, color = bottomFacetColor, style = Fill)
-
-                // C. Flat Center Table (The Heart of the Crystal)
+                // ================================================================
+                // C. FLAT CENTER TABLE (The Polished Mirror Face of the Crystal)
+                // ================================================================
                 val tablePath = Path().apply {
-                    moveTo(tablePad + tableCut, tablePad)
-                    lineTo(cW - tablePad - tableCut, tablePad)
-                    lineTo(cW - tablePad, tablePad + tableCut)
-                    lineTo(cW - tablePad, cH - tablePad - tableCut)
-                    lineTo(cW - tablePad - tableCut, cH - tablePad)
-                    lineTo(tablePad + tableCut, cH - tablePad)
-                    lineTo(tablePad, cH - tablePad - tableCut)
-                    lineTo(tablePad, tablePad + tableCut)
+                    moveTo(t1.x, t1.y)
+                    lineTo(t2.x, t2.y)
+                    lineTo(t3.x, t3.y)
+                    lineTo(t4.x, t4.y)
+                    lineTo(t5.x, t5.y)
+                    lineTo(t6.x, t6.y)
+                    lineTo(t7.x, t7.y)
+                    lineTo(t8.x, t8.y)
                     close()
+                }
+
+                val tableCenterColors = when (style) {
+                    BadgeGemStyle.RUBY_PRO_X -> listOf(
+                        Color(0xFFFF1744), // Brilliant fiery ruby heart
+                        Color(0xFFD50000), // Pure blood ruby
+                        Color(0xFF7F0013)  // Deep table perimeter
+                    )
+                    BadgeGemStyle.OWNER_CROWN -> listOf(
+                        Color(0xFFFF2A55),
+                        Color(0xFFB71C1C),
+                        Color(0xFF4D0008)
+                    )
+                    BadgeGemStyle.MOD_SHIELD -> listOf(
+                        Color(0xFF6366F1),
+                        Color(0xFF4338CA),
+                        Color(0xFF1E1B4B)
+                    )
                 }
 
                 drawPath(
                     path = tablePath,
                     brush = Brush.radialGradient(
                         colors = tableCenterColors,
-                        center = Offset(cW * 0.42f, cH * 0.42f),
-                        radius = cW * 0.45f
+                        center = Offset(cx, cy),
+                        radius = gW * 0.36f
                     ),
                     style = Fill
                 )
 
-                // Razor-thin Table Border Accent
+                // Razor-thin Table Rim Accent (Light Catching Table Edge)
                 drawPath(
                     path = tablePath,
-                    color = Color.White.copy(alpha = 0.25f),
-                    style = Stroke(width = 1f)
+                    color = Color.White.copy(alpha = 0.45f),
+                    style = Stroke(width = 1.1f)
                 )
 
-                // D. Smooth Glass Specular Sheen (Curved Upper-Left Highlight)
+                // ================================================================
+                // D. BOLD CHISELED ESPORTS BLACK [X] (100% Solid Black with Gold Bevel)
+                //    - Custom geometric Esports gaming "X" glyph
+                //    - Sharp predatory wing serifs at outer corners for elite gaming style
+                //    - Solid Pitch-Black Carbon Fill + Polished 24K Gold Rim
+                //    - Crisp and unmistakably readable as "X" in all sizes
+                // ================================================================
+                if (style == BadgeGemStyle.RUBY_PRO_X) {
+                    val xReach = gW * 0.22f       // Total reach from center
+                    val wingTip = gW * 0.055f      // Serif wing flare at tips
+                    val strokeW = gW * 0.082f      // Main stem thickness
+                    val waistW = gW * 0.065f       // Taper at center cross
+
+                    // Build Diagonal Bar 1: Top-Left to Bottom-Right (\)
+                    val slash1 = Path().apply {
+                        // Top-Left Head with sharp aggressive serifs
+                        moveTo(cx - xReach - wingTip, cy - xReach)
+                        lineTo(cx - xReach + strokeW, cy - xReach)
+                        lineTo(cx - strokeW * 0.4f, cy - waistW * 0.5f)
+                        lineTo(cx - waistW * 0.5f, cy + strokeW * 0.4f)
+                        // Bottom-Left inner
+                        lineTo(cx + xReach - strokeW, cy + xReach)
+                        lineTo(cx + xReach + wingTip, cy + xReach)
+                        lineTo(cx + xReach, cy + xReach - strokeW)
+                        lineTo(cx + strokeW * 0.4f, cy + waistW * 0.5f)
+                        lineTo(cx + waistW * 0.5f, cy - strokeW * 0.4f)
+                        lineTo(cx - xReach, cy - xReach + strokeW)
+                        close()
+                    }
+
+                    // Build Diagonal Bar 2: Top-Right to Bottom-Left (/)
+                    val slash2 = Path().apply {
+                        // Top-Right Head
+                        moveTo(cx + xReach + wingTip, cy - xReach)
+                        lineTo(cx + xReach - strokeW, cy - xReach)
+                        lineTo(cx + strokeW * 0.4f, cy - waistW * 0.5f)
+                        lineTo(cx + waistW * 0.5f, cy + strokeW * 0.4f)
+                        // Bottom-Left Head
+                        lineTo(cx - xReach + strokeW, cy + xReach)
+                        lineTo(cx - xReach - wingTip, cy + xReach)
+                        lineTo(cx - xReach, cy + xReach - strokeW)
+                        lineTo(cx - strokeW * 0.4f, cy + waistW * 0.5f)
+                        lineTo(cx - waistW * 0.5f, cy - strokeW * 0.4f)
+                        lineTo(cx + xReach, cy - xReach + strokeW)
+                        close()
+                    }
+
+                    // 1. Deep Inset Drop Shadow into ruby crystal
+                    drawPath(slash1, color = Color(0xCC0A0002), style = Fill)
+                    drawPath(slash2, color = Color(0xCC0A0002), style = Fill)
+
+                    // 2. High-Contrast 24K Gold & Platinum Outer Bevel Edge
+                    val goldBevelBrush = Brush.linearGradient(
+                        colors = listOf(
+                            Color(0xFFFFFFFF), // White-hot highlight gleam
+                            Color(0xFFFFDF79), // 24K Champagne Gold
+                            Color(0xFFFFB300), // Rich Imperial Gold
+                            Color(0xFFFFD54F)  // Warm Gold
+                        ),
+                        start = Offset(cx - xReach, cy - xReach),
+                        end = Offset(cx + xReach, cy + xReach)
+                    )
+                    drawPath(slash1, brush = goldBevelBrush, style = Stroke(width = 1.9f))
+                    drawPath(slash2, brush = goldBevelBrush, style = Stroke(width = 1.9f))
+
+                    // 3. 100% DEEP SOLID JET-BLACK (Obsidian Carbon Fill)
+                    val pureBlackBrush = Brush.linearGradient(
+                        colors = listOf(
+                            Color(0xFF181A20), // Subtle upper light reflection
+                            Color(0xFF07080A), // Pure Jet Obsidian
+                            Color(0xFF000000)  // Pitch Black
+                        ),
+                        start = Offset(cx, cy - xReach),
+                        end = Offset(cx, cy + xReach)
+                    )
+                    drawPath(slash1, brush = pureBlackBrush, style = Fill)
+                    drawPath(slash2, brush = pureBlackBrush, style = Fill)
+
+                    // 4. Center Golden Diamond Stud in the Intersection
+                    val coreR = strokeW * 0.46f
+                    val centerStud = Path().apply {
+                        moveTo(cx, cy - coreR)
+                        lineTo(cx + coreR, cy)
+                        lineTo(cx, cy + coreR)
+                        lineTo(cx - coreR, cy)
+                        close()
+                    }
+                    drawPath(
+                        path = centerStud,
+                        brush = Brush.radialGradient(
+                            colors = listOf(Color(0xFFFFFFFF), Color(0xFFFFD700), Color(0xFFE69500)),
+                            center = Offset(cx, cy),
+                            radius = coreR
+                        ),
+                        style = Fill
+                    )
+                    drawPath(path = centerStud, color = Color.White, style = Stroke(width = 0.8f))
+                    drawCircle(Color.White, radius = coreR * 0.35f, center = Offset(cx, cy))
+                }
+
+                // ================================================================
+                // E. GLASSY DOME SHEEN & CAUSTICS (Authentic Real Ruby Glass Finish)
+                // ================================================================
+
+                // 1. Primary Curved Glass Lens Glare (Top-Left High Gloss Reflection)
                 val glassGlare = Path().apply {
-                    moveTo(rimPad, rimPad + rimCut)
-                    lineTo(rimPad + rimCut, rimPad)
-                    lineTo(cW * 0.55f, rimPad)
-                    lineTo(rimPad, cH * 0.55f)
+                    moveTo(rMinX, rMinY + rCut)
+                    lineTo(rMinX + rCut, rMinY)
+                    lineTo(cx + (gW * 0.20f), rMinY)
+                    cubicTo(
+                        cx - (gW * 0.04f), cy - (gH * 0.04f),
+                        rMinX + (gW * 0.12f), cy + (gH * 0.06f),
+                        rMinX, cy + (gH * 0.20f)
+                    )
                     close()
                 }
                 drawPath(
                     path = glassGlare,
                     brush = Brush.linearGradient(
                         colors = listOf(
-                            Color.White.copy(alpha = 0.5f),
-                            Color.White.copy(alpha = 0.1f),
+                            Color.White.copy(alpha = 0.72f),
+                            Color.White.copy(alpha = 0.25f),
                             Color.Transparent
                         ),
-                        start = Offset(rimPad, rimPad),
-                        end = Offset(cW * 0.45f, cH * 0.45f)
+                        start = Offset(rMinX, rMinY),
+                        end = Offset(cx, cy)
                     ),
                     style = Fill
                 )
 
-                // E. Delicate Internal Shimmer (Strictly clipped inside tablePath)
+                // 2. Secondary Bottom-Right Internal Reflection Arc (Glass thickness bounce)
+                val bottomGlassArc = Path().apply {
+                    moveTo(cx, rMaxY)
+                    lineTo(rMaxX - rCut, rMaxY)
+                    lineTo(rMaxX, rMaxY - rCut)
+                    lineTo(rMaxX, cy)
+                    cubicTo(
+                        rMaxX - (gW * 0.08f), cy + (gH * 0.12f),
+                        cx + (gW * 0.12f), rMaxY - (gH * 0.08f),
+                        cx, rMaxY
+                    )
+                    close()
+                }
+                drawPath(
+                    path = bottomGlassArc,
+                    color = Color.White.copy(alpha = 0.14f),
+                    style = Fill
+                )
+
+                // 3. Delicate Internal Shimmer Streak (Sweeping through the crystal)
                 if (isAnimated && shimmerPhase in -0.2f..1.2f) {
                     clipPath(tablePath) {
                         val sx = shimmerPhase * cW
@@ -379,9 +606,9 @@ fun GemstoneBadge(
                             brush = Brush.horizontalGradient(
                                 colors = listOf(
                                     Color.Transparent,
-                                    Color.White.copy(alpha = 0.5f),
-                                    Color(0xFFFFD700).copy(alpha = 0.75f),
-                                    Color.White.copy(alpha = 0.5f),
+                                    Color.White.copy(alpha = 0.50f),
+                                    Color(0xFFFFDF79).copy(alpha = 0.85f),
+                                    Color.White.copy(alpha = 0.50f),
                                     Color.Transparent
                                 ),
                                 startX = sx - (cW * 0.12f),
@@ -389,57 +616,63 @@ fun GemstoneBadge(
                             ),
                             start = Offset(sx, 0f),
                             end = Offset(sx - (cW * 0.2f), cH),
-                            strokeWidth = (cW * 0.05f).coerceAtLeast(1.2f)
+                            strokeWidth = (cW * 0.065f).coerceAtLeast(1.5f)
                         )
                     }
                 }
 
-                // F. Micro Diamond Starburst Sparkle (Clipped inside gem and synced with shimmer)
+                // 4. Micro Diamond Starburst Sparkle (Twinkling star at top-left crown facet)
                 if (isAnimated && sparkleIntensity > 0.05f) {
-                    clipPath(gemPath) {
-                        val starCenterX = tablePad + (tableCut * 0.5f)
-                        val starCenterY = tablePad * 0.9f
-                        val starRadius = (cW * 0.09f) * sparkleIntensity
+                    val starCenterX = tMinX + (tCut * 0.45f)
+                    val starCenterY = tMinY * 0.95f
+                    val starRadius = (gW * 0.11f) * sparkleIntensity
 
-                        // Horizontal Ray
-                        drawLine(
-                            color = Color.White.copy(alpha = 0.9f * sparkleIntensity),
-                            start = Offset(starCenterX - starRadius, starCenterY),
-                            end = Offset(starCenterX + starRadius, starCenterY),
-                            strokeWidth = 1.2f,
-                            cap = StrokeCap.Round
-                        )
-                        // Vertical Ray
-                        drawLine(
-                            color = Color.White.copy(alpha = 0.9f * sparkleIntensity),
-                            start = Offset(starCenterX, starCenterY - starRadius),
-                            end = Offset(starCenterX, starCenterY + starRadius),
-                            strokeWidth = 1.2f,
-                            cap = StrokeCap.Round
-                        )
-                        // Center Star Point Glow
-                        drawCircle(
-                            color = Color.White.copy(alpha = 0.85f * sparkleIntensity),
-                            radius = starRadius * 0.35f,
-                            center = Offset(starCenterX, starCenterY)
-                        )
-                    }
+                    // Horizontal Ray
+                    drawLine(
+                        color = Color.White.copy(alpha = 0.95f * sparkleIntensity),
+                        start = Offset(starCenterX - starRadius, starCenterY),
+                        end = Offset(starCenterX + starRadius, starCenterY),
+                        strokeWidth = 1.3f,
+                        cap = StrokeCap.Round
+                    )
+                    // Vertical Ray
+                    drawLine(
+                        color = Color.White.copy(alpha = 0.95f * sparkleIntensity),
+                        start = Offset(starCenterX, starCenterY - starRadius),
+                        end = Offset(starCenterX, starCenterY + starRadius),
+                        strokeWidth = 1.3f,
+                        cap = StrokeCap.Round
+                    )
+                    // Micro 45-deg cross sparkle
+                    val dR = starRadius * 0.5f
+                    drawLine(
+                        color = Color(0xFFFFF9C4).copy(alpha = 0.80f * sparkleIntensity),
+                        start = Offset(starCenterX - dR, starCenterY - dR),
+                        end = Offset(starCenterX + dR, starCenterY + dR),
+                        strokeWidth = 0.9f,
+                        cap = StrokeCap.Round
+                    )
+                    drawLine(
+                        color = Color(0xFFFFF9C4).copy(alpha = 0.80f * sparkleIntensity),
+                        start = Offset(starCenterX - dR, starCenterY + dR),
+                        end = Offset(starCenterX + dR, starCenterY - dR),
+                        strokeWidth = 0.9f,
+                        cap = StrokeCap.Round
+                    )
+                    // Diamond point flare
+                    drawCircle(
+                        color = Color.White.copy(alpha = 0.90f * sparkleIntensity),
+                        radius = starRadius * 0.35f,
+                        center = Offset(starCenterX, starCenterY)
+                    )
                 }
             }
         }
 
-        // Center Laser-Inscribed Emblem
+        // Center Laser-Inscribed Emblem for OWNER and MOD (RUBY_PRO_X is drawn above in Canvas!)
         when (style) {
             BadgeGemStyle.RUBY_PRO_X -> {
-                Text(
-                    text = "X",
-                    color = Color(0xFF0A0C14), // Sharp Carbon Laser Black
-                    fontWeight = FontWeight.Black,
-                    fontSize = fontSize,
-                    fontFamily = FontFamily.Monospace,
-                    letterSpacing = (-1.5).sp,
-                    modifier = Modifier.offset(y = (-0.5).dp)
-                )
+                // Handled in high-performance 3D vector Canvas above! No standard keyboard font text!
             }
             BadgeGemStyle.OWNER_CROWN -> {
                 Text(

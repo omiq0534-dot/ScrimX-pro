@@ -605,28 +605,28 @@ fun XBadgeStatusCard(profile: UserProfile?) {
                 Column {
                     if (hasXBadge) {
                         Text(
-                            "VERIFIED [X] BADGE",
+                            "VERIFIED PRO [X]",
                             color = Color(0xFFFFD700),
                             fontWeight = FontWeight.Black,
                             fontSize = 14.sp,
                             letterSpacing = 0.5.sp
                         )
                         Text(
-                            "Official Pro Esports Player / Champion 👑",
+                            "Elite Verified Esports Contender",
                             color = Color(0xFFE2E8F0),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Medium
                         )
                     } else {
                         Text(
-                            "ROAD TO [X] BADGE",
+                            "ROAD TO PRO [X]",
                             color = Color.White,
                             fontWeight = FontWeight.Black,
                             fontSize = 13.sp,
                             letterSpacing = 0.5.sp
                         )
                         Text(
-                            "Win $wins/$targetWins Tournament Matches to Unlock",
+                            "Win $wins/$targetWins tournament matches to unlock",
                             color = Color(0xFF94A3B8),
                             fontSize = 11.sp
                         )
