@@ -15,8 +15,8 @@ data class UserProfile(
     val uid: String = "",
     val email: String = "",
     val name: String = "",
-    val realMoney: Int = 100, // Free joining bonus for testing
-    val appMoney: Int = 0,
+    val realMoney: Int = 5, // Joining cash bonus (admin configurable)
+    val appMoney: Int = 50, // Joining coins bonus (admin configurable)
     val referralCode: String = "",
     val referredBy: String = "",
     val referralCount: Int = 0,
@@ -100,18 +100,37 @@ class UserViewModel : ViewModel() {
                         }
                         val genCode = "REF" + (currentUser.uid.take(4) + (1000..9999).random().toString()).uppercase()
 
-                        val newUser = UserProfile(
-                            uid = currentUser.uid,
-                            email = currentUser.email ?: "",
-                            name = derivedName,
-                            realMoney = 100,
-                            appMoney = 0,
-                            referralCode = genCode,
-                            referredBy = "",
-                            referralCount = 0,
-                            referralEarnings = 0
-                        )
-                        docRef.set(newUser)
+                        currentDb.collection("system_config").document("app_control").get()
+                            .addOnSuccessListener { cfgDoc ->
+                                val bonusCash = cfgDoc?.getLong("newUserRealMoneyBonus")?.toInt() ?: 5
+                                val bonusCoins = cfgDoc?.getLong("newUserAppMoneyBonus")?.toInt() ?: 50
+                                val newUser = UserProfile(
+                                    uid = currentUser.uid,
+                                    email = currentUser.email ?: "",
+                                    name = derivedName,
+                                    realMoney = bonusCash,
+                                    appMoney = bonusCoins,
+                                    referralCode = genCode,
+                                    referredBy = "",
+                                    referralCount = 0,
+                                    referralEarnings = 0
+                                )
+                                docRef.set(newUser)
+                            }
+                            .addOnFailureListener {
+                                val newUser = UserProfile(
+                                    uid = currentUser.uid,
+                                    email = currentUser.email ?: "",
+                                    name = derivedName,
+                                    realMoney = 5,
+                                    appMoney = 50,
+                                    referralCode = genCode,
+                                    referredBy = "",
+                                    referralCount = 0,
+                                    referralEarnings = 0
+                                )
+                                docRef.set(newUser)
+                            }
                     }
                 } catch (ex: Exception) {
                     // Safe catch

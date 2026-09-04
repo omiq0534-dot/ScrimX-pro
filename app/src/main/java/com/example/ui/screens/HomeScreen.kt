@@ -53,6 +53,7 @@ import kotlin.random.Random
 import com.example.FirebaseHelper
 import com.example.security.AppSecurityGuard
 import com.example.ui.components.LiveAnnouncementMarquee
+import com.example.ui.components.LivePatchBanner
 
 data class WheelPrize(
     val coins: Int,
@@ -726,11 +727,28 @@ fun HomeScreen(
                 LiveAnnouncementMarquee(notice = appConfig.announcementNotice)
             }
         }
+        if (appConfig.isLivePatchActive && appConfig.patchTag.isNotBlank()) {
+            item {
+                LivePatchBanner(tag = appConfig.patchTag, notes = appConfig.patchNotes)
+            }
+        }
         item { 
             EarningZone(
                 onDailyClick = { showDailyDialog = true },
-                onSpinClick = { showSpinDialog = true },
-                onWatchClick = { showWatchDialog = true }
+                onSpinClick = { 
+                    if (appConfig.isSpinWheelEnabled) {
+                        showSpinDialog = true 
+                    } else {
+                        Toast.makeText(context, "Spin Wheel is temporarily paused by Admin", Toast.LENGTH_SHORT).show()
+                    }
+                },
+                onWatchClick = { 
+                    if (appConfig.isWatchAdsEnabled) {
+                        showWatchDialog = true 
+                    } else {
+                        Toast.makeText(context, "Video rewards are temporarily paused by Admin", Toast.LENGTH_SHORT).show()
+                    }
+                }
             ) 
         }
         item {

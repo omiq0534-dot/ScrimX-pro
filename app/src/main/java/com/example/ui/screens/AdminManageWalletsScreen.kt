@@ -3,9 +3,13 @@ package com.example.ui.screens
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.util.Base64
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -58,6 +62,7 @@ fun AdminManageWalletsScreen(navController: NavController) {
 
     var pendingDeposits by remember { mutableStateOf<List<TransactionRecord>>(emptyList()) }
     var pendingWithdraws by remember { mutableStateOf<List<TransactionRecord>>(emptyList()) }
+    var pendingRecharges by remember { mutableStateOf<List<TransactionRecord>>(emptyList()) }
 
     // UPI Settings State
     var upiIdInput by remember { mutableStateOf("6375615586@fam") }
@@ -101,6 +106,8 @@ fun AdminManageWalletsScreen(navController: NavController) {
                     pendingDeposits = allTx.filter { it.type == "DEPOSIT" && it.status == "PENDING" }
                         .sortedByDescending { it.timestamp }
                     pendingWithdraws = allTx.filter { it.type == "WITHDRAW" && it.status == "PENDING" }
+                        .sortedByDescending { it.timestamp }
+                    pendingRecharges = allTx.filter { it.type == "DATA_RECHARGE" && it.status == "PENDING" }
                         .sortedByDescending { it.timestamp }
                 }
             }
@@ -171,6 +178,7 @@ fun AdminManageWalletsScreen(navController: NavController) {
                 listOf(
                     "Deposits (${pendingDeposits.size})",
                     "Withdrawals (${pendingWithdraws.size})",
+                    "Recharges (${pendingRecharges.size})",
                     "Edit Wallet",
                     "UPI Gateway"
                 ).forEachIndexed { index, title ->
@@ -268,8 +276,73 @@ fun AdminManageWalletsScreen(navController: NavController) {
                     }
                 }
 
-                // 3. MANUAL USER BALANCE & COIN EDIT
+                // 3. PENDING DATA RECHARGE REQUESTS
                 2 -> {
+                    if (pendingRecharges.isEmpty()) {
+                        EmptyAdminPlaceholder("No pending recharges!", "Users' mobile data booster requests (Jio / Airtel) will show here for instant top-up.")
+                    } else {
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            items(pendingRecharges) { tx ->
+                                RechargeRequestCard(
+                                    tx = tx,
+                                    onCompleteWithProof = { proofBase64, opTxnId ->
+                                        scope.launch {
+                                            try {
+                                                val txUpdates = mutableMapOf<String, Any>(
+                                                    "status" to "SUCCESS"
+                                                )
+                                                if (proofBase64.isNotBlank()) {
+                                                    txUpdates["screenshotBase64"] = proofBase64
+                                                }
+                                                if (opTxnId.isNotBlank()) {
+                                                    txUpdates["operatorTxnId"] = opTxnId
+                                                }
+                                                db?.collection("transactions")?.document(tx.id)?.update(txUpdates)?.await()
+
+                                                val invUpdates = mutableMapOf<String, Any>(
+                                                    "status" to "SUCCESS"
+                                                )
+                                                if (proofBase64.isNotBlank()) {
+                                                    invUpdates["proofScreenshotBase64"] = proofBase64
+                                                }
+                                                if (opTxnId.isNotBlank()) {
+                                                    invUpdates["rechargeTxnId"] = opTxnId
+                                                }
+                                                db?.collection("users")?.document(tx.userId)?.collection("inventory")?.document(tx.id)?.update(invUpdates)?.await()
+
+                                                Toast.makeText(context, "✅ Recharge Marked SUCCESS with Proof for +91 ${tx.mobileNumber}!", Toast.LENGTH_LONG).show()
+                                            } catch (e: Exception) {
+                                                Toast.makeText(context, "Update error: ${e.message}", Toast.LENGTH_SHORT).show()
+                                            }
+                                        }
+                                    },
+                                    onReject = {
+                                        scope.launch {
+                                            try {
+                                                // Refund coins back to user
+                                                if (tx.coinAmount > 0) {
+                                                    db?.collection("users")?.document(tx.userId)
+                                                        ?.update("appMoney", FieldValue.increment(tx.coinAmount.toLong()))?.await()
+                                                }
+                                                db?.collection("transactions")?.document(tx.id)?.update("status", "REJECTED")?.await()
+                                                db?.collection("users")?.document(tx.userId)?.collection("inventory")?.document(tx.id)?.update("status", "REJECTED")?.await()
+                                                Toast.makeText(context, "❌ Recharge rejected & ${tx.coinAmount} coins refunded!", Toast.LENGTH_SHORT).show()
+                                            } catch (e: Exception) {
+                                                Toast.makeText(context, "Refund error: ${e.message}", Toast.LENGTH_SHORT).show()
+                                            }
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // 4. MANUAL USER BALANCE & COIN EDIT
+                3 -> {
                     LazyColumn(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                         // Search / Selector Card
                         item {
@@ -784,8 +857,8 @@ fun AdminManageWalletsScreen(navController: NavController) {
                     }
                 }
 
-                // 4. UPI & QR PAYMENT GATEWAY CONFIG
-                3 -> {
+                // 5. UPI & QR PAYMENT GATEWAY CONFIG
+                4 -> {
                     LazyColumn(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                         item {
                             Box(
@@ -1123,6 +1196,304 @@ fun EmptyAdminPlaceholder(title: String, subtitle: String) {
             Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF00E676), modifier = Modifier.size(36.dp))
             Text(title, color = Color.White, fontWeight = FontWeight.Black, fontSize = 15.sp)
             Text(subtitle, color = Color(0xFF8E92A4), fontSize = 12.sp, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+        }
+    }
+}
+
+@Composable
+fun RechargeRequestCard(
+    tx: TransactionRecord,
+    onCompleteWithProof: (proofBase64: String, opTxnId: String) -> Unit,
+    onReject: () -> Unit
+) {
+    val context = LocalContext.current
+    val dateStr = SimpleDateFormat("dd MMM, hh:mm a", Locale.getDefault()).format(Date(tx.timestamp))
+    val isJio = tx.operator.equals("JIO", ignoreCase = true)
+
+    var proofScreenshotBase64 by remember { mutableStateOf("") }
+    var operatorTxnId by remember { mutableStateOf("") }
+    var showConfirmDialog by remember { mutableStateOf(false) }
+
+    // Photo picker launcher for admin recharge receipt screenshot
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            val base64 = compressUriToBase64(context, uri)
+            if (base64.isNotEmpty()) {
+                proofScreenshotBase64 = base64
+                Toast.makeText(context, "📸 Recharge screenshot attached!", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(context, "Could not process image", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    val proofBitmap = remember(proofScreenshotBase64) {
+        if (proofScreenshotBase64.isNotEmpty()) {
+            try {
+                val decodedBytes = Base64.decode(proofScreenshotBase64, Base64.DEFAULT)
+                BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+            } catch (e: Exception) {
+                null
+            }
+        } else null
+    }
+
+    if (showConfirmDialog) {
+        Dialog(onDismissRequest = { showConfirmDialog = false }) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(Color(0xFF14161F))
+                    .border(1.5.dp, Color(0xFF00E676).copy(alpha = 0.5f), RoundedCornerShape(20.dp))
+                    .padding(20.dp)
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Confirm Recharge & Add Proof", color = Color.White, fontWeight = FontWeight.Black, fontSize = 15.sp)
+                        IconButton(onClick = { showConfirmDialog = false }, modifier = Modifier.size(24.dp)) {
+                            Icon(Icons.Default.Close, contentDescription = "Close", tint = Color(0xFF8E92A4))
+                        }
+                    }
+
+                    Text(
+                        "Number: +91 ${tx.mobileNumber} (${tx.operator})\nPack: ${tx.packDetails} (₹${tx.amount})",
+                        color = Color(0xFFFFD700),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 12.sp,
+                        lineHeight = 16.sp
+                    )
+
+                    // Reference or Operator Txn ID (Optional)
+                    OutlinedTextField(
+                        value = operatorTxnId,
+                        onValueChange = { operatorTxnId = it },
+                        label = { Text("Operator Ref / UTR / Order ID (Optional)", fontSize = 11.sp) },
+                        placeholder = { Text("e.g. GPAY_123456 or JIO_9876", color = Color(0xFF75798E), fontSize = 11.sp) },
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFF00E676),
+                            unfocusedBorderColor = Color(0xFF2E3244),
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            focusedContainerColor = Color(0xFF0C0D12),
+                            unfocusedContainerColor = Color(0xFF0C0D12)
+                        ),
+                        shape = RoundedCornerShape(10.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    // Attach Screenshot Button
+                    if (proofBitmap != null) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(Color(0xFF0C0D12))
+                                .border(1.dp, Color(0xFF00E676).copy(alpha = 0.5f), RoundedCornerShape(10.dp))
+                                .padding(8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Image(
+                                bitmap = proofBitmap.asImageBitmap(),
+                                contentDescription = "Proof",
+                                modifier = Modifier.size(48.dp).clip(RoundedCornerShape(6.dp)),
+                                contentScale = ContentScale.Crop
+                            )
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text("✅ Screenshot Attached", color = Color(0xFF00E676), fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                                Text("Visible to user as proof of recharge", color = Color(0xFF8E92A4), fontSize = 10.sp)
+                            }
+                            IconButton(onClick = { proofScreenshotBase64 = "" }) {
+                                Icon(Icons.Default.Delete, contentDescription = "Remove", tint = Color(0xFFFF5252), modifier = Modifier.size(18.dp))
+                            }
+                        }
+                    } else {
+                        OutlinedButton(
+                            onClick = {
+                                photoPickerLauncher.launch(
+                                    androidx.activity.result.PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                )
+                            },
+                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFFFD700).copy(alpha = 0.6f)),
+                            shape = RoundedCornerShape(10.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(Icons.Default.AddPhotoAlternate, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("ATTACH PAYMENT SCREENSHOT (PROOF)", color = Color(0xFFFFD700), fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                        }
+                    }
+
+                    Text(
+                        "Tip: Attaching a screenshot gives the user 100% indisputable proof that you recharged their phone.",
+                        color = Color(0xFF8E92A4),
+                        fontSize = 10.sp,
+                        lineHeight = 13.sp
+                    )
+
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedButton(
+                            onClick = { showConfirmDialog = false },
+                            shape = RoundedCornerShape(10.dp),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("CANCEL", color = Color(0xFF8E92A4), fontSize = 11.sp)
+                        }
+
+                        Button(
+                            onClick = {
+                                showConfirmDialog = false
+                                onCompleteWithProof(proofScreenshotBase64, operatorTxnId)
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E676)),
+                            shape = RoundedCornerShape(10.dp),
+                            modifier = Modifier.weight(1.5f)
+                        ) {
+                            Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color.Black, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("CONFIRM DONE", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 12.sp)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color(0xFF160608))
+            .border(1.5.dp, Color(0xFFE50914).copy(alpha = 0.6f), RoundedCornerShape(16.dp))
+            .padding(16.dp)
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            // Header Row: Operator Badge & Pack Price
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(if (isJio) Color(0xFF0A2885) else Color(0xFFE40000))
+                            .padding(horizontal = 8.dp, vertical = 3.dp)
+                    ) {
+                        Text(
+                            text = if (isJio) "JIO 4G/5G" else "AIRTEL 5G",
+                            color = Color.White,
+                            fontWeight = FontWeight.Black,
+                            fontSize = 11.sp
+                        )
+                    }
+                    Text(
+                        text = if (tx.userEmail.isNotEmpty()) tx.userEmail else "Player",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 12.sp,
+                        maxLines = 1
+                    )
+                }
+
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(
+                        "₹${tx.amount}",
+                        color = Color(0xFFFFD700),
+                        fontWeight = FontWeight.Black,
+                        fontSize = 17.sp
+                    )
+                    Text(
+                        "${tx.coinAmount} Coins",
+                        color = Color(0xFFFFA000),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 10.sp
+                    )
+                }
+            }
+
+            // Pack Details
+            Text(
+                text = "⚡ Pack: ${tx.packDetails}",
+                color = Color(0xFFFF8A80),
+                fontWeight = FontWeight.Black,
+                fontSize = 13.sp
+            )
+
+            // Mobile Number Box with 1-Tap Copy
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(Color(0xFF26080A))
+                    .border(1.dp, Color(0xFFFF5252).copy(alpha = 0.3f), RoundedCornerShape(10.dp))
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text("Recharge Mobile Number:", color = Color(0xFFB0BEC5), fontSize = 10.sp)
+                    Text(
+                        "+91 ${tx.mobileNumber}",
+                        color = Color.White,
+                        fontWeight = FontWeight.Black,
+                        fontSize = 15.sp,
+                        letterSpacing = 1.sp
+                    )
+                }
+
+                Button(
+                    onClick = {
+                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        clipboard.setPrimaryClip(ClipData.newPlainText("Mobile Number", tx.mobileNumber))
+                        Toast.makeText(context, "📋 Copied +91 ${tx.mobileNumber}!", Toast.LENGTH_SHORT).show()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700)),
+                    shape = RoundedCornerShape(8.dp),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                ) {
+                    Icon(Icons.Default.ContentCopy, contentDescription = "Copy", tint = Color.Black, modifier = Modifier.size(14.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("COPY", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 11.sp)
+                }
+            }
+
+            Text("Requested: $dateStr", color = Color(0xFF8E92A4), fontSize = 10.sp)
+
+            // Action Buttons
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Button(
+                    onClick = { showConfirmDialog = true },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E676)),
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.weight(1f).height(44.dp)
+                ) {
+                    Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color.Black, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("MARK RECHARGED", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 11.sp)
+                }
+
+                Button(
+                    onClick = onReject,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE11D48)),
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.weight(1f).height(44.dp)
+                ) {
+                    Icon(Icons.Default.Close, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("REJECT & REFUND", color = Color.White, fontWeight = FontWeight.Black, fontSize = 11.sp)
+                }
+            }
         }
     }
 }

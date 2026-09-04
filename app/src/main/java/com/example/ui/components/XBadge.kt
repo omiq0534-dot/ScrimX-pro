@@ -189,28 +189,28 @@ fun GemstoneBadge(
                 drawCircle(
                     brush = Brush.radialGradient(
                         colors = listOf(
-                            Color(0xFFFF1744).copy(alpha = 0.52f * pulseScale),
-                            Color(0xFFFF003C).copy(alpha = 0.35f * pulseScale),
-                            Color(0xFFD50000).copy(alpha = 0.18f),
+                            Color(0xFFFF1744).copy(alpha = 0.60f * pulseScale),
+                            Color(0xFFFF003C).copy(alpha = 0.42f * pulseScale),
+                            Color(0xFFD50000).copy(alpha = 0.22f),
                             Color.Transparent
                         ),
                         center = Offset(cx, cy),
-                        radius = cW * 0.52f
+                        radius = cW * 0.54f
                     ),
-                    radius = cW * 0.52f,
+                    radius = cW * 0.54f,
                     center = Offset(cx, cy)
                 )
                 // Core hot optical flare
                 drawCircle(
                     brush = Brush.radialGradient(
                         colors = listOf(
-                            Color(0xFFFF5277).copy(alpha = 0.35f * pulseScale),
+                            Color(0xFFFF5277).copy(alpha = 0.42f * pulseScale),
                             Color.Transparent
                         ),
                         center = Offset(cx, cy),
-                        radius = cW * 0.38f
+                        radius = cW * 0.40f
                     ),
-                    radius = cW * 0.38f,
+                    radius = cW * 0.40f,
                     center = Offset(cx, cy)
                 )
             } else {
@@ -298,11 +298,11 @@ fun GemstoneBadge(
                 // A. Base Crystal Pavilion Depth (Deep Pigeon Blood Ruby)
                 val crystalBaseColors = when (style) {
                     BadgeGemStyle.RUBY_PRO_X -> listOf(
-                        Color(0xFFFF2A6D), // Hot electric ruby flare
-                        Color(0xFFFF0844), // Vivid radiant crimson
-                        Color(0xFFB30021), // Pure deep royal ruby
-                        Color(0xFF5A0010), // Velvet burgundy
-                        Color(0xFF1E0005)  // Deepest optical absorption
+                        Color(0xFFFF1E56), // Ultra luminous electric ruby flare
+                        Color(0xFFFF003C), // Pure fiery crimson
+                        Color(0xFFD50000), // Vivid pigeon-blood ruby
+                        Color(0xFF880016), // Rich velvet wine
+                        Color(0xFF260006)  // Deepest optical absorption
                     )
                     BadgeGemStyle.OWNER_CROWN -> listOf(
                         Color(0xFFFF3366),
@@ -416,9 +416,9 @@ fun GemstoneBadge(
 
                 val tableCenterColors = when (style) {
                     BadgeGemStyle.RUBY_PRO_X -> listOf(
-                        Color(0xFFFF1744), // Brilliant fiery ruby heart
-                        Color(0xFFD50000), // Pure blood ruby
-                        Color(0xFF7F0013)  // Deep table perimeter
+                        Color(0xFFFF2253), // Brilliant fiery ruby heart
+                        Color(0xFFE5093A), // Pure blood ruby
+                        Color(0xFF900018)  // Deep table perimeter
                     )
                     BadgeGemStyle.OWNER_CROWN -> listOf(
                         Color(0xFFFF2A55),
@@ -450,103 +450,84 @@ fun GemstoneBadge(
                 )
 
                 // ================================================================
-                // D. BOLD CHISELED ESPORTS BLACK [X] (100% Solid Black with Gold Bevel)
-                //    - Custom geometric Esports gaming "X" glyph
-                //    - Sharp predatory wing serifs at outer corners for elite gaming style
-                //    - Solid Pitch-Black Carbon Fill + Polished 24K Gold Rim
-                //    - Crisp and unmistakably readable as "X" in all sizes
+                // D. CENTER LASER-EMBEDDED ESPORTS LETTER "X" (NOT A CROSS!)
                 // ================================================================
                 if (style == BadgeGemStyle.RUBY_PRO_X) {
-                    val xReach = gW * 0.22f       // Total reach from center
-                    val wingTip = gW * 0.055f      // Serif wing flare at tips
-                    val strokeW = gW * 0.082f      // Main stem thickness
-                    val waistW = gW * 0.065f       // Taper at center cross
+                    val xW = gW * 0.44f
+                    val xH = gH * 0.50f // Taller than wide -> distinctly Latin Alphabet Letter 'X'
+                    val left = cx - xW * 0.5f
+                    val right = cx + xW * 0.5f
+                    val top = cy - xH * 0.5f
+                    val bottom = cy + xH * 0.5f
 
-                    // Build Diagonal Bar 1: Top-Left to Bottom-Right (\)
-                    val slash1 = Path().apply {
-                        // Top-Left Head with sharp aggressive serifs
-                        moveTo(cx - xReach - wingTip, cy - xReach)
-                        lineTo(cx - xReach + strokeW, cy - xReach)
-                        lineTo(cx - strokeW * 0.4f, cy - waistW * 0.5f)
-                        lineTo(cx - waistW * 0.5f, cy + strokeW * 0.4f)
-                        // Bottom-Left inner
-                        lineTo(cx + xReach - strokeW, cy + xReach)
-                        lineTo(cx + xReach + wingTip, cy + xReach)
-                        lineTo(cx + xReach, cy + xReach - strokeW)
-                        lineTo(cx + strokeW * 0.4f, cy + waistW * 0.5f)
-                        lineTo(cx + waistW * 0.5f, cy - strokeW * 0.4f)
-                        lineTo(cx - xReach, cy - xReach + strokeW)
+                    val tHeavy = xW * 0.32f // Bold primary diagonal slash (\)
+                    val tLight = xW * 0.24f // Secondary crossing slash (/)
+
+                    // Stem 1: Dominant Esports Power Slash (\)
+                    val stem1 = Path().apply {
+                        moveTo(left, top + (xH * 0.04f))
+                        lineTo(left + tHeavy * 0.95f, top)
+                        lineTo(right, bottom - (xH * 0.04f))
+                        lineTo(right - tHeavy * 0.95f, bottom)
                         close()
                     }
 
-                    // Build Diagonal Bar 2: Top-Right to Bottom-Left (/)
-                    val slash2 = Path().apply {
-                        // Top-Right Head
-                        moveTo(cx + xReach + wingTip, cy - xReach)
-                        lineTo(cx + xReach - strokeW, cy - xReach)
-                        lineTo(cx + strokeW * 0.4f, cy - waistW * 0.5f)
-                        lineTo(cx + waistW * 0.5f, cy + strokeW * 0.4f)
-                        // Bottom-Left Head
-                        lineTo(cx - xReach + strokeW, cy + xReach)
-                        lineTo(cx - xReach - wingTip, cy + xReach)
-                        lineTo(cx - xReach, cy + xReach - strokeW)
-                        lineTo(cx - strokeW * 0.4f, cy + waistW * 0.5f)
-                        lineTo(cx - waistW * 0.5f, cy - strokeW * 0.4f)
-                        lineTo(cx + xReach, cy - xReach + strokeW)
+                    // Stem 2: Counter-Slash with Dynamic Cut (/)
+                    val stem2 = Path().apply {
+                        moveTo(right - tLight * 0.95f, top)
+                        lineTo(right, top + (xH * 0.04f))
+                        lineTo(left + tLight * 0.95f, bottom)
+                        lineTo(left, bottom - (xH * 0.04f))
                         close()
                     }
 
-                    // 1. Deep Inset Drop Shadow into ruby crystal
-                    drawPath(slash1, color = Color(0xCC0A0002), style = Fill)
-                    drawPath(slash2, color = Color(0xCC0A0002), style = Fill)
-
-                    // 2. High-Contrast 24K Gold & Platinum Outer Bevel Edge
-                    val goldBevelBrush = Brush.linearGradient(
+                    val goldBezelBrush = Brush.linearGradient(
                         colors = listOf(
-                            Color(0xFFFFFFFF), // White-hot highlight gleam
+                            Color(0xFFFFFDF0), // Platinum Light Top
                             Color(0xFFFFDF79), // 24K Champagne Gold
-                            Color(0xFFFFB300), // Rich Imperial Gold
-                            Color(0xFFFFD54F)  // Warm Gold
+                            Color(0xFFFFB300), // Amber Gold
+                            Color(0xFFB87000)  // Deep Bronze Accent
                         ),
-                        start = Offset(cx - xReach, cy - xReach),
-                        end = Offset(cx + xReach, cy + xReach)
+                        start = Offset(left, top),
+                        end = Offset(right, bottom)
                     )
-                    drawPath(slash1, brush = goldBevelBrush, style = Stroke(width = 1.9f))
-                    drawPath(slash2, brush = goldBevelBrush, style = Stroke(width = 1.9f))
 
-                    // 3. 100% DEEP SOLID JET-BLACK (Obsidian Carbon Fill)
-                    val pureBlackBrush = Brush.linearGradient(
+                    val obsidianBlackBrush = Brush.verticalGradient(
                         colors = listOf(
-                            Color(0xFF181A20), // Subtle upper light reflection
-                            Color(0xFF07080A), // Pure Jet Obsidian
-                            Color(0xFF000000)  // Pitch Black
+                            Color(0xFF22252E), // Subtle obsidian specular sheen at top
+                            Color(0xFF090A0D), // Solid jet black
+                            Color(0xFF040507)  // Deep shadow black
                         ),
-                        start = Offset(cx, cy - xReach),
-                        end = Offset(cx, cy + xReach)
+                        startY = top,
+                        endY = bottom
                     )
-                    drawPath(slash1, brush = pureBlackBrush, style = Fill)
-                    drawPath(slash2, brush = pureBlackBrush, style = Fill)
 
-                    // 4. Center Golden Diamond Stud in the Intersection
-                    val coreR = strokeW * 0.46f
-                    val centerStud = Path().apply {
-                        moveTo(cx, cy - coreR)
-                        lineTo(cx + coreR, cy)
-                        lineTo(cx, cy + coreR)
-                        lineTo(cx - coreR, cy)
-                        close()
+                    val strokeWidth = when (size) {
+                        XBadgeSize.MINI -> 1.4f
+                        XBadgeSize.NORMAL -> 2.0f
+                        XBadgeSize.LARGE -> 3.4f
                     }
-                    drawPath(
-                        path = centerStud,
-                        brush = Brush.radialGradient(
-                            colors = listOf(Color(0xFFFFFFFF), Color(0xFFFFD700), Color(0xFFE69500)),
-                            center = Offset(cx, cy),
-                            radius = coreR
-                        ),
-                        style = Fill
+
+                    // 1. Chiseled 24K Gold Outer Bevel Rim
+                    drawPath(stem1, brush = goldBezelBrush, style = Stroke(width = strokeWidth * 2.2f, cap = StrokeCap.Round, join = StrokeJoin.Round))
+                    drawPath(stem2, brush = goldBezelBrush, style = Stroke(width = strokeWidth * 2.2f, cap = StrokeCap.Round, join = StrokeJoin.Round))
+
+                    // 2. High-Contrast Deep Obsidian Jet-Black Solid Core
+                    drawPath(stem1, brush = obsidianBlackBrush, style = Fill)
+                    drawPath(stem2, brush = obsidianBlackBrush, style = Fill)
+
+                    // 3. Crisp Inner 24K Gold Hairline for sharp 3D relief
+                    drawPath(stem1, brush = goldBezelBrush, style = Stroke(width = strokeWidth * 0.75f))
+                    drawPath(stem2, brush = goldBezelBrush, style = Stroke(width = strokeWidth * 0.75f))
+
+                    // 4. Specular Razor Edge Highlight on top-left of main stem
+                    drawLine(
+                        color = Color.White.copy(alpha = 0.65f),
+                        start = Offset(left + tHeavy * 0.4f, top + (xH * 0.06f)),
+                        end = Offset(cx - (xW * 0.04f), cy - (xH * 0.04f)),
+                        strokeWidth = strokeWidth * 0.65f,
+                        cap = StrokeCap.Round
                     )
-                    drawPath(path = centerStud, color = Color.White, style = Stroke(width = 0.8f))
-                    drawCircle(Color.White, radius = coreR * 0.35f, center = Offset(cx, cy))
                 }
 
                 // ================================================================
@@ -669,10 +650,10 @@ fun GemstoneBadge(
             }
         }
 
-        // Center Laser-Inscribed Emblem for OWNER and MOD (RUBY_PRO_X is drawn above in Canvas!)
+        // Center Laser-Inscribed Emblem
         when (style) {
             BadgeGemStyle.RUBY_PRO_X -> {
-                // Handled in high-performance 3D vector Canvas above! No standard keyboard font text!
+                // Bespoke esports letter "X" with 24K gold rim and jet black core is rendered directly on Canvas with laser precision
             }
             BadgeGemStyle.OWNER_CROWN -> {
                 Text(

@@ -13,8 +13,21 @@ import java.util.UUID
 
 enum class StoreItemCategory {
     GOOGLE_PLAY,
-    APP_DISCOUNT
+    APP_DISCOUNT,
+    DATA_RECHARGE
 }
+
+data class DataRechargePlan(
+    val id: String,
+    val operator: String, // "JIO" or "AIRTEL"
+    val dataAmount: String, // "10 GB", "1.5 GB", "2.5 GB", "25 GB", "1 GB", "2 GB", "High-Speed Bulk"
+    val priceRupees: Int,
+    val coinPrice: Int,
+    val validity: String,
+    val tagText: String,
+    val description: String,
+    val highlightSpeed: String = "4G / 5G High Speed"
+)
 
 data class StoreItem(
     val id: String,
@@ -46,7 +59,9 @@ data class UserPurchasedCard(
     val totalUses: Int = 1,
     val remainingUses: Int = 1,
     val purchaseTimestamp: Long = System.currentTimeMillis(),
-    val cardColorTheme: String = "GOLD"
+    val cardColorTheme: String = "GOLD",
+    val proofScreenshotBase64: String = "",
+    val rechargeTxnId: String = ""
 )
 
 class StoreViewModel : ViewModel() {
@@ -179,6 +194,102 @@ class StoreViewModel : ViewModel() {
             cardColorTheme = "GOD",
             badgeText = "100% FREE ENTRY 👑",
             description = "Enjoy completely free entry to any paid tournament of your choice without spending real money!"
+        )
+    )
+
+    // JIO Official Data Booster Plans (2024-2026 Latest)
+    val jioRechargePlans = listOf(
+        DataRechargePlan(
+            id = "jio_data_11",
+            operator = "JIO",
+            dataAmount = "10 GB",
+            priceRupees = 11,
+            coinPrice = 130,
+            validity = "1 Hour Validity",
+            tagText = "⚡ 10GB 1-HOUR BOOSTER",
+            description = "10GB High-Speed 4G/5G data valid for 1 hour. Ideal for high-stakes tournament matches!",
+            highlightSpeed = "True 5G / 4G Speed"
+        ),
+        DataRechargePlan(
+            id = "jio_data_19",
+            operator = "JIO",
+            dataAmount = "1.5 GB",
+            priceRupees = 19,
+            coinPrice = 230,
+            validity = "Active Base Plan Validity",
+            tagText = "🔥 BESTSELLER",
+            description = "1.5GB High-Speed 4G/5G data booster. Valid till your active daily pack ends.",
+            highlightSpeed = "True 5G / 4G Speed"
+        ),
+        DataRechargePlan(
+            id = "jio_data_29",
+            operator = "JIO",
+            dataAmount = "2.5 GB",
+            priceRupees = 29,
+            coinPrice = 340,
+            validity = "Active Base Plan Validity",
+            tagText = "💎 EXTRA VALUE",
+            description = "2.5GB High-Speed 4G/5G data booster. Perfect for intense scrims & live streams.",
+            highlightSpeed = "True 5G / 4G Speed"
+        ),
+        DataRechargePlan(
+            id = "jio_data_49",
+            operator = "JIO",
+            dataAmount = "25 GB",
+            priceRupees = 49,
+            coinPrice = 570,
+            validity = "1 Day (24 Hours)",
+            tagText = "🚀 25GB POWERPACK",
+            description = "Massive 25GB High-Speed data valid for full 24 hours. Play all day with zero ping issues!",
+            highlightSpeed = "True 5G / 4G Speed"
+        )
+    )
+
+    // AIRTEL Official Real Data Booster Plans (₹22 1GB, ₹33 2GB, ₹65 4GB, ₹77 5GB, ₹121 6GB)
+    val airtelRechargePlans = listOf(
+        DataRechargePlan(
+            id = "airtel_data_22",
+            operator = "AIRTEL",
+            dataAmount = "1 GB",
+            priceRupees = 22,
+            coinPrice = 250,
+            validity = "1 Day Validity",
+            tagText = "🔥 POPULAR CHOICE",
+            description = "1GB High-Speed 4G/5G data booster valid for 1 day. Keep your games connected seamlessly.",
+            highlightSpeed = "Airtel 5G Plus / 4G"
+        ),
+        DataRechargePlan(
+            id = "airtel_data_33",
+            operator = "AIRTEL",
+            dataAmount = "2 GB",
+            priceRupees = 33,
+            coinPrice = 370,
+            validity = "1 Day Validity",
+            tagText = "💎 PRO GAMER PACK",
+            description = "2GB High-Speed 4G/5G data booster valid for 1 day. Extra data for custom tournaments.",
+            highlightSpeed = "Airtel 5G Plus / 4G"
+        ),
+        DataRechargePlan(
+            id = "airtel_data_65",
+            operator = "AIRTEL",
+            dataAmount = "4 GB",
+            priceRupees = 65,
+            coinPrice = 730,
+            validity = "Active Base Plan Validity",
+            tagText = "⚡ BEST VALUE",
+            description = "4GB High-Speed data booster valid till your current active base pack ends.",
+            highlightSpeed = "Airtel 5G Plus / 4G"
+        ),
+        DataRechargePlan(
+            id = "airtel_data_77",
+            operator = "AIRTEL",
+            dataAmount = "5 GB",
+            priceRupees = 77,
+            coinPrice = 860,
+            validity = "Active Base Plan Validity",
+            tagText = "🚀 HEAVY DATA PACK",
+            description = "5GB High-Speed 4G/5G data with active pack validity. Zero ping drop in gaming.",
+            highlightSpeed = "Airtel 5G Plus / 4G"
         )
     )
 
@@ -315,6 +426,98 @@ class StoreViewModel : ViewModel() {
         }.addOnFailureListener { e ->
             _isLoading.value = false
             onError(e.localizedMessage ?: "Purchase failed. Please try again.")
+        }
+    }
+
+    fun requestDataRecharge(
+        plan: DataRechargePlan,
+        mobileNumber: String,
+        userCoins: Int,
+        userName: String,
+        onSuccess: (String) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val cleanNumber = mobileNumber.trim().replace("+91", "").replace(" ", "").replace("-", "")
+        if (cleanNumber.length != 10 || !cleanNumber.all { it.isDigit() } || cleanNumber[0] !in listOf('6', '7', '8', '9')) {
+            onError("Please enter a valid 10-digit Indian mobile number (starts with 6, 7, 8, or 9)")
+            return
+        }
+
+        if (userCoins < plan.coinPrice) {
+            onError("Insufficient Coins! You need ${plan.coinPrice} coins but have $userCoins.")
+            return
+        }
+
+        val auth = getAuth() ?: run {
+            onError("Authentication not available")
+            return
+        }
+        val db = getDb() ?: run {
+            onError("Database not connected")
+            return
+        }
+        val user = auth.currentUser ?: run {
+            onError("User not logged in")
+            return
+        }
+
+        _isLoading.value = true
+
+        val txId = UUID.randomUUID().toString()
+        val userDocRef = db.collection("users").document(user.uid)
+        val packDesc = "${plan.operator} ₹${plan.priceRupees} (${plan.dataAmount})"
+
+        db.runTransaction { tx ->
+            val userSnap = tx.get(userDocRef)
+            val currentCoins = (userSnap.getLong("appMoney") ?: 0L).toInt()
+
+            if (currentCoins < plan.coinPrice) {
+                throw Exception("Insufficient Coins balance! Need ${plan.coinPrice} coins.")
+            }
+
+            // 1. Deduct coins from user
+            tx.update(userDocRef, "appMoney", currentCoins - plan.coinPrice)
+
+            // 2. Add to user's inventory
+            val inventoryDocRef = userDocRef.collection("inventory").document(txId)
+            val orderRecord = UserPurchasedCard(
+                id = txId,
+                userId = user.uid,
+                itemId = plan.id,
+                category = "DATA_RECHARGE",
+                title = packDesc,
+                denominationRupees = plan.priceRupees,
+                code = "Mobile: +91 $cleanNumber",
+                coinsPaid = plan.coinPrice,
+                status = "PENDING_RECHARGE",
+                cardColorTheme = "RED_RECHARGE",
+                purchaseTimestamp = System.currentTimeMillis()
+            )
+            tx.set(inventoryDocRef, orderRecord)
+
+            // 3. Log in transactions for Admin tracking
+            val txRecord = mapOf(
+                "id" to txId,
+                "userId" to user.uid,
+                "userEmail" to (user.email ?: ""),
+                "userName" to userName,
+                "type" to "DATA_RECHARGE",
+                "amount" to plan.priceRupees,
+                "coinAmount" to plan.coinPrice,
+                "operator" to plan.operator,
+                "mobileNumber" to cleanNumber,
+                "packDetails" to packDesc,
+                "status" to "PENDING",
+                "timestamp" to System.currentTimeMillis(),
+                "note" to "Mobile Recharge Request: $packDesc for +91 $cleanNumber"
+            )
+            tx.set(db.collection("transactions").document(txId), txRecord)
+        }.addOnSuccessListener {
+            _isLoading.value = false
+            onSuccess("Recharge request for +91 $cleanNumber ($packDesc) placed successfully! Admin will process it shortly.")
+        }.addOnFailureListener { e ->
+            _isLoading.value = false
+            onError(e.localizedMessage ?: "Recharge request failed. Please try again.")
         }
     }
 

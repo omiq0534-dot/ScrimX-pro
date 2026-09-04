@@ -495,3 +495,63 @@ fun AdminVipTopBanner(
         }
     }
 }
+
+@Composable
+fun LivePatchBanner(
+    tag: String,
+    notes: String,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(
+                Brush.horizontalGradient(
+                    listOf(Color(0xFF064E3B), Color(0xFF065F46), Color(0xFF0F172A))
+                )
+            )
+            .border(1.dp, Color(0xFF10B981).copy(alpha = 0.5f), RoundedCornerShape(12.dp))
+            .padding(horizontal = 14.dp, vertical = 9.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(Color(0xFF10B981))
+                    .padding(horizontal = 6.dp, vertical = 2.dp)
+            ) {
+                Text(
+                    "PATCH",
+                    color = Color.Black,
+                    fontWeight = FontWeight.Black,
+                    fontSize = 9.sp,
+                    letterSpacing = 0.5.sp
+                )
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    "⚡ LIVE HOTFIX: $tag",
+                    color = Color(0xFF6EE7B7),
+                    fontWeight = FontWeight.Black,
+                    fontSize = 11.sp
+                )
+                if (notes.isNotBlank()) {
+                    Text(
+                        notes,
+                        color = Color(0xFFE2E8F0),
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 10.5.sp,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    )
+                }
+            }
+        }
+    }
+}
+

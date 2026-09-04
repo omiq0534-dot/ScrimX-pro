@@ -27,9 +27,19 @@ data class AppControlConfig(
     val dailyFreeSpins: Int = 2,
     val watchVideoCoins: Int = 10,
     val dailyRewardCoins: Int = 15,
+    val newUserRealMoneyBonus: Int = 5,
+    val newUserAppMoneyBonus: Int = 50,
     val adminUpiId: String = "admin@upi",
     val supportWhatsapp: String = "+919876543210",
-    val supportTelegram: String = "https://t.me/tournament_support"
+    val supportTelegram: String = "https://t.me/tournament_support",
+    val patchTag: String = "v1.3.0-LIVE",
+    val patchNotes: String = "All server systems operational.",
+    val isLivePatchActive: Boolean = true,
+    val isRegistrationEnabled: Boolean = true,
+    val isWithdrawalsEnabled: Boolean = true,
+    val isSpinWheelEnabled: Boolean = true,
+    val isWatchAdsEnabled: Boolean = true,
+    val cacheBustTimestamp: Long = 0L
 )
 
 class AppControlViewModel : ViewModel() {
@@ -86,34 +96,9 @@ class AppControlViewModel : ViewModel() {
             ?: doc.getString("version")
         val parsedVersionName = rawVersionName?.trim()?.ifBlank { BuildConfig.VERSION_NAME } ?: BuildConfig.VERSION_NAME
 
-        // Clamp to current compiled release if server code was accidentally set to a non-existent build
-        val safeVersionCode = if (parsedVersionCode > BuildConfig.VERSION_CODE) {
-            // Auto-heal Firestore in background so ghost build (like Build 4) is reset to current Build 3
-            try {
-                val db = FirebaseHelper.getFirestore()
-                if (db != null) {
-                    val fixMap = mapOf(
-                        "latestVersionCode" to BuildConfig.VERSION_CODE,
-                        "latestVersionName" to BuildConfig.VERSION_NAME
-                    )
-                    db.collection("system_config").document("app_control").update(fixMap)
-                    db.collection("settings").document("app_control").update(fixMap)
-                }
-            } catch (e: Exception) {}
-            BuildConfig.VERSION_CODE
-        } else {
-            parsedVersionCode
-        }
-
-        val safeVersionName = if (parsedVersionCode > BuildConfig.VERSION_CODE) {
-            BuildConfig.VERSION_NAME
-        } else {
-            parsedVersionName
-        }
-
         _config.value = AppControlConfig(
-            latestVersionCode = safeVersionCode,
-            latestVersionName = safeVersionName,
+            latestVersionCode = parsedVersionCode,
+            latestVersionName = parsedVersionName,
             apkDownloadUrl = doc.getString("apkDownloadUrl") ?: "",
             whatsNew = doc.getString("whatsNew") ?: "• Bug fixes & improvements",
             isForceUpdate = doc.getBoolean("isForceUpdate") ?: false,
@@ -127,9 +112,19 @@ class AppControlViewModel : ViewModel() {
             dailyFreeSpins = doc.getLong("dailyFreeSpins")?.toInt() ?: 2,
             watchVideoCoins = doc.getLong("watchVideoCoins")?.toInt() ?: 10,
             dailyRewardCoins = doc.getLong("dailyRewardCoins")?.toInt() ?: 15,
+            newUserRealMoneyBonus = doc.getLong("newUserRealMoneyBonus")?.toInt() ?: 5,
+            newUserAppMoneyBonus = doc.getLong("newUserAppMoneyBonus")?.toInt() ?: 50,
             adminUpiId = doc.getString("adminUpiId") ?: "admin@upi",
             supportWhatsapp = doc.getString("supportWhatsapp") ?: "+919876543210",
-            supportTelegram = doc.getString("supportTelegram") ?: "https://t.me/tournament_support"
+            supportTelegram = doc.getString("supportTelegram") ?: "https://t.me/tournament_support",
+            patchTag = doc.getString("patchTag") ?: "v1.3.0-LIVE",
+            patchNotes = doc.getString("patchNotes") ?: "All server systems operational.",
+            isLivePatchActive = doc.getBoolean("isLivePatchActive") ?: true,
+            isRegistrationEnabled = doc.getBoolean("isRegistrationEnabled") ?: true,
+            isWithdrawalsEnabled = doc.getBoolean("isWithdrawalsEnabled") ?: true,
+            isSpinWheelEnabled = doc.getBoolean("isSpinWheelEnabled") ?: true,
+            isWatchAdsEnabled = doc.getBoolean("isWatchAdsEnabled") ?: true,
+            cacheBustTimestamp = doc.getLong("cacheBustTimestamp") ?: 0L
         )
     }
 

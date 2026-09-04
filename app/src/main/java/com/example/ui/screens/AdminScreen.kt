@@ -45,6 +45,7 @@ fun AdminScreen(navController: NavController) {
     var totalUsers by remember { mutableStateOf(0) }
     var isLiveStreamActive by remember { mutableStateOf(false) }
     var pendingQueriesCount by remember { mutableStateOf(0) }
+    var pendingRechargesCount by remember { mutableStateOf(0) }
 
     LaunchedEffect(Unit) {
         if (db != null) {
@@ -101,6 +102,14 @@ fun AdminScreen(navController: NavController) {
                     isLiveStreamActive = doc.getBoolean("isActive") == true
                 }
             }
+            db.collection("transactions")
+                .whereEqualTo("type", "DATA_RECHARGE")
+                .whereEqualTo("status", "PENDING")
+                .addSnapshotListener { snap, _ ->
+                    if (snap != null) {
+                        pendingRechargesCount = snap.size()
+                    }
+                }
         }
     }
 
@@ -279,6 +288,16 @@ fun AdminScreen(navController: NavController) {
                     icon = Icons.Default.AccountBalanceWallet,
                     iconTint = Color(0xFF00E676),
                     badge = "🔒 Owner",
+                    onClick = { navController.navigate("admin_manage_wallets") }
+                )
+
+                // 5b. Mobile Data Recharge Requests
+                ClassyAdminActionCard(
+                    title = "Mobile Data Recharge Requests",
+                    subtitle = "Approve pending Jio & Airtel data booster recharges & copy mobile numbers",
+                    icon = Icons.Default.Bolt,
+                    iconTint = Color(0xFFFF5252),
+                    badge = if (pendingRechargesCount > 0) "⚡ $pendingRechargesCount PENDING" else "⚡ Mobile Top-up",
                     onClick = { navController.navigate("admin_manage_wallets") }
                 )
 

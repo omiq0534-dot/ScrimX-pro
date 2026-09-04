@@ -211,13 +211,29 @@ class AuthViewModel : ViewModel() {
                     val cleanName = name.trim().ifBlank { cleanEmail.substringBefore("@").replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() } }
                     try {
                         val db = FirebaseHelper.getFirestore()
+                        var bonusCash = 5
+                        var bonusCoins = 50
+                        try {
+                            val cfgDoc = db?.collection("system_config")?.document("app_control")?.get()?.await()
+                            if (cfgDoc != null && cfgDoc.exists()) {
+                                bonusCash = cfgDoc.getLong("newUserRealMoneyBonus")?.toInt() ?: 5
+                                bonusCoins = cfgDoc.getLong("newUserAppMoneyBonus")?.toInt() ?: 50
+                            } else {
+                                val altDoc = db?.collection("settings")?.document("app_control")?.get()?.await()
+                                if (altDoc != null && altDoc.exists()) {
+                                    bonusCash = altDoc.getLong("newUserRealMoneyBonus")?.toInt() ?: 5
+                                    bonusCoins = altDoc.getLong("newUserAppMoneyBonus")?.toInt() ?: 50
+                                }
+                            }
+                        } catch (e: Exception) {}
+
                         db?.collection("users")?.document(uid)?.set(
                             mapOf(
                                 "uid" to uid,
                                 "email" to cleanEmail,
                                 "name" to cleanName,
-                                "realMoney" to 100,
-                                "appMoney" to 0
+                                "realMoney" to bonusCash,
+                                "appMoney" to bonusCoins
                             )
                         )
                     } catch (ex: Exception) {

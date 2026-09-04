@@ -33,9 +33,9 @@ fun AdminAppUpdateScreen(navController: NavController) {
     val context = LocalContext.current
     val db = remember { FirebaseHelper.getFirestore() }
 
-    // APK Version Update State (Current App is Build 3, Version 1.2.1)
-    var latestVersionCode by remember { mutableStateOf("3") }
-    var latestVersionName by remember { mutableStateOf("1.2.1") }
+    // APK Version Update State (Current App is Build 4, Version 1.3.0)
+    var latestVersionCode by remember { mutableStateOf("4") }
+    var latestVersionName by remember { mutableStateOf("1.3.0") }
     var apkDownloadUrl by remember { mutableStateOf("https://website-scrim-x-pro.vercel.app/") }
     var whatsNewText by remember { mutableStateOf("• Bug fixes & performance improvements\n• Enhanced tournament room speed\n• New instant cashout options") }
     var isForceUpdate by remember { mutableStateOf(false) }
@@ -51,9 +51,21 @@ fun AdminAppUpdateScreen(navController: NavController) {
     var dailyFreeSpins by remember { mutableStateOf("2") }
     var watchVideoCoins by remember { mutableStateOf("10") }
     var dailyRewardCoins by remember { mutableStateOf("15") }
+    var newUserRealMoneyBonus by remember { mutableStateOf("5") }
+    var newUserAppMoneyBonus by remember { mutableStateOf("50") }
     var adminUpiId by remember { mutableStateOf("admin@upi") }
     var supportWhatsapp by remember { mutableStateOf("+919876543210") }
     var supportTelegram by remember { mutableStateOf("https://t.me/tournament_support") }
+
+    // New Live Patch & Remote Switch System State
+    var patchTag by remember { mutableStateOf("v1.3.0-LIVE") }
+    var patchNotes by remember { mutableStateOf("All server systems operational & low-ping matchmaking active.") }
+    var isLivePatchActive by remember { mutableStateOf(true) }
+    var isRegistrationEnabled by remember { mutableStateOf(true) }
+    var isWithdrawalsEnabled by remember { mutableStateOf(true) }
+    var isSpinWheelEnabled by remember { mutableStateOf(true) }
+    var isWatchAdsEnabled by remember { mutableStateOf(true) }
+    var cacheBustTimestamp by remember { mutableStateOf(System.currentTimeMillis()) }
 
     var isLoading by remember { mutableStateOf(true) }
     var isSaving by remember { mutableStateOf(false) }
@@ -62,12 +74,12 @@ fun AdminAppUpdateScreen(navController: NavController) {
         val rawCode = doc.get("latestVersionCode") ?: doc.get("versionCode") ?: doc.get("version_code") ?: doc.get("build")
         latestVersionCode = when (rawCode) {
             is Number -> rawCode.toInt().toString()
-            is String -> rawCode.trim().ifBlank { "3" }
-            else -> "3"
+            is String -> rawCode.trim().ifBlank { "4" }
+            else -> "4"
         }
 
         val rawName = doc.getString("latestVersionName") ?: doc.getString("versionName") ?: doc.getString("version")
-        latestVersionName = rawName?.trim()?.ifBlank { "1.2.1" } ?: "1.2.1"
+        latestVersionName = rawName?.trim()?.ifBlank { "1.3.0" } ?: "1.3.0"
 
         apkDownloadUrl = doc.getString("apkDownloadUrl") ?: ""
         whatsNewText = doc.getString("whatsNew") ?: whatsNewText
@@ -83,9 +95,20 @@ fun AdminAppUpdateScreen(navController: NavController) {
         dailyFreeSpins = doc.getLong("dailyFreeSpins")?.toString() ?: "2"
         watchVideoCoins = doc.getLong("watchVideoCoins")?.toString() ?: "10"
         dailyRewardCoins = doc.getLong("dailyRewardCoins")?.toString() ?: "15"
+        newUserRealMoneyBonus = doc.getLong("newUserRealMoneyBonus")?.toString() ?: "5"
+        newUserAppMoneyBonus = doc.getLong("newUserAppMoneyBonus")?.toString() ?: "50"
         adminUpiId = doc.getString("adminUpiId") ?: "admin@upi"
         supportWhatsapp = doc.getString("supportWhatsapp") ?: "+919876543210"
         supportTelegram = doc.getString("supportTelegram") ?: "https://t.me/tournament_support"
+
+        patchTag = doc.getString("patchTag") ?: "v1.3.0-LIVE"
+        patchNotes = doc.getString("patchNotes") ?: patchNotes
+        isLivePatchActive = doc.getBoolean("isLivePatchActive") ?: true
+        isRegistrationEnabled = doc.getBoolean("isRegistrationEnabled") ?: true
+        isWithdrawalsEnabled = doc.getBoolean("isWithdrawalsEnabled") ?: true
+        isSpinWheelEnabled = doc.getBoolean("isSpinWheelEnabled") ?: true
+        isWatchAdsEnabled = doc.getBoolean("isWatchAdsEnabled") ?: true
+        cacheBustTimestamp = doc.getLong("cacheBustTimestamp") ?: System.currentTimeMillis()
     }
 
     // Load initial settings with robust type parsing
@@ -131,8 +154,8 @@ fun AdminAppUpdateScreen(navController: NavController) {
             return
         }
         isSaving = true
-        val targetCode = latestVersionCode.toIntOrNull() ?: 3
-        val targetName = latestVersionName.trim().ifBlank { "1.2.1" }
+        val targetCode = latestVersionCode.toIntOrNull() ?: 4
+        val targetName = latestVersionName.trim().ifBlank { "1.3.0" }
 
         val data = hashMapOf<String, Any>(
             "latestVersionCode" to targetCode,
@@ -152,9 +175,19 @@ fun AdminAppUpdateScreen(navController: NavController) {
             "dailyFreeSpins" to (dailyFreeSpins.toIntOrNull() ?: 2),
             "watchVideoCoins" to (watchVideoCoins.toIntOrNull() ?: 10),
             "dailyRewardCoins" to (dailyRewardCoins.toIntOrNull() ?: 15),
+            "newUserRealMoneyBonus" to (newUserRealMoneyBonus.toIntOrNull() ?: 5),
+            "newUserAppMoneyBonus" to (newUserAppMoneyBonus.toIntOrNull() ?: 50),
             "adminUpiId" to adminUpiId.trim(),
             "supportWhatsapp" to supportWhatsapp.trim(),
             "supportTelegram" to supportTelegram.trim(),
+            "patchTag" to patchTag.trim(),
+            "patchNotes" to patchNotes.trim(),
+            "isLivePatchActive" to isLivePatchActive,
+            "isRegistrationEnabled" to isRegistrationEnabled,
+            "isWithdrawalsEnabled" to isWithdrawalsEnabled,
+            "isSpinWheelEnabled" to isSpinWheelEnabled,
+            "isWatchAdsEnabled" to isWatchAdsEnabled,
+            "cacheBustTimestamp" to cacheBustTimestamp,
             "updatedAt" to com.google.firebase.Timestamp.now()
         )
 
@@ -389,6 +422,9 @@ fun AdminAppUpdateScreen(navController: NavController) {
                     }
                 }
 
+                // ==========================================
+                // CARD 1: 📦 APK VERSION & RELEASE BUILDS
+                // ==========================================
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -398,6 +434,15 @@ fun AdminAppUpdateScreen(navController: NavController) {
                         .padding(16.dp)
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                        AdminCardHeader(
+                            icon = Icons.Default.SystemUpdate,
+                            iconTint = Color(0xFF00E5FF),
+                            title = "1. 📦 APK VERSION & RELEASE BUILDS",
+                            subtitle = "Target version numbers & direct APK download link for players"
+                        )
+
+                        HorizontalDivider(color = Color(0xFF262938))
+
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -405,8 +450,8 @@ fun AdminAppUpdateScreen(navController: NavController) {
                             OutlinedTextField(
                                 value = latestVersionCode,
                                 onValueChange = { latestVersionCode = it },
-                                label = { Text("Version Code (e.g. 3)") },
-                                placeholder = { Text("3") },
+                                label = { Text("Version Code (e.g. 4)") },
+                                placeholder = { Text("4") },
                                 singleLine = true,
                                 modifier = Modifier.weight(1f),
                                 colors = adminTextFieldColors()
@@ -415,7 +460,7 @@ fun AdminAppUpdateScreen(navController: NavController) {
                                 value = latestVersionName,
                                 onValueChange = { latestVersionName = it },
                                 label = { Text("Version Name") },
-                                placeholder = { Text("1.2.1") },
+                                placeholder = { Text("1.3.0") },
                                 singleLine = true,
                                 modifier = Modifier.weight(1f),
                                 colors = adminTextFieldColors()
@@ -454,134 +499,12 @@ fun AdminAppUpdateScreen(navController: NavController) {
                             minLines = 3,
                             colors = adminTextFieldColors()
                         )
-
-                        // Force Update Toggle
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(if (isForceUpdate) Color(0xFF2E1014) else Color(0xFF191B24))
-                                .border(
-                                    1.dp,
-                                    if (isForceUpdate) Color(0xFFFF5252).copy(alpha = 0.5f) else Color(0xFF2B2E3D),
-                                    RoundedCornerShape(12.dp)
-                                )
-                                .padding(12.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    if (isForceUpdate) "🚨 Force Update (Mandatory)" else "Optional Update Mode",
-                                    color = if (isForceUpdate) Color(0xFFFF5252) else Color.White,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 13.sp
-                                )
-                                Text(
-                                    if (isForceUpdate) "Users CANNOT enter app without downloading update." else "Standard update prompt.",
-                                    color = Color(0xFF8E92A4),
-                                    fontSize = 11.sp
-                                )
-                            }
-                            Switch(
-                                checked = isForceUpdate,
-                                onCheckedChange = { isForceUpdate = it },
-                                colors = SwitchDefaults.colors(
-                                    checkedThumbColor = Color.White,
-                                    checkedTrackColor = Color(0xFFFF3366)
-                                )
-                            )
-                        }
-
-                        // Allow Later Button Switch
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(if (allowLaterButton) Color(0xFF0D2818) else Color(0xFF191B24))
-                                .border(
-                                    1.dp,
-                                    if (allowLaterButton) Color(0xFF00E676).copy(alpha = 0.5f) else Color(0xFF2B2E3D),
-                                    RoundedCornerShape(12.dp)
-                                )
-                                .padding(12.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    "Show 'Later / Skip' Button",
-                                    color = if (allowLaterButton) Color(0xFF00E676) else Color.White,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 13.sp
-                                )
-                                Text(
-                                    if (allowLaterButton) "Allowed: Users see 'Later' button and can skip." else "Hidden: Users get NO skip button unless permitted by you.",
-                                    color = Color(0xFF8E92A4),
-                                    fontSize = 11.sp
-                                )
-                            }
-                            Switch(
-                                checked = allowLaterButton,
-                                onCheckedChange = { allowLaterButton = it },
-                                colors = SwitchDefaults.colors(
-                                    checkedThumbColor = Color.White,
-                                    checkedTrackColor = Color(0xFF00E676)
-                                )
-                            )
-                        }
-
-                        // Auto-Ban Outdated APK Users Switch
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(if (autoBanOutdatedUsers) Color(0xFF3B0764).copy(alpha = 0.4f) else Color(0xFF191B24))
-                                .border(
-                                    1.dp,
-                                    if (autoBanOutdatedUsers) Color(0xFFA855F7).copy(alpha = 0.6f) else Color(0xFF2B2E3D),
-                                    RoundedCornerShape(12.dp)
-                                )
-                                .padding(12.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    "⚡ Auto-Ban Outdated APK Bypassers",
-                                    color = if (autoBanOutdatedUsers) Color(0xFFD8B4FE) else Color.White,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 13.sp
-                                )
-                                Text(
-                                    if (autoBanOutdatedUsers) "Enabled: Anyone attempting to bypass update with old APK gets auto temporary ban (24h)." else "Disabled: Just shows update blocker without ban.",
-                                    color = Color(0xFF8E92A4),
-                                    fontSize = 11.sp
-                                )
-                            }
-                            Switch(
-                                checked = autoBanOutdatedUsers,
-                                onCheckedChange = { autoBanOutdatedUsers = it },
-                                colors = SwitchDefaults.colors(
-                                    checkedThumbColor = Color.White,
-                                    checkedTrackColor = Color(0xFFA855F7)
-                                )
-                            )
-                        }
                     }
                 }
 
                 // ==========================================
-                // SECTION 2: ⚡ LIVE PATCH & INSTANT CONFIG
+                // CARD 2: 🚨 UPDATE POLICY & USER RESTRICTIONS
                 // ==========================================
-                Text(
-                    "⚡ 2. LIVE PATCH & INSTANT CONFIG (0s DOWNLOAD)",
-                    color = Color(0xFFFFD700),
-                    fontWeight = FontWeight.Black,
-                    fontSize = 13.sp,
-                    letterSpacing = 1.sp
-                )
-
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -591,43 +514,202 @@ fun AdminAppUpdateScreen(navController: NavController) {
                         .padding(16.dp)
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                        // Maintenance Switch
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(if (isMaintenanceMode) Color(0xFF331D08) else Color(0xFF191B24))
-                                .border(
-                                    1.dp,
-                                    if (isMaintenanceMode) Color(0xFFFF9800).copy(alpha = 0.5f) else Color(0xFF2B2E3D),
-                                    RoundedCornerShape(12.dp)
-                                )
-                                .padding(12.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                        AdminCardHeader(
+                            icon = Icons.Default.Security,
+                            iconTint = Color(0xFFFF5252),
+                            title = "2. 🚨 UPDATE POLICY & ENFORCEMENT",
+                            subtitle = "Manage mandatory blockers, skip permissions and cheat protection"
+                        )
+
+                        HorizontalDivider(color = Color(0xFF262938))
+
+                        // Force Update Toggle
+                        AdminSwitchRow(
+                            title = if (isForceUpdate) "🚨 Force Update (Mandatory)" else "Optional Update Mode",
+                            subtitle = if (isForceUpdate) "Users CANNOT enter app without downloading update." else "Standard non-blocking update dialog.",
+                            checked = isForceUpdate,
+                            onCheckedChange = { isForceUpdate = it },
+                            activeColor = Color(0xFFFF3366),
+                            activeContainerColor = Color(0xFF2E1014)
+                        )
+
+                        // Allow Later Button Switch
+                        AdminSwitchRow(
+                            title = "Show 'Later / Skip' Button",
+                            subtitle = if (allowLaterButton) "Allowed: Users see 'Later' button and can skip update." else "Hidden: Users get NO skip button.",
+                            checked = allowLaterButton,
+                            onCheckedChange = { allowLaterButton = it },
+                            activeColor = Color(0xFF00E676),
+                            activeContainerColor = Color(0xFF0D2818)
+                        )
+
+                        // Auto-Ban Outdated APK Users Switch
+                        AdminSwitchRow(
+                            title = "⚡ Auto-Ban Outdated APK Bypassers",
+                            subtitle = if (autoBanOutdatedUsers) "Active: Anyone bypassing update with old APK gets auto temporary ban (24h)." else "Disabled: Just shows update blocker without ban.",
+                            checked = autoBanOutdatedUsers,
+                            onCheckedChange = { autoBanOutdatedUsers = it },
+                            activeColor = Color(0xFFA855F7),
+                            activeContainerColor = Color(0xFF3B0764).copy(alpha = 0.4f)
+                        )
+                    }
+                }
+
+                // ==========================================
+                // CARD 3: ⚡ LIVE PATCH & HOTFIX SYSTEM (NEW SYSTEM!)
+                // ==========================================
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(Color(0xFF14161F))
+                        .border(1.dp, Color(0xFF262938), RoundedCornerShape(18.dp))
+                        .padding(16.dp)
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                        AdminCardHeader(
+                            icon = Icons.Default.Bolt,
+                            iconTint = Color(0xFFFFD700),
+                            title = "3. ⚡ LIVE PATCH & HOTFIX SYSTEM",
+                            subtitle = "Instant over-the-air hotfix deployment with 0 seconds download required"
+                        )
+
+                        HorizontalDivider(color = Color(0xFF262938))
+
+                        OutlinedTextField(
+                            value = patchTag,
+                            onValueChange = { patchTag = it },
+                            label = { Text("Live Patch Tag (e.g. v1.3.0-HOTFIX-P1)") },
+                            placeholder = { Text("v1.3.0-LIVE") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = adminTextFieldColors(),
+                            leadingIcon = { Icon(Icons.Default.Tag, contentDescription = null, tint = Color(0xFFFFD700)) }
+                        )
+
+                        OutlinedTextField(
+                            value = patchNotes,
+                            onValueChange = { patchNotes = it },
+                            label = { Text("Hotfix Notes / Live Status") },
+                            placeholder = { Text("All server systems operational & matchmaking active.") },
+                            modifier = Modifier.fillMaxWidth(),
+                            minLines = 2,
+                            colors = adminTextFieldColors()
+                        )
+
+                        AdminSwitchRow(
+                            title = "Show In-Game Live Patch Status Banner",
+                            subtitle = if (isLivePatchActive) "Active: Displays green live patch status badge on player screen." else "Hidden: Patch banner is hidden.",
+                            checked = isLivePatchActive,
+                            onCheckedChange = { isLivePatchActive = it },
+                            activeColor = Color(0xFFFFD700),
+                            activeContainerColor = Color(0xFF2E2408)
+                        )
+
+                        Button(
+                            onClick = {
+                                cacheBustTimestamp = System.currentTimeMillis()
+                                Toast.makeText(context, "🔄 Cache-Bust timestamp refreshed! Click SAVE to broadcast.", Toast.LENGTH_SHORT).show()
+                            },
+                            modifier = Modifier.fillMaxWidth().height(42.dp),
+                            shape = RoundedCornerShape(10.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF252A38))
                         ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    if (isMaintenanceMode) "🚧 Server Maintenance ON" else "Server Live (Normal)",
-                                    color = if (isMaintenanceMode) Color(0xFFFFB74D) else Color.White,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 13.sp
-                                )
-                                Text(
-                                    if (isMaintenanceMode) "All regular users see maintenance screen." else "App running smoothly for everyone.",
-                                    color = Color(0xFF8E92A4),
-                                    fontSize = 11.sp
-                                )
-                            }
-                            Switch(
-                                checked = isMaintenanceMode,
-                                onCheckedChange = { isMaintenanceMode = it },
-                                colors = SwitchDefaults.colors(
-                                    checkedThumbColor = Color.White,
-                                    checkedTrackColor = Color(0xFFFF9800)
-                                )
-                            )
+                            Icon(Icons.Default.Sync, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("🔄 FORCE RE-SYNC ALL CLIENT CACHES", color = Color(0xFFFFD700), fontWeight = FontWeight.Bold, fontSize = 11.5.sp)
                         }
+                    }
+                }
+
+                // ==========================================
+                // CARD 4: 🎛️ REMOTE FEATURE KILL-SWITCHES (NEW SYSTEM!)
+                // ==========================================
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(Color(0xFF14161F))
+                        .border(1.dp, Color(0xFF262938), RoundedCornerShape(18.dp))
+                        .padding(16.dp)
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                        AdminCardHeader(
+                            icon = Icons.Default.ToggleOn,
+                            iconTint = Color(0xFF00E5FF),
+                            title = "4. 🎛️ REMOTE FEATURE TOGGLES",
+                            subtitle = "Instantly enable or disable individual app features without restarting"
+                        )
+
+                        HorizontalDivider(color = Color(0xFF262938))
+
+                        AdminSwitchRow(
+                            title = "Tournament Registrations",
+                            subtitle = if (isRegistrationEnabled) "Active: Players can join Free Fire & BGMI matches." else "Paused: Registrations temporarily locked.",
+                            checked = isRegistrationEnabled,
+                            onCheckedChange = { isRegistrationEnabled = it },
+                            activeColor = Color(0xFF00E5FF),
+                            activeContainerColor = Color(0xFF08262E)
+                        )
+
+                        AdminSwitchRow(
+                            title = "Real Cash Withdrawals",
+                            subtitle = if (isWithdrawalsEnabled) "Active: Players can submit UPI withdrawal requests." else "Paused: Cashouts temporarily held.",
+                            checked = isWithdrawalsEnabled,
+                            onCheckedChange = { isWithdrawalsEnabled = it },
+                            activeColor = Color(0xFF00E676),
+                            activeContainerColor = Color(0xFF0D2818)
+                        )
+
+                        AdminSwitchRow(
+                            title = "Lucky Spin Wheel",
+                            subtitle = if (isSpinWheelEnabled) "Active: Daily spin wheel is open for all players." else "Paused: Spin wheel temporarily disabled.",
+                            checked = isSpinWheelEnabled,
+                            onCheckedChange = { isSpinWheelEnabled = it },
+                            activeColor = Color(0xFFFFD700),
+                            activeContainerColor = Color(0xFF2E2408)
+                        )
+
+                        AdminSwitchRow(
+                            title = "Watch & Earn Video Ads",
+                            subtitle = if (isWatchAdsEnabled) "Active: Players earn coins for watching rewarded ads." else "Paused: Video ads reward is paused.",
+                            checked = isWatchAdsEnabled,
+                            onCheckedChange = { isWatchAdsEnabled = it },
+                            activeColor = Color(0xFFA855F7),
+                            activeContainerColor = Color(0xFF3B0764).copy(alpha = 0.4f)
+                        )
+                    }
+                }
+
+                // ==========================================
+                // CARD 5: 🚧 SERVER MAINTENANCE MODE
+                // ==========================================
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(Color(0xFF14161F))
+                        .border(1.dp, Color(0xFF262938), RoundedCornerShape(18.dp))
+                        .padding(16.dp)
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                        AdminCardHeader(
+                            icon = Icons.Default.Build,
+                            iconTint = Color(0xFFFF9800),
+                            title = "5. 🚧 SERVER MAINTENANCE LOCK",
+                            subtitle = "Full-screen maintenance screen displayed to all regular players"
+                        )
+
+                        HorizontalDivider(color = Color(0xFF262938))
+
+                        AdminSwitchRow(
+                            title = if (isMaintenanceMode) "🚧 Server Maintenance ON" else "Server Live (Normal)",
+                            subtitle = if (isMaintenanceMode) "All regular players are locked on the maintenance screen." else "App running smoothly for everyone.",
+                            checked = isMaintenanceMode,
+                            onCheckedChange = { isMaintenanceMode = it },
+                            activeColor = Color(0xFFFF9800),
+                            activeContainerColor = Color(0xFF331D08)
+                        )
 
                         if (isMaintenanceMode) {
                             OutlinedTextField(
@@ -635,55 +717,127 @@ fun AdminAppUpdateScreen(navController: NavController) {
                                 onValueChange = { maintenanceMessage = it },
                                 label = { Text("Maintenance Message") },
                                 modifier = Modifier.fillMaxWidth(),
+                                minLines = 2,
                                 colors = adminTextFieldColors()
                             )
                         }
+                    }
+                }
 
-                        Divider(color = Color(0xFF262938))
+                // ==========================================
+                // CARD 6: 📢 LIVE HOME SCREEN ANNOUNCEMENT TICKER
+                // ==========================================
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(Color(0xFF14161F))
+                        .border(1.dp, Color(0xFF262938), RoundedCornerShape(18.dp))
+                        .padding(16.dp)
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                        AdminCardHeader(
+                            icon = Icons.Default.Campaign,
+                            iconTint = Color(0xFFF43F5E),
+                            title = "6. 📢 LIVE ANNOUNCEMENT TICKER",
+                            subtitle = "Broadcast high-priority announcement on top of the Home Screen"
+                        )
 
-                        // Live Marquee Announcement
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    "📢 Live Announcement Ticker",
-                                    color = Color.White,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 13.sp
-                                )
-                                Text(
-                                    "Shows moving red alert bar on Home Screen",
-                                    color = Color(0xFF8E92A4),
-                                    fontSize = 11.sp
-                                )
-                            }
-                            Switch(
-                                checked = isAnnouncementActive,
-                                onCheckedChange = { isAnnouncementActive = it },
-                                colors = SwitchDefaults.colors(
-                                    checkedThumbColor = Color.White,
-                                    checkedTrackColor = Color(0xFF00E676)
-                                )
-                            )
-                        }
+                        HorizontalDivider(color = Color(0xFF262938))
+
+                        AdminSwitchRow(
+                            title = "Live Announcement Ticker",
+                            subtitle = if (isAnnouncementActive) "Active: Displays scrolling alert bar on Home Screen." else "Hidden: Alert bar is turned off.",
+                            checked = isAnnouncementActive,
+                            onCheckedChange = { isAnnouncementActive = it },
+                            activeColor = Color(0xFFF43F5E),
+                            activeContainerColor = Color(0xFF330E18)
+                        )
 
                         if (isAnnouncementActive) {
                             OutlinedTextField(
                                 value = announcementNotice,
                                 onValueChange = { announcementNotice = it },
-                                label = { Text("Notice Text") },
+                                label = { Text("Notice Text (Shown to players)") },
                                 modifier = Modifier.fillMaxWidth(),
+                                minLines = 2,
+                                colors = adminTextFieldColors()
+                            )
+                        }
+                    }
+                }
+
+                // ==========================================
+                // CARD 7: 🪙 SIGNUP BONUSES & REWARD ECONOMY
+                // ==========================================
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(Color(0xFF14161F))
+                        .border(1.dp, Color(0xFF262938), RoundedCornerShape(18.dp))
+                        .padding(16.dp)
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                        AdminCardHeader(
+                            icon = Icons.Default.MonetizationOn,
+                            iconTint = Color(0xFF00E676),
+                            title = "7. 🪙 SIGNUP BONUSES & ECONOMY",
+                            subtitle = "New player joining bonus (Real Cash & Coins), spin jackpot, and ad rewards"
+                        )
+
+                        HorizontalDivider(color = Color(0xFF262938))
+
+                        // Section 1: New User Joining Bonus (Real Cash & Coins)
+                        Text(
+                            "🎁 NEW USER SIGNUP / JOINING BONUS",
+                            fontWeight = FontWeight.Black,
+                            fontSize = 12.sp,
+                            color = Color(0xFF00E676),
+                            letterSpacing = 0.5.sp
+                        )
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            OutlinedTextField(
+                                value = newUserRealMoneyBonus,
+                                onValueChange = { newUserRealMoneyBonus = it },
+                                label = { Text("Joining Real Cash (₹)") },
+                                placeholder = { Text("5") },
+                                singleLine = true,
+                                modifier = Modifier.weight(1f),
+                                colors = adminTextFieldColors()
+                            )
+                            OutlinedTextField(
+                                value = newUserAppMoneyBonus,
+                                onValueChange = { newUserAppMoneyBonus = it },
+                                label = { Text("Joining App Coins") },
+                                placeholder = { Text("50") },
+                                singleLine = true,
+                                modifier = Modifier.weight(1f),
                                 colors = adminTextFieldColors()
                             )
                         }
 
-                        Divider(color = Color(0xFF262938))
+                        Text(
+                            "💡 Pehle ₹100 tha jisse loss ho sakta tha. Ab default ₹5 Real Cash aur 50 Coins hai. Aap ise kabhi bhi badal sakte hain!",
+                            fontSize = 11.sp,
+                            color = Color(0xFF9CA3AF),
+                            lineHeight = 15.sp
+                        )
 
-                        // Game Economy & Coin Rewards Patch
-                        Text("🎮 Game Economy & Rewards Patch", color = Color(0xFFE2E8F0), fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                        HorizontalDivider(color = Color(0xFF262938))
+
+                        // Section 2: Daily Rewards & Ad Coins
+                        Text(
+                            "🎰 IN-GAME EARNING & JACKPOT",
+                            fontWeight = FontWeight.Black,
+                            fontSize = 12.sp,
+                            color = Color.White,
+                            letterSpacing = 0.5.sp
+                        )
 
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -732,21 +886,52 @@ fun AdminAppUpdateScreen(navController: NavController) {
                                 colors = adminTextFieldColors()
                             )
                         }
+                    }
+                }
 
-                        Divider(color = Color(0xFF262938))
+                // ==========================================
+                // CARD 8: 💳 TOURNAMENT UPI & SUPPORT CONTACTS
+                // ==========================================
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(Color(0xFF14161F))
+                        .border(1.dp, Color(0xFF262938), RoundedCornerShape(18.dp))
+                        .padding(16.dp)
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                        AdminCardHeader(
+                            icon = Icons.Default.AccountBalance,
+                            iconTint = Color(0xFF60A5FA),
+                            title = "8. 💳 TOURNAMENT UPI & SUPPORT",
+                            subtitle = "Official deposit payment receiver and player support links"
+                        )
 
-                        // Admin UPI & Support
-                        Text("💳 Admin UPI & Support Links", color = Color(0xFFE2E8F0), fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                        HorizontalDivider(color = Color(0xFF262938))
 
                         OutlinedTextField(
                             value = adminUpiId,
                             onValueChange = { adminUpiId = it },
-                            label = { Text("Admin UPI ID for deposits") },
+                            label = { Text("Admin UPI ID (Used for player QR & UPI deposits)") },
                             placeholder = { Text("yourupi@oksbi") },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
                             colors = adminTextFieldColors(),
-                            leadingIcon = { Icon(Icons.Default.AccountBalance, contentDescription = null, tint = Color.Gray) }
+                            leadingIcon = { Icon(Icons.Default.AccountBalance, contentDescription = null, tint = Color(0xFF60A5FA)) },
+                            trailingIcon = {
+                                if (adminUpiId.isNotBlank()) {
+                                    IconButton(onClick = {
+                                        try {
+                                            val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                                            clipboard.setPrimaryClip(android.content.ClipData.newPlainText("Admin UPI ID", adminUpiId.trim()))
+                                            Toast.makeText(context, "📋 UPI ID Copied!", Toast.LENGTH_SHORT).show()
+                                        } catch (e: Exception) {}
+                                    }) {
+                                        Icon(Icons.Default.ContentCopy, contentDescription = "Copy UPI", tint = Color(0xFF60A5FA))
+                                    }
+                                }
+                            }
                         )
 
                         Row(
@@ -814,3 +999,90 @@ private fun adminTextFieldColors() = OutlinedTextFieldDefaults.colors(
     focusedContainerColor = Color(0xFF0E1017),
     unfocusedContainerColor = Color(0xFF0E1017)
 )
+
+@Composable
+private fun AdminCardHeader(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    iconTint: Color,
+    title: String,
+    subtitle: String
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(iconTint.copy(alpha = 0.15f))
+                .border(1.dp, iconTint.copy(alpha = 0.4f), RoundedCornerShape(10.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(18.dp))
+        }
+        Spacer(modifier = Modifier.width(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                title,
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                fontSize = 13.sp,
+                letterSpacing = 0.5.sp
+            )
+            Text(
+                subtitle,
+                color = Color(0xFF8E92A4),
+                fontSize = 10.5.sp,
+                lineHeight = 14.sp
+            )
+        }
+    }
+}
+
+@Composable
+private fun AdminSwitchRow(
+    title: String,
+    subtitle: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    activeColor: Color = Color(0xFF00E676),
+    activeContainerColor: Color = Color(0xFF0D2818)
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(if (checked) activeContainerColor else Color(0xFF191B24))
+            .border(
+                1.dp,
+                if (checked) activeColor.copy(alpha = 0.5f) else Color(0xFF2B2E3D),
+                RoundedCornerShape(12.dp)
+            )
+            .padding(12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                title,
+                color = if (checked) activeColor else Color.White,
+                fontWeight = FontWeight.Bold,
+                fontSize = 12.5.sp
+            )
+            Text(
+                subtitle,
+                color = Color(0xFF8E92A4),
+                fontSize = 10.5.sp
+            )
+        }
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = Color.White,
+                checkedTrackColor = activeColor
+            )
+        )
+    }
+}

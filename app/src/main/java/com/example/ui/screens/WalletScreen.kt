@@ -64,11 +64,15 @@ data class TransactionRecord(
     val id: String = "",
     val userId: String = "",
     val userEmail: String = "",
-    val type: String = "DEPOSIT", // "DEPOSIT", "WITHDRAW", "ENTRY_FEE", "WINNING", "CONVERT", "REDEEM"
+    val type: String = "DEPOSIT", // "DEPOSIT", "WITHDRAW", "ENTRY_FEE", "WINNING", "CONVERT", "REDEEM", "DATA_RECHARGE"
     val amount: Int = 0,
+    val coinAmount: Int = 0,
     val status: String = "SUCCESS", // "PENDING", "SUCCESS", "REJECTED"
     val utrOrUpi: String = "",
     val upiId: String = "",
+    val operator: String = "", // "JIO" or "AIRTEL"
+    val mobileNumber: String = "",
+    val packDetails: String = "",
     val screenshotBase64: String = "",
     val screenshotUrl: String = "",
     val timestamp: Long = System.currentTimeMillis(),
@@ -370,23 +374,25 @@ fun WalletScreen(
         AlertDialog(
             containerColor = Color(0xFF14161F),
             onDismissRequest = { if (!isSubmittingDeposit) showDepositDialog = false },
+            properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false),
+            modifier = Modifier.fillMaxWidth(0.93f),
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(Color(0xFFFFD700)))
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Text("ADD CASH VIA QR / UPI", fontWeight = FontWeight.Black, color = Color.White, fontSize = 16.sp)
+                    Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(Color(0xFFFFD700)))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("ADD CASH VIA QR / UPI", fontWeight = FontWeight.Black, color = Color.White, fontSize = 15.sp)
                 }
             },
             text = {
                 Column(
                     modifier = Modifier.verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(14.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
                         "Step 1: Scan QR or Click to Pay using GPay / PhonePe / Paytm",
                         color = Color(0xFFC0C4D6),
-                        fontSize = 12.sp,
+                        fontSize = 11.5.sp,
                         fontWeight = FontWeight.Medium,
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -394,21 +400,21 @@ fun WalletScreen(
                     // Quick Amount Chips
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         listOf("20", "50", "100", "200").forEach { amt ->
                             val isSelected = depositAmount == amt
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
-                                    .clip(RoundedCornerShape(10.dp))
+                                    .clip(RoundedCornerShape(8.dp))
                                     .background(if (isSelected) Color(0xFF222636) else Color(0xFF0C0D12))
-                                    .border(1.dp, if (isSelected) Color(0xFFFFD700) else Color(0xFF262938), RoundedCornerShape(10.dp))
+                                    .border(1.dp, if (isSelected) Color(0xFFFFD700) else Color(0xFF262938), RoundedCornerShape(8.dp))
                                     .clickable { depositAmount = amt }
-                                    .padding(vertical = 8.dp),
+                                    .padding(vertical = 6.dp),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text("₹$amt", color = if (isSelected) Color(0xFFFFD700) else Color.White, fontWeight = FontWeight.Black, fontSize = 13.sp)
+                                Text("₹$amt", color = if (isSelected) Color(0xFFFFD700) else Color.White, fontWeight = FontWeight.Black, fontSize = 12.sp)
                             }
                         }
                     }
@@ -420,14 +426,14 @@ fun WalletScreen(
                         placeholder = "e.g. 50"
                     )
 
-                    // High-Res Scanner QR Code Box
+                    // Compact High-Res Scanner QR Code Box (Zero wasted gap)
                     Box(
                         modifier = Modifier
-                            .size(180.dp)
-                            .clip(RoundedCornerShape(16.dp))
+                            .size(125.dp)
+                            .clip(RoundedCornerShape(12.dp))
                             .background(Color.White)
-                            .border(2.dp, Color(0xFFFFD700), RoundedCornerShape(16.dp))
-                            .padding(8.dp),
+                            .border(1.5.dp, Color(0xFFFFD700), RoundedCornerShape(12.dp))
+                            .padding(6.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         AsyncImage(
@@ -441,7 +447,7 @@ fun WalletScreen(
                         "Scan QR code with any UPI App",
                         color = Color(0xFFFFD700),
                         fontWeight = FontWeight.Bold,
-                        fontSize = 11.sp
+                        fontSize = 10.5.sp
                     )
 
                     // Direct UPI App Trigger Button
@@ -456,22 +462,22 @@ fun WalletScreen(
                             }
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700)),
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.fillMaxWidth().height(48.dp)
+                        shape = RoundedCornerShape(10.dp),
+                        modifier = Modifier.fillMaxWidth().height(42.dp)
                     ) {
-                        Icon(Icons.Default.OpenInNew, contentDescription = null, tint = Color.Black, modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("PAY ₹$selectedAmt VIA GPAY / PHONEPE", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 12.sp)
+                        Icon(Icons.Default.OpenInNew, contentDescription = null, tint = Color.Black, modifier = Modifier.size(15.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("PAY ₹$selectedAmt VIA GPAY / PHONEPE", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 11.5.sp)
                     }
 
                     // UPI ID Box with Copy Button
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
+                            .clip(RoundedCornerShape(10.dp))
                             .background(Color(0xFF0C0D12))
-                            .border(1.dp, Color(0xFF262938), RoundedCornerShape(12.dp))
-                            .padding(12.dp)
+                            .border(1.dp, Color(0xFF262938), RoundedCornerShape(10.dp))
+                            .padding(8.dp)
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -479,9 +485,8 @@ fun WalletScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text("OFFICIAL TOURNAMENT UPI ID", color = Color(0xFF75798E), fontSize = 9.sp, fontWeight = FontWeight.Black)
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(targetUpi, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                Text("OFFICIAL TOURNAMENT UPI ID", color = Color(0xFF75798E), fontSize = 8.5.sp, fontWeight = FontWeight.Black)
+                                Text(targetUpi, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                             }
                             IconButton(
                                 onClick = {
@@ -490,23 +495,22 @@ fun WalletScreen(
                                     clipboard.setPrimaryClip(clip)
                                     Toast.makeText(context, "UPI ID Copied!", Toast.LENGTH_SHORT).show()
                                 },
-                                modifier = Modifier.size(34.dp).background(Color(0xFF1E212D), RoundedCornerShape(8.dp))
+                                modifier = Modifier.size(30.dp).background(Color(0xFF1E212D), RoundedCornerShape(6.dp))
                             ) {
-                                Icon(Icons.Default.ContentCopy, contentDescription = "Copy", tint = Color.White, modifier = Modifier.size(16.dp))
+                                Icon(Icons.Default.ContentCopy, contentDescription = "Copy", tint = Color.White, modifier = Modifier.size(14.dp))
                             }
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(4.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            "Step 2: Enter 12-Digit UTR Number (Mandatory):",
+                            "Step 2: Enter 12-Digit UTR (Mandatory):",
                             color = Color(0xFFC0C4D6),
-                            fontSize = 12.sp,
+                            fontSize = 11.5.sp,
                             fontWeight = FontWeight.Bold
                         )
                         val utrDigitsCount = depositUtr.filter { it.isDigit() }.length
@@ -521,7 +525,6 @@ fun WalletScreen(
                     ClassyDarkInput(
                         value = depositUtr,
                         onValueChange = { input ->
-                            // Only allow digits up to 12 characters
                             val filtered = input.filter { it.isDigit() }
                             if (filtered.length <= 12) {
                                 depositUtr = filtered
@@ -535,17 +538,16 @@ fun WalletScreen(
                         Text(
                             "⚠️ UTR must be exactly 12 digits (currently ${depositUtr.length} digits)",
                             color = Color(0xFFFF7043),
-                            fontSize = 10.5.sp,
+                            fontSize = 10.sp,
                             fontWeight = FontWeight.Medium,
                             modifier = Modifier.fillMaxWidth()
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         "Step 3: Attach Payment Screenshot (Mandatory):",
                         color = Color(0xFFC0C4D6),
-                        fontSize = 12.sp,
+                        fontSize = 11.5.sp,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.fillMaxWidth()
                     )
