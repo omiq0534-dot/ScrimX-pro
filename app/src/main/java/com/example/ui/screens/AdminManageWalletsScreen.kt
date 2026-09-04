@@ -292,30 +292,42 @@ fun AdminManageWalletsScreen(navController: NavController) {
                                         scope.launch {
                                             try {
                                                 val txUpdates = mutableMapOf<String, Any>(
-                                                    "status" to "SUCCESS"
+                                                    "status" to "SUCCESS",
+                                                    "completedTimestamp" to System.currentTimeMillis()
                                                 )
                                                 if (proofBase64.isNotBlank()) {
                                                     txUpdates["screenshotBase64"] = proofBase64
+                                                    txUpdates["proofScreenshotBase64"] = proofBase64
                                                 }
                                                 if (opTxnId.isNotBlank()) {
                                                     txUpdates["operatorTxnId"] = opTxnId
+                                                    txUpdates["rechargeTxnId"] = opTxnId
                                                 }
-                                                db?.collection("transactions")?.document(tx.id)?.update(txUpdates)?.await()
+                                                db?.collection("transactions")?.document(tx.id)
+                                                    ?.set(txUpdates, com.google.firebase.firestore.SetOptions.merge())?.await()
 
                                                 val invUpdates = mutableMapOf<String, Any>(
-                                                    "status" to "SUCCESS"
+                                                    "status" to "SUCCESS",
+                                                    "completedTimestamp" to System.currentTimeMillis()
                                                 )
                                                 if (proofBase64.isNotBlank()) {
                                                     invUpdates["proofScreenshotBase64"] = proofBase64
+                                                    invUpdates["screenshotBase64"] = proofBase64
                                                 }
                                                 if (opTxnId.isNotBlank()) {
                                                     invUpdates["rechargeTxnId"] = opTxnId
+                                                    invUpdates["operatorTxnId"] = opTxnId
                                                 }
-                                                db?.collection("users")?.document(tx.userId)?.collection("inventory")?.document(tx.id)?.update(invUpdates)?.await()
+                                                if (tx.userId.isNotBlank()) {
+                                                    db?.collection("users")?.document(tx.userId)?.collection("inventory")?.document(tx.id)
+                                                        ?.set(invUpdates, com.google.firebase.firestore.SetOptions.merge())?.await()
+                                                    db?.collection("users")?.document(tx.userId)?.collection("purchased_cards")?.document(tx.id)
+                                                        ?.set(invUpdates, com.google.firebase.firestore.SetOptions.merge())?.await()
+                                                }
 
                                                 Toast.makeText(context, "✅ Recharge Marked SUCCESS with Proof for +91 ${tx.mobileNumber}!", Toast.LENGTH_LONG).show()
                                             } catch (e: Exception) {
-                                                Toast.makeText(context, "Update error: ${e.message}", Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(context, "Update error: ${e.message}", Toast.LENGTH_LONG).show()
                                             }
                                         }
                                     },
@@ -324,14 +336,23 @@ fun AdminManageWalletsScreen(navController: NavController) {
                                             try {
                                                 // Refund coins back to user
                                                 if (tx.coinAmount > 0) {
+                                                    val refundMap = mapOf(
+                                                        "appMoney" to FieldValue.increment(tx.coinAmount.toLong()),
+                                                        "walletBalance" to FieldValue.increment(tx.coinAmount.toLong())
+                                                    )
                                                     db?.collection("users")?.document(tx.userId)
-                                                        ?.update("appMoney", FieldValue.increment(tx.coinAmount.toLong()))?.await()
+                                                        ?.set(refundMap, com.google.firebase.firestore.SetOptions.merge())?.await()
                                                 }
-                                                db?.collection("transactions")?.document(tx.id)?.update("status", "REJECTED")?.await()
-                                                db?.collection("users")?.document(tx.userId)?.collection("inventory")?.document(tx.id)?.update("status", "REJECTED")?.await()
+                                                val rejMap = mapOf("status" to "REJECTED")
+                                                db?.collection("transactions")?.document(tx.id)
+                                                    ?.set(rejMap, com.google.firebase.firestore.SetOptions.merge())?.await()
+                                                if (tx.userId.isNotBlank()) {
+                                                    db?.collection("users")?.document(tx.userId)?.collection("inventory")?.document(tx.id)
+                                                        ?.set(rejMap, com.google.firebase.firestore.SetOptions.merge())?.await()
+                                                }
                                                 Toast.makeText(context, "❌ Recharge rejected & ${tx.coinAmount} coins refunded!", Toast.LENGTH_SHORT).show()
                                             } catch (e: Exception) {
-                                                Toast.makeText(context, "Refund error: ${e.message}", Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(context, "Refund error: ${e.message}", Toast.LENGTH_LONG).show()
                                             }
                                         }
                                     }
@@ -579,10 +600,16 @@ fun AdminManageWalletsScreen(navController: NavController) {
                                                 Button(
                                                     onClick = {
                                                         scope.launch {
-                                                            val newCoins = user.appMoney + amt
-                                                            db?.collection("users")?.document(user.uid)?.update("appMoney", newCoins)?.await()
-                                                            foundUser = user.copy(appMoney = newCoins)
-                                                            Toast.makeText(context, "Added +$amt Coins! New Total: $newCoins", Toast.LENGTH_SHORT).show()
+                                                            try {
+                                                                val newCoins = user.appMoney + amt
+                                                                val updates = mapOf("appMoney" to newCoins, "walletBalance" to newCoins)
+                                                                db?.collection("users")?.document(user.uid)
+                                                                    ?.set(updates, com.google.firebase.firestore.SetOptions.merge())?.await()
+                                                                foundUser = user.copy(appMoney = newCoins)
+                                                                Toast.makeText(context, "Added +$amt Coins! New Total: $newCoins", Toast.LENGTH_SHORT).show()
+                                                            } catch (e: Exception) {
+                                                                Toast.makeText(context, "Coin update failed: ${e.message}", Toast.LENGTH_LONG).show()
+                                                            }
                                                         }
                                                     },
                                                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF262112), contentColor = Color(0xFFFFD700)),
@@ -598,10 +625,16 @@ fun AdminManageWalletsScreen(navController: NavController) {
                                                 Button(
                                                     onClick = {
                                                         scope.launch {
-                                                            val newCoins = (user.appMoney - amt).coerceAtLeast(0)
-                                                            db?.collection("users")?.document(user.uid)?.update("appMoney", newCoins)?.await()
-                                                            foundUser = user.copy(appMoney = newCoins)
-                                                            Toast.makeText(context, "Deducted -$amt Coins! New Total: $newCoins", Toast.LENGTH_SHORT).show()
+                                                            try {
+                                                                val newCoins = (user.appMoney - amt).coerceAtLeast(0)
+                                                                val updates = mapOf("appMoney" to newCoins, "walletBalance" to newCoins)
+                                                                db?.collection("users")?.document(user.uid)
+                                                                    ?.set(updates, com.google.firebase.firestore.SetOptions.merge())?.await()
+                                                                foundUser = user.copy(appMoney = newCoins)
+                                                                Toast.makeText(context, "Deducted -$amt Coins! New Total: $newCoins", Toast.LENGTH_SHORT).show()
+                                                            } catch (e: Exception) {
+                                                                Toast.makeText(context, "Coin update failed: ${e.message}", Toast.LENGTH_LONG).show()
+                                                            }
                                                         }
                                                     },
                                                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2A1515), contentColor = Color(0xFFFF6B6B)),
@@ -630,11 +663,17 @@ fun AdminManageWalletsScreen(navController: NavController) {
                                                 onClick = {
                                                     val amt = coinAmountInput.toIntOrNull() ?: return@Button
                                                     scope.launch {
-                                                        val newCoins = user.appMoney + amt
-                                                        db?.collection("users")?.document(user.uid)?.update("appMoney", newCoins)?.await()
-                                                        foundUser = user.copy(appMoney = newCoins)
-                                                        coinAmountInput = ""
-                                                        Toast.makeText(context, "🪙 Added +$amt Coins! (Total: $newCoins)", Toast.LENGTH_SHORT).show()
+                                                        try {
+                                                            val newCoins = user.appMoney + amt
+                                                            val updates = mapOf("appMoney" to newCoins, "walletBalance" to newCoins)
+                                                            db?.collection("users")?.document(user.uid)
+                                                                ?.set(updates, com.google.firebase.firestore.SetOptions.merge())?.await()
+                                                            foundUser = user.copy(appMoney = newCoins)
+                                                            coinAmountInput = ""
+                                                            Toast.makeText(context, "🪙 Added +$amt Coins! (Total: $newCoins)", Toast.LENGTH_SHORT).show()
+                                                        } catch (e: Exception) {
+                                                            Toast.makeText(context, "Failed to add coins: ${e.message}", Toast.LENGTH_LONG).show()
+                                                        }
                                                     }
                                                 },
                                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700), contentColor = Color.Black),
@@ -648,11 +687,17 @@ fun AdminManageWalletsScreen(navController: NavController) {
                                                 onClick = {
                                                     val amt = coinAmountInput.toIntOrNull() ?: return@Button
                                                     scope.launch {
-                                                        val newCoins = (user.appMoney - amt).coerceAtLeast(0)
-                                                        db?.collection("users")?.document(user.uid)?.update("appMoney", newCoins)?.await()
-                                                        foundUser = user.copy(appMoney = newCoins)
-                                                        coinAmountInput = ""
-                                                        Toast.makeText(context, "🪙 Deducted -$amt Coins! (Total: $newCoins)", Toast.LENGTH_SHORT).show()
+                                                        try {
+                                                            val newCoins = (user.appMoney - amt).coerceAtLeast(0)
+                                                            val updates = mapOf("appMoney" to newCoins, "walletBalance" to newCoins)
+                                                            db?.collection("users")?.document(user.uid)
+                                                                ?.set(updates, com.google.firebase.firestore.SetOptions.merge())?.await()
+                                                            foundUser = user.copy(appMoney = newCoins)
+                                                            coinAmountInput = ""
+                                                            Toast.makeText(context, "🪙 Deducted -$amt Coins! (Total: $newCoins)", Toast.LENGTH_SHORT).show()
+                                                        } catch (e: Exception) {
+                                                            Toast.makeText(context, "Failed to deduct coins: ${e.message}", Toast.LENGTH_LONG).show()
+                                                        }
                                                     }
                                                 },
                                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE11D48), contentColor = Color.White),
@@ -666,11 +711,17 @@ fun AdminManageWalletsScreen(navController: NavController) {
                                                 onClick = {
                                                     val exact = coinAmountInput.toIntOrNull() ?: return@Button
                                                     scope.launch {
-                                                        val newCoins = exact.coerceAtLeast(0)
-                                                        db?.collection("users")?.document(user.uid)?.update("appMoney", newCoins)?.await()
-                                                        foundUser = user.copy(appMoney = newCoins)
-                                                        coinAmountInput = ""
-                                                        Toast.makeText(context, "🪙 Coins Set to Exactly: $newCoins", Toast.LENGTH_SHORT).show()
+                                                        try {
+                                                            val newCoins = exact.coerceAtLeast(0)
+                                                            val updates = mapOf("appMoney" to newCoins, "walletBalance" to newCoins)
+                                                            db?.collection("users")?.document(user.uid)
+                                                                ?.set(updates, com.google.firebase.firestore.SetOptions.merge())?.await()
+                                                            foundUser = user.copy(appMoney = newCoins)
+                                                            coinAmountInput = ""
+                                                            Toast.makeText(context, "🪙 Coins Set to Exactly: $newCoins", Toast.LENGTH_SHORT).show()
+                                                        } catch (e: Exception) {
+                                                            Toast.makeText(context, "Failed to set coins: ${e.message}", Toast.LENGTH_LONG).show()
+                                                        }
                                                     }
                                                 },
                                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2563EB), contentColor = Color.White),
@@ -685,10 +736,16 @@ fun AdminManageWalletsScreen(navController: NavController) {
                                         Button(
                                             onClick = {
                                                 scope.launch {
-                                                    db?.collection("users")?.document(user.uid)?.update("appMoney", 0)?.await()
-                                                    foundUser = user.copy(appMoney = 0)
-                                                    coinAmountInput = ""
-                                                    Toast.makeText(context, "🔄 Coins successfully RESET to 0!", Toast.LENGTH_SHORT).show()
+                                                    try {
+                                                        val updates = mapOf("appMoney" to 0, "walletBalance" to 0)
+                                                        db?.collection("users")?.document(user.uid)
+                                                            ?.set(updates, com.google.firebase.firestore.SetOptions.merge())?.await()
+                                                        foundUser = user.copy(appMoney = 0)
+                                                        coinAmountInput = ""
+                                                        Toast.makeText(context, "🔄 Coins successfully RESET to 0!", Toast.LENGTH_SHORT).show()
+                                                    } catch (e: Exception) {
+                                                        Toast.makeText(context, "Failed to reset coins: ${e.message}", Toast.LENGTH_LONG).show()
+                                                    }
                                                 }
                                             },
                                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E2230), contentColor = Color(0xFFFF5252)),
@@ -731,10 +788,16 @@ fun AdminManageWalletsScreen(navController: NavController) {
                                                 Button(
                                                     onClick = {
                                                         scope.launch {
-                                                            val newCash = user.realMoney + amt
-                                                            db?.collection("users")?.document(user.uid)?.update("realMoney", newCash)?.await()
-                                                            foundUser = user.copy(realMoney = newCash)
-                                                            Toast.makeText(context, "Added +₹$amt Cash! New Total: ₹$newCash", Toast.LENGTH_SHORT).show()
+                                                            try {
+                                                                val newCash = user.realMoney + amt
+                                                                val updates = mapOf("realMoney" to newCash)
+                                                                db?.collection("users")?.document(user.uid)
+                                                                    ?.set(updates, com.google.firebase.firestore.SetOptions.merge())?.await()
+                                                                foundUser = user.copy(realMoney = newCash)
+                                                                Toast.makeText(context, "Added +₹$amt Cash! New Total: ₹$newCash", Toast.LENGTH_SHORT).show()
+                                                            } catch (e: Exception) {
+                                                                Toast.makeText(context, "Cash update failed: ${e.message}", Toast.LENGTH_LONG).show()
+                                                            }
                                                         }
                                                     },
                                                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0D2517), contentColor = Color(0xFF00E676)),
@@ -750,10 +813,16 @@ fun AdminManageWalletsScreen(navController: NavController) {
                                                 Button(
                                                     onClick = {
                                                         scope.launch {
-                                                            val newCash = (user.realMoney - amt).coerceAtLeast(0)
-                                                            db?.collection("users")?.document(user.uid)?.update("realMoney", newCash)?.await()
-                                                            foundUser = user.copy(realMoney = newCash)
-                                                            Toast.makeText(context, "Deducted -₹$amt Cash! New Total: ₹$newCash", Toast.LENGTH_SHORT).show()
+                                                            try {
+                                                                val newCash = (user.realMoney - amt).coerceAtLeast(0)
+                                                                val updates = mapOf("realMoney" to newCash)
+                                                                db?.collection("users")?.document(user.uid)
+                                                                    ?.set(updates, com.google.firebase.firestore.SetOptions.merge())?.await()
+                                                                foundUser = user.copy(realMoney = newCash)
+                                                                Toast.makeText(context, "Deducted -₹$amt Cash! New Total: ₹$newCash", Toast.LENGTH_SHORT).show()
+                                                            } catch (e: Exception) {
+                                                                Toast.makeText(context, "Cash update failed: ${e.message}", Toast.LENGTH_LONG).show()
+                                                            }
                                                         }
                                                     },
                                                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2A1515), contentColor = Color(0xFFFF6B6B)),
@@ -782,11 +851,17 @@ fun AdminManageWalletsScreen(navController: NavController) {
                                                 onClick = {
                                                     val amt = cashAmountInput.toIntOrNull() ?: return@Button
                                                     scope.launch {
-                                                        val newCash = user.realMoney + amt
-                                                        db?.collection("users")?.document(user.uid)?.update("realMoney", newCash)?.await()
-                                                        foundUser = user.copy(realMoney = newCash)
-                                                        cashAmountInput = ""
-                                                        Toast.makeText(context, "💵 Added +₹$amt Cash! (Total: ₹$newCash)", Toast.LENGTH_SHORT).show()
+                                                        try {
+                                                            val newCash = user.realMoney + amt
+                                                            val updates = mapOf("realMoney" to newCash)
+                                                            db?.collection("users")?.document(user.uid)
+                                                                ?.set(updates, com.google.firebase.firestore.SetOptions.merge())?.await()
+                                                            foundUser = user.copy(realMoney = newCash)
+                                                            cashAmountInput = ""
+                                                            Toast.makeText(context, "💵 Added +₹$amt Cash! (Total: ₹$newCash)", Toast.LENGTH_SHORT).show()
+                                                        } catch (e: Exception) {
+                                                            Toast.makeText(context, "Failed to add cash: ${e.message}", Toast.LENGTH_LONG).show()
+                                                        }
                                                     }
                                                 },
                                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E676), contentColor = Color.Black),
@@ -800,11 +875,17 @@ fun AdminManageWalletsScreen(navController: NavController) {
                                                 onClick = {
                                                     val amt = cashAmountInput.toIntOrNull() ?: return@Button
                                                     scope.launch {
-                                                        val newCash = (user.realMoney - amt).coerceAtLeast(0)
-                                                        db?.collection("users")?.document(user.uid)?.update("realMoney", newCash)?.await()
-                                                        foundUser = user.copy(realMoney = newCash)
-                                                        cashAmountInput = ""
-                                                        Toast.makeText(context, "💵 Deducted -₹$amt Cash! (Total: ₹$newCash)", Toast.LENGTH_SHORT).show()
+                                                        try {
+                                                            val newCash = (user.realMoney - amt).coerceAtLeast(0)
+                                                            val updates = mapOf("realMoney" to newCash)
+                                                            db?.collection("users")?.document(user.uid)
+                                                                ?.set(updates, com.google.firebase.firestore.SetOptions.merge())?.await()
+                                                            foundUser = user.copy(realMoney = newCash)
+                                                            cashAmountInput = ""
+                                                            Toast.makeText(context, "💵 Deducted -₹$amt Cash! (Total: ₹$newCash)", Toast.LENGTH_SHORT).show()
+                                                        } catch (e: Exception) {
+                                                            Toast.makeText(context, "Failed to deduct cash: ${e.message}", Toast.LENGTH_LONG).show()
+                                                        }
                                                     }
                                                 },
                                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE11D48), contentColor = Color.White),
@@ -818,11 +899,17 @@ fun AdminManageWalletsScreen(navController: NavController) {
                                                 onClick = {
                                                     val exact = cashAmountInput.toIntOrNull() ?: return@Button
                                                     scope.launch {
-                                                        val newCash = exact.coerceAtLeast(0)
-                                                        db?.collection("users")?.document(user.uid)?.update("realMoney", newCash)?.await()
-                                                        foundUser = user.copy(realMoney = newCash)
-                                                        cashAmountInput = ""
-                                                        Toast.makeText(context, "💵 Cash Set to Exactly: ₹$newCash", Toast.LENGTH_SHORT).show()
+                                                        try {
+                                                            val newCash = exact.coerceAtLeast(0)
+                                                            val updates = mapOf("realMoney" to newCash)
+                                                            db?.collection("users")?.document(user.uid)
+                                                                ?.set(updates, com.google.firebase.firestore.SetOptions.merge())?.await()
+                                                            foundUser = user.copy(realMoney = newCash)
+                                                            cashAmountInput = ""
+                                                            Toast.makeText(context, "💵 Cash Set to Exactly: ₹$newCash", Toast.LENGTH_SHORT).show()
+                                                        } catch (e: Exception) {
+                                                            Toast.makeText(context, "Failed to set cash: ${e.message}", Toast.LENGTH_LONG).show()
+                                                        }
                                                     }
                                                 },
                                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2563EB), contentColor = Color.White),
@@ -837,10 +924,16 @@ fun AdminManageWalletsScreen(navController: NavController) {
                                         Button(
                                             onClick = {
                                                 scope.launch {
-                                                    db?.collection("users")?.document(user.uid)?.update("realMoney", 0)?.await()
-                                                    foundUser = user.copy(realMoney = 0)
-                                                    cashAmountInput = ""
-                                                    Toast.makeText(context, "🔄 Real Cash successfully RESET to ₹0!", Toast.LENGTH_SHORT).show()
+                                                    try {
+                                                        val updates = mapOf("realMoney" to 0)
+                                                        db?.collection("users")?.document(user.uid)
+                                                            ?.set(updates, com.google.firebase.firestore.SetOptions.merge())?.await()
+                                                        foundUser = user.copy(realMoney = 0)
+                                                        cashAmountInput = ""
+                                                        Toast.makeText(context, "🔄 Real Cash successfully RESET to ₹0!", Toast.LENGTH_SHORT).show()
+                                                    } catch (e: Exception) {
+                                                        Toast.makeText(context, "Failed to reset cash: ${e.message}", Toast.LENGTH_LONG).show()
+                                                    }
                                                 }
                                             },
                                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E2230), contentColor = Color(0xFFFF5252)),

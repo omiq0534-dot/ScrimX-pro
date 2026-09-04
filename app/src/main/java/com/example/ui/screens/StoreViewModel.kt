@@ -61,7 +61,9 @@ data class UserPurchasedCard(
     val purchaseTimestamp: Long = System.currentTimeMillis(),
     val cardColorTheme: String = "GOLD",
     val proofScreenshotBase64: String = "",
-    val rechargeTxnId: String = ""
+    val screenshotBase64: String = "",
+    val rechargeTxnId: String = "",
+    val operatorTxnId: String = ""
 )
 
 class StoreViewModel : ViewModel() {

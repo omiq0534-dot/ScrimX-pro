@@ -1191,12 +1191,15 @@ fun PurchasedCardVaultItem(
     val isGooglePlay = card.category.equals("GOOGLE_PLAY", ignoreCase = true)
     val isUsed = card.status.equals("USED", ignoreCase = true)
 
+    val proofBase64String = card.proofScreenshotBase64.ifBlank { card.screenshotBase64 }
+    val effectiveRechargeTxnId = card.rechargeTxnId.ifBlank { card.operatorTxnId }
+
     var showProofDialog by remember { mutableStateOf(false) }
 
-    val proofBitmap = remember(card.proofScreenshotBase64) {
-        if (card.proofScreenshotBase64.isNotEmpty()) {
+    val proofBitmap = remember(proofBase64String) {
+        if (proofBase64String.isNotEmpty()) {
             try {
-                val decodedBytes = Base64.decode(card.proofScreenshotBase64, Base64.DEFAULT)
+                val decodedBytes = Base64.decode(proofBase64String, Base64.DEFAULT)
                 BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
             } catch (e: Exception) {
                 null
@@ -1243,7 +1246,7 @@ fun PurchasedCardVaultItem(
                         contentScale = ContentScale.Fit
                     )
 
-                    if (card.rechargeTxnId.isNotBlank()) {
+                    if (effectiveRechargeTxnId.isNotBlank()) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -1253,7 +1256,7 @@ fun PurchasedCardVaultItem(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Ref ID / UTR: ${card.rechargeTxnId}", color = Color(0xFFFFD700), fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                            Text("Ref ID / UTR: $effectiveRechargeTxnId", color = Color(0xFFFFD700), fontWeight = FontWeight.Bold, fontSize = 11.sp)
                         }
                     }
 
@@ -1682,7 +1685,7 @@ fun PurchasedCardVaultItem(
                     }
 
                     // If proof screenshot is attached by admin
-                    if (card.proofScreenshotBase64.isNotEmpty()) {
+                    if (proofBase64String.isNotEmpty()) {
                         Button(
                             onClick = { showProofDialog = true },
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E676)),
