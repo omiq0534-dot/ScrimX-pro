@@ -73,10 +73,66 @@ class StoreViewModel : ViewModel() {
     private val _purchasedCards = MutableStateFlow<List<UserPurchasedCard>>(emptyList())
     val purchasedCards: StateFlow<List<UserPurchasedCard>> = _purchasedCards
 
+    private val _storeSettings = MutableStateFlow<Map<String, Map<String, Any>>>(emptyMap())
+    val storeSettings: StateFlow<Map<String, Map<String, Any>>> = _storeSettings
+
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
     private var cardsListener: ListenerRegistration? = null
+    private var settingsListener: ListenerRegistration? = null
+
+    init {
+        listenToStoreSettings()
+        listenToUserInventory()
+    }
+
+    private fun listenToStoreSettings() {
+        val db = getDb() ?: return
+        settingsListener?.remove()
+        settingsListener = db.collection("store_settings")
+            .addSnapshotListener { snapshot, e ->
+                if (e != null) return@addSnapshotListener
+                if (snapshot != null) {
+                    val map = mutableMapOf<String, Map<String, Any>>()
+                    for (doc in snapshot.documents) {
+                        map[doc.id] = doc.data ?: emptyMap()
+                    }
+                    _storeSettings.value = map
+                }
+            }
+    }
+
+    fun getEffectivePrice(item: StoreItem): Int {
+        val settings = _storeSettings.value[item.id] ?: return item.coinPrice
+        val customPrice = (settings["coinPrice"] as? Long)?.toInt()
+            ?: (settings["coinPrice"] as? Int)
+        return customPrice ?: item.coinPrice
+    }
+
+    fun isItemEnabled(item: StoreItem): Boolean {
+        val settings = _storeSettings.value[item.id] ?: return true
+        return settings["enabled"] as? Boolean ?: true
+    }
+
+    fun getAvailableCodesCount(item: StoreItem): Int {
+        val settings = _storeSettings.value[item.id] ?: return 0
+        val codes = (settings["codes"] as? List<*>)?.filterIsInstance<String>() ?: emptyList()
+        return codes.size
+    }
+
+    fun getEffectiveDailyLimit(item: StoreItem): Int {
+        val settings = _storeSettings.value[item.id] ?: return 2
+        val customLimit = (settings["dailyLimit"] as? Long)?.toInt()
+            ?: (settings["dailyLimit"] as? Int)
+        return customLimit ?: 2
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        cardsListener?.remove()
+        settingsListener?.remove()
+    }
 
     val googlePlayCards = listOf(
         StoreItem(
@@ -295,10 +351,6 @@ class StoreViewModel : ViewModel() {
         )
     )
 
-    init {
-        listenToUserInventory()
-    }
-
     private fun listenToUserInventory() {
         val auth = getAuth() ?: return
         val db = getDb() ?: return
@@ -339,8 +391,16 @@ class StoreViewModel : ViewModel() {
             return
         }
 
-        if (userCoins < item.coinPrice) {
-            onError("Insufficient Coins! You need ${item.coinPrice} coins but have $userCoins.")
+        val effectivePrice = getEffectivePrice(item)
+        val isEnabled = isItemEnabled(item)
+
+        if (!isEnabled) {
+            onError("⛔ This item is currently out of stock / blocked by Admin.")
+            return
+        }
+
+        if (userCoins < effectivePrice) {
+            onError("Insufficient Coins! You need $effectivePrice coins but have $userCoins.")
             return
         }
 
@@ -367,7 +427,7 @@ class StoreViewModel : ViewModel() {
             discountPercent = item.discountPercent,
             discountFlatRupees = item.discountFlatRupees,
             code = generatedCode,
-            coinsPaid = item.coinPrice,
+            coinsPaid = effectivePrice,
             status = "ACTIVE",
             totalUses = item.maxUses,
             remainingUses = item.maxUses,
@@ -378,19 +438,23 @@ class StoreViewModel : ViewModel() {
         db.runTransaction { tx ->
             val userSnap = tx.get(userDocRef)
             val currentCoins = userSnap.getLong("appMoney")?.toInt() ?: 0
-            if (currentCoins < item.coinPrice) {
-                throw Exception("Insufficient Coins balance! Need ${item.coinPrice} coins.")
-            }
 
             // Check if admin has set custom settings or code pool
             val settingsDocRef = db.collection("store_settings").document(item.id)
             val settingsSnap = tx.get(settingsDocRef)
             var finalCode = generatedCode
+            var txnEffectivePrice = effectivePrice
 
             if (settingsSnap.exists()) {
-                val isEnabled = settingsSnap.getBoolean("enabled") ?: true
-                if (!isEnabled) {
-                    throw Exception("This item is temporarily unavailable.")
+                val isItemActive = settingsSnap.getBoolean("enabled") ?: true
+                if (!isItemActive) {
+                    throw Exception("This item is currently disabled / out of stock.")
+                }
+
+                val customPrice = (settingsSnap.get("coinPrice") as? Long)?.toInt()
+                    ?: (settingsSnap.get("coinPrice") as? Int)
+                if (customPrice != null && customPrice > 0) {
+                    txnEffectivePrice = customPrice
                 }
 
                 // Check daily limits
@@ -404,7 +468,7 @@ class StoreViewModel : ViewModel() {
                     set(java.util.Calendar.MILLISECOND, 0)
                 }.timeInMillis
                 
-                // Let's create a daily tracker document for the user
+                // Daily tracker document for the user
                 val dailyTrackerRef = db.collection("users").document(user.uid)
                     .collection("daily_limits").document("${item.id}_${todayStart}")
                 
@@ -418,7 +482,6 @@ class StoreViewModel : ViewModel() {
                 // Increment tracker
                 tx.set(dailyTrackerRef, mapOf("count" to currentPurchases + 1), com.google.firebase.firestore.SetOptions.merge())
 
-
                 val codesList = (settingsSnap.get("codes") as? List<*>)?.filterIsInstance<String>() ?: emptyList()
                 if (codesList.isNotEmpty()) {
                     finalCode = codesList.first()
@@ -427,12 +490,16 @@ class StoreViewModel : ViewModel() {
                 }
             }
 
-            // Deduct Coins
-            tx.update(userDocRef, "appMoney", currentCoins - item.coinPrice)
+            if (currentCoins < txnEffectivePrice) {
+                throw Exception("Insufficient Coins balance! Need $txnEffectivePrice coins.")
+            }
 
-            // Save to User Inventory
+            // Deduct Coins dynamically
+            tx.update(userDocRef, "appMoney", currentCoins - txnEffectivePrice)
+
+            // Save to User Inventory with effective price
             val cardDocRef = inventoryCollRef.document(newCardId)
-            val finalCard = purchasedCard.copy(code = finalCode)
+            val finalCard = purchasedCard.copy(code = finalCode, coinsPaid = txnEffectivePrice)
             tx.set(cardDocRef, finalCard)
 
             // Record in global transactions
@@ -442,7 +509,7 @@ class StoreViewModel : ViewModel() {
                 "userId" to user.uid,
                 "userEmail" to (user.email ?: ""),
                 "type" to "STORE_REDEEM",
-                "amount" to item.coinPrice,
+                "amount" to txnEffectivePrice,
                 "status" to "SUCCESS",
                 "timestamp" to System.currentTimeMillis(),
                 "note" to "Store Purchase: ${item.title} (Code: ${finalCode.take(6)}...)"
@@ -450,10 +517,7 @@ class StoreViewModel : ViewModel() {
             tx.set(db.collection("transactions").document(txId), txRecord)
         }.addOnSuccessListener {
             _isLoading.value = false
-            // Since we updated finalCode inside transaction, the purchasedCard obj might still hold generatedCode
-            // To be 100% accurate we should probably fetch it again or return the updated one, 
-            // but the UI re-listens to Firestore anyway. Let's just trigger success.
-            onSuccess(purchasedCard) // Let UI know it succeeded
+            onSuccess(purchasedCard)
         }.addOnFailureListener { e ->
             _isLoading.value = false
             onError(e.localizedMessage ?: "Purchase failed. Please try again.")
@@ -576,10 +640,5 @@ class StoreViewModel : ViewModel() {
         val user = getAuth()?.currentUser ?: return
         val db = getDb() ?: return
         db.collection("users").document(user.uid).collection("inventory").document(cardId).update("status", "USED")
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        cardsListener?.remove()
     }
 }

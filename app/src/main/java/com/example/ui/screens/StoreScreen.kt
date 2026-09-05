@@ -74,9 +74,13 @@ fun StoreScreen(
 
     val userCoins = profile?.appMoney ?: 0
     val userName = profile?.name?.ifBlank { "PRO GAMER" } ?: "PRO GAMER"
+    val storeSettings by storeViewModel.storeSettings.collectAsState()
 
     // Dialog for Confirming Purchase
     selectedItemForPurchase?.let { item ->
+        val effectivePrice = storeViewModel.getEffectivePrice(item)
+        val isItemActive = storeViewModel.isItemEnabled(item)
+
         AlertDialog(
             containerColor = Color(0xFF13151F),
             onDismissRequest = { if (!isLoading) selectedItemForPurchase = null },
@@ -118,7 +122,7 @@ fun StoreScreen(
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(Icons.Default.MonetizationOn, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(14.dp))
                                     Spacer(modifier = Modifier.width(3.dp))
-                                    Text("${item.coinPrice} Coins", color = Color(0xFFFFD700), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                    Text("$effectivePrice Coins", color = Color(0xFFFFD700), fontWeight = FontWeight.Bold, fontSize = 12.sp)
                                 }
                             }
                             Row(
@@ -138,7 +142,7 @@ fun StoreScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text("Remaining After:", color = Color(0xFF8E93A6), fontSize = 12.sp)
-                                val remaining = userCoins - item.coinPrice
+                                val remaining = userCoins - effectivePrice
                                 Text(
                                     "$remaining Coins",
                                     color = if (remaining >= 0) Color(0xFF00E676) else Color(0xFFFF5252),
@@ -149,7 +153,14 @@ fun StoreScreen(
                         }
                     }
 
-                    if (userCoins < item.coinPrice) {
+                    if (!isItemActive) {
+                        Text(
+                            "⛔ This item is temporarily out of stock / blocked by Admin.",
+                            color = Color(0xFFFF5252),
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    } else if (userCoins < effectivePrice) {
                         Text(
                             "You do not have enough coins! Play matches, spin the wheel, or watch videos to earn more.",
                             color = Color(0xFFFF5252),
@@ -175,14 +186,20 @@ fun StoreScreen(
                             }
                         )
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700)),
-                    enabled = userCoins >= item.coinPrice && !isLoading,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isItemActive) Color(0xFFFFD700) else Color(0xFF333333)
+                    ),
+                    enabled = isItemActive && userCoins >= effectivePrice && !isLoading,
                     shape = RoundedCornerShape(10.dp)
                 ) {
                     if (isLoading) {
                         CircularProgressIndicator(color = Color.Black, modifier = Modifier.size(18.dp))
                     } else {
-                        Text("UNLOCK WITH ${item.coinPrice} COINS", color = Color.Black, fontWeight = FontWeight.Black)
+                        Text(
+                            if (!isItemActive) "OUT OF STOCK / BLOCKED" else "UNLOCK WITH $effectivePrice COINS",
+                            color = if (isItemActive) Color.Black else Color(0xFF888888),
+                            fontWeight = FontWeight.Black
+                        )
                     }
                 }
             },
@@ -424,8 +441,17 @@ fun StoreScreen(
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         items(storeViewModel.googlePlayCards) { item ->
+                            val effectivePrice = storeViewModel.getEffectivePrice(item)
+                            val isItemActive = storeViewModel.isItemEnabled(item)
+                            val dailyLimit = storeViewModel.getEffectiveDailyLimit(item)
+                            val codesCount = storeViewModel.getAvailableCodesCount(item)
+
                             FamPayGooglePlayCard(
                                 item = item,
+                                effectivePrice = effectivePrice,
+                                isEnabled = isItemActive,
+                                dailyLimit = dailyLimit,
+                                customCodesCount = codesCount,
                                 userName = userName,
                                 userCoins = userCoins,
                                 onBuyClick = { selectedItemForPurchase = item }
@@ -443,8 +469,17 @@ fun StoreScreen(
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         items(storeViewModel.appDiscountCards) { item ->
+                            val effectivePrice = storeViewModel.getEffectivePrice(item)
+                            val isItemActive = storeViewModel.isItemEnabled(item)
+                            val dailyLimit = storeViewModel.getEffectiveDailyLimit(item)
+                            val codesCount = storeViewModel.getAvailableCodesCount(item)
+
                             TournamentDiscountCard(
                                 item = item,
+                                effectivePrice = effectivePrice,
+                                isEnabled = isItemActive,
+                                dailyLimit = dailyLimit,
+                                customCodesCount = codesCount,
                                 userName = userName,
                                 userCoins = userCoins,
                                 onBuyClick = { selectedItemForPurchase = item }
@@ -534,11 +569,15 @@ fun StoreScreen(
 @Composable
 fun FamPayGooglePlayCard(
     item: StoreItem,
+    effectivePrice: Int = item.coinPrice,
+    isEnabled: Boolean = true,
+    dailyLimit: Int = 2,
+    customCodesCount: Int = 0,
     userName: String,
     userCoins: Int,
     onBuyClick: () -> Unit
 ) {
-    val canAfford = userCoins >= item.coinPrice
+    val canAfford = userCoins >= effectivePrice && isEnabled
 
     // Continuous Shimmer / Sheen Animation
     val infiniteTransition = rememberInfiniteTransition(label = "googlePlayShimmer")
@@ -770,13 +809,19 @@ fun FamPayGooglePlayCard(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
-                            .background(Color(0xFF00E5FF).copy(alpha = 0.12f))
-                            .border(0.6.dp, Color(0xFF00E5FF).copy(alpha = 0.4f), RoundedCornerShape(6.dp))
+                            .background(
+                                if (!isEnabled) Color(0xFFFF5252).copy(alpha = 0.2f) else Color(0xFF00E5FF).copy(alpha = 0.12f)
+                            )
+                            .border(
+                                0.6.dp,
+                                if (!isEnabled) Color(0xFFFF5252).copy(alpha = 0.5f) else Color(0xFF00E5FF).copy(alpha = 0.4f),
+                                RoundedCornerShape(6.dp)
+                            )
                             .padding(horizontal = 7.dp, vertical = 2.5.dp)
                     ) {
                         Text(
-                            "${item.badgeText} • LIMIT: 2/DAY",
-                            color = Color(0xFFE0F7FA),
+                            if (!isEnabled) "⛔ BLOCKED BY ADMIN" else "${item.badgeText} • LIMIT: ${dailyLimit}/DAY",
+                            color = if (!isEnabled) Color(0xFFFF8A80) else Color(0xFFE0F7FA),
                             fontWeight = FontWeight.Black,
                             fontSize = 8.5.sp
                         )
@@ -801,8 +846,8 @@ fun FamPayGooglePlayCard(
                     fontSize = 13.5.sp
                 )
                 Text(
-                    item.subtitle,
-                    color = Color(0xFF8E93A6),
+                    if (!isEnabled) "⛔ Currently out of stock / blocked" else item.subtitle,
+                    color = if (!isEnabled) Color(0xFFFF5252) else Color(0xFF8E93A6),
                     fontSize = 10.5.sp
                 )
             }
@@ -812,25 +857,39 @@ fun FamPayGooglePlayCard(
             Button(
                 onClick = onBuyClick,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (canAfford) Color(0xFFFFD700) else Color(0xFF1E2232)
+                    containerColor = when {
+                        !isEnabled -> Color(0xFF2A1215)
+                        canAfford -> Color(0xFFFFD700)
+                        else -> Color(0xFF1E2232)
+                    }
                 ),
+                enabled = isEnabled,
                 shape = RoundedCornerShape(10.dp),
                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.MonetizationOn,
-                        contentDescription = null,
-                        tint = if (canAfford) Color.Black else Color(0xFF8E93A6),
-                        modifier = Modifier.size(13.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        "${item.coinPrice} COINS",
-                        color = if (canAfford) Color.Black else Color(0xFF8E93A6),
-                        fontWeight = FontWeight.Black,
-                        fontSize = 11.5.sp
-                    )
+                    if (isEnabled) {
+                        Icon(
+                            Icons.Default.MonetizationOn,
+                            contentDescription = null,
+                            tint = if (canAfford) Color.Black else Color(0xFF8E93A6),
+                            modifier = Modifier.size(13.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            "$effectivePrice COINS",
+                            color = if (canAfford) Color.Black else Color(0xFF8E93A6),
+                            fontWeight = FontWeight.Black,
+                            fontSize = 11.5.sp
+                        )
+                    } else {
+                        Text(
+                            "BLOCKED",
+                            color = Color(0xFFFF5252),
+                            fontWeight = FontWeight.Black,
+                            fontSize = 11.sp
+                        )
+                    }
                 }
             }
         }
@@ -843,11 +902,15 @@ fun FamPayGooglePlayCard(
 @Composable
 fun TournamentDiscountCard(
     item: StoreItem,
+    effectivePrice: Int = item.coinPrice,
+    isEnabled: Boolean = true,
+    dailyLimit: Int = 2,
+    customCodesCount: Int = 0,
     userName: String,
     userCoins: Int,
     onBuyClick: () -> Unit
 ) {
-    val canAfford = userCoins >= item.coinPrice
+    val canAfford = userCoins >= effectivePrice && isEnabled
 
     // Rich saturated background gradients & matching accents
     val (cardBgGradient, borderGradient, accentColor) = when (item.cardColorTheme) {
@@ -1102,22 +1165,34 @@ fun TournamentDiscountCard(
                         )
                     }
 
-                    Row(
+                    Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
-                            .background(Color.Black.copy(alpha = 0.5f))
-                            .border(0.6.dp, accentColor.copy(alpha = 0.4f), RoundedCornerShape(6.dp))
-                            .padding(horizontal = 7.dp, vertical = 2.5.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                            .background(
+                                if (!isEnabled) Color(0xFFFF5252).copy(alpha = 0.2f) else Color.Black.copy(alpha = 0.5f)
+                            )
+                            .border(
+                                0.6.dp,
+                                if (!isEnabled) Color(0xFFFF5252).copy(alpha = 0.5f) else accentColor.copy(alpha = 0.4f),
+                                RoundedCornerShape(6.dp)
+                            )
+                            .padding(horizontal = 7.dp, vertical = 2.5.dp)
                     ) {
-                        Icon(Icons.Default.Verified, contentDescription = null, tint = accentColor, modifier = Modifier.size(11.dp))
-                        Spacer(modifier = Modifier.width(3.dp))
-                        Text(
-                            item.badgeText,
-                            color = Color.White,
-                            fontWeight = FontWeight.Black,
-                            fontSize = 8.5.sp
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                if (!isEnabled) Icons.Default.Block else Icons.Default.Verified,
+                                contentDescription = null,
+                                tint = if (!isEnabled) Color(0xFFFF5252) else accentColor,
+                                modifier = Modifier.size(11.dp)
+                            )
+                            Spacer(modifier = Modifier.width(3.dp))
+                            Text(
+                                if (!isEnabled) "⛔ BLOCKED BY ADMIN" else "${item.badgeText} • LIMIT: ${dailyLimit}/DAY",
+                                color = if (!isEnabled) Color(0xFFFF8A80) else Color.White,
+                                fontWeight = FontWeight.Black,
+                                fontSize = 8.5.sp
+                            )
+                        }
                     }
                 }
             }
@@ -1139,8 +1214,8 @@ fun TournamentDiscountCard(
                     fontSize = 13.5.sp
                 )
                 Text(
-                    item.subtitle,
-                    color = Color(0xFF8E93A6),
+                    if (!isEnabled) "⛔ Currently out of stock / blocked" else item.subtitle,
+                    color = if (!isEnabled) Color(0xFFFF5252) else Color(0xFF8E93A6),
                     fontSize = 10.5.sp
                 )
             }
@@ -1150,25 +1225,39 @@ fun TournamentDiscountCard(
             Button(
                 onClick = onBuyClick,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (canAfford) accentColor else Color(0xFF1E2232)
+                    containerColor = when {
+                        !isEnabled -> Color(0xFF2A1215)
+                        canAfford -> accentColor
+                        else -> Color(0xFF1E2232)
+                    }
                 ),
+                enabled = isEnabled,
                 shape = RoundedCornerShape(10.dp),
                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.MonetizationOn,
-                        contentDescription = null,
-                        tint = if (canAfford) Color.Black else Color(0xFF8E93A6),
-                        modifier = Modifier.size(13.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        "${item.coinPrice} COINS",
-                        color = if (canAfford) Color.Black else Color(0xFF8E93A6),
-                        fontWeight = FontWeight.Black,
-                        fontSize = 11.5.sp
-                    )
+                    if (isEnabled) {
+                        Icon(
+                            Icons.Default.MonetizationOn,
+                            contentDescription = null,
+                            tint = if (canAfford) Color.Black else Color(0xFF8E93A6),
+                            modifier = Modifier.size(13.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            "$effectivePrice COINS",
+                            color = if (canAfford) Color.Black else Color(0xFF8E93A6),
+                            fontWeight = FontWeight.Black,
+                            fontSize = 11.5.sp
+                        )
+                    } else {
+                        Text(
+                            "BLOCKED",
+                            color = Color(0xFFFF5252),
+                            fontWeight = FontWeight.Black,
+                            fontSize = 11.sp
+                        )
+                    }
                 }
             }
         }
