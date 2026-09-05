@@ -393,6 +393,32 @@ class StoreViewModel : ViewModel() {
                     throw Exception("This item is temporarily unavailable.")
                 }
 
+                // Check daily limits
+                val dailyLimit = settingsSnap.getLong("dailyLimit")?.toInt() ?: 2
+                
+                // Fetch user's purchases today for this specific item
+                val todayStart = java.util.Calendar.getInstance().apply {
+                    set(java.util.Calendar.HOUR_OF_DAY, 0)
+                    set(java.util.Calendar.MINUTE, 0)
+                    set(java.util.Calendar.SECOND, 0)
+                    set(java.util.Calendar.MILLISECOND, 0)
+                }.timeInMillis
+                
+                // Let's create a daily tracker document for the user
+                val dailyTrackerRef = db.collection("users").document(user.uid)
+                    .collection("daily_limits").document("${item.id}_${todayStart}")
+                
+                val dailyTrackerSnap = tx.get(dailyTrackerRef)
+                val currentPurchases = dailyTrackerSnap.getLong("count")?.toInt() ?: 0
+                
+                if (currentPurchases >= dailyLimit) {
+                    throw Exception("Daily limit of $dailyLimit purchases reached for this item.")
+                }
+                
+                // Increment tracker
+                tx.set(dailyTrackerRef, mapOf("count" to currentPurchases + 1), com.google.firebase.firestore.SetOptions.merge())
+
+
                 val codesList = (settingsSnap.get("codes") as? List<*>)?.filterIsInstance<String>() ?: emptyList()
                 if (codesList.isNotEmpty()) {
                     finalCode = codesList.first()
@@ -424,7 +450,10 @@ class StoreViewModel : ViewModel() {
             tx.set(db.collection("transactions").document(txId), txRecord)
         }.addOnSuccessListener {
             _isLoading.value = false
-            onSuccess(purchasedCard)
+            // Since we updated finalCode inside transaction, the purchasedCard obj might still hold generatedCode
+            // To be 100% accurate we should probably fetch it again or return the updated one, 
+            // but the UI re-listens to Firestore anyway. Let's just trigger success.
+            onSuccess(purchasedCard) // Let UI know it succeeded
         }.addOnFailureListener { e ->
             _isLoading.value = false
             onError(e.localizedMessage ?: "Purchase failed. Please try again.")

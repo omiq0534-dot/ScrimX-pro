@@ -45,7 +45,9 @@ fun AdminStoreCodesScreen(navController: NavController) {
     val db = remember { FirebaseHelper.getFirestore() }
     val auth = remember { FirebaseHelper.getAuth() }
     val currentUserEmail = auth?.currentUser?.email?.lowercase() ?: ""
-    val isOwner = remember(currentUserEmail) { AppSecurityGuard.isSuperOwner(currentUserEmail) }
+    val currentUid = auth?.currentUser?.uid
+    val isOwner = remember(currentUserEmail, currentUid) { AppSecurityGuard.isSuperOwner(currentUserEmail, currentUid) }
+    var isAuthorized by remember { mutableStateOf(isOwner) }
 
     var selectedItemForCodeEntry by remember { mutableStateOf<StoreItem?>(null) }
     var codeInputText by remember { mutableStateOf("") }
@@ -56,14 +58,39 @@ fun AdminStoreCodesScreen(navController: NavController) {
     val storeViewModel = remember { StoreViewModel() }
     var stockDataMap by remember { mutableStateOf<Map<String, Map<String, Any>>>(emptyMap()) }
 
-    LaunchedEffect(Unit) {
-        if (!isOwner) {
-            Toast.makeText(context, "Access Denied: Owner Exclusive Tool", Toast.LENGTH_SHORT).show()
+    LaunchedEffect(currentUid) {
+        if (isOwner) {
+            isAuthorized = true
+        } else if (currentUid != null && db != null) {
+            db.collection("users").document(currentUid).get().addOnSuccessListener { doc ->
+                if (doc != null && doc.exists()) {
+                    val role = doc.getString("role")?.lowercase() ?: "player"
+                    val isMod = doc.getBoolean("isModerator") ?: false
+                    val emailInDoc = doc.getString("email")?.lowercase() ?: ""
+                    if (role in listOf("owner", "admin", "moderator") || isMod || AppSecurityGuard.isSuperOwner(emailInDoc, currentUid)) {
+                        isAuthorized = true
+                    } else {
+                        Toast.makeText(context, "Access Denied: Admin Exclusive Tool", Toast.LENGTH_SHORT).show()
+                        navController.popBackStack()
+                    }
+                } else {
+                    Toast.makeText(context, "Access Denied: Admin Exclusive Tool", Toast.LENGTH_SHORT).show()
+                    navController.popBackStack()
+                }
+            }.addOnFailureListener {
+                Toast.makeText(context, "Authentication verification failed", Toast.LENGTH_SHORT).show()
+                navController.popBackStack()
+            }
+        } else {
+            Toast.makeText(context, "Access Denied: Admin Exclusive Tool", Toast.LENGTH_SHORT).show()
             navController.popBackStack()
-            return@LaunchedEffect
         }
 
-        db?.collection("store_settings")?.addSnapshotListener { snapshot, _ ->
+        db?.collection("store_settings")?.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                android.util.Log.e("AdminStoreCodes", "Error listening to store settings: ${error.message}")
+                return@addSnapshotListener
+            }
             if (snapshot != null) {
                 val map = mutableMapOf<String, Map<String, Any>>()
                 for (doc in snapshot.documents) {

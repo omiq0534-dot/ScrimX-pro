@@ -68,6 +68,7 @@ object NotificationHelper {
         }
     }
 
+    @android.annotation.SuppressLint("MissingPermission")
     fun showRoomCredentialsNotification(
         context: Context,
         matchId: String,
@@ -142,6 +143,7 @@ object NotificationHelper {
         }
     }
 
+    @android.annotation.SuppressLint("MissingPermission")
     fun showGeneralAnnouncementNotification(
         context: Context,
         title: String,
