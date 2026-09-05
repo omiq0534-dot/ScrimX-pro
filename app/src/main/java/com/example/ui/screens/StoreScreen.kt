@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Canvas
@@ -19,12 +20,15 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
@@ -34,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
@@ -65,22 +70,18 @@ fun StoreScreen(
     val profile by userViewModel.profile.collectAsState()
     val purchasedCards by storeViewModel.purchasedCards.collectAsState()
     val isLoading by storeViewModel.isLoading.collectAsState()
-
     var selectedTab by remember { mutableIntStateOf(0) } // 0: Data Recharge, 1: Google Play Cards, 2: Discount Passes, 3: My Vault
     var selectedOperatorFilter by remember { mutableIntStateOf(0) } // 0: All, 1: Jio, 2: Airtel
     var selectedRechargePlan by remember { mutableStateOf<DataRechargePlan?>(null) }
     var selectedItemForPurchase by remember { mutableStateOf<StoreItem?>(null) }
     var newlyPurchasedCard by remember { mutableStateOf<UserPurchasedCard?>(null) }
-
     val userCoins = profile?.appMoney ?: 0
     val userName = profile?.name?.ifBlank { "PRO GAMER" } ?: "PRO GAMER"
     val storeSettings by storeViewModel.storeSettings.collectAsState()
-
     // Dialog for Confirming Purchase
     selectedItemForPurchase?.let { item ->
         val effectivePrice = storeViewModel.getEffectivePrice(item)
         val isItemActive = storeViewModel.isItemEnabled(item)
-
         AlertDialog(
             containerColor = Color(0xFF13151F),
             onDismissRequest = { if (!isLoading) selectedItemForPurchase = null },
@@ -103,7 +104,6 @@ fun StoreScreen(
                         color = Color(0xFFC4C8D8),
                         fontSize = 13.sp
                     )
-
                     // Price Breakdown Box
                     Box(
                         modifier = Modifier
@@ -152,7 +152,6 @@ fun StoreScreen(
                             }
                         }
                     }
-
                     if (!isItemActive) {
                         Text(
                             "⛔ This item is temporarily out of stock / blocked by Admin.",
@@ -212,7 +211,6 @@ fun StoreScreen(
             }
         )
     }
-
     // Modal Dialog for Newly Purchased Card (Scratch & Reveal Code!)
     newlyPurchasedCard?.let { card ->
         CelebrationCardDialog(
@@ -224,7 +222,6 @@ fun StoreScreen(
             }
         )
     }
-
     // Dialog for Mobile Data Recharge Confirmation
     selectedRechargePlan?.let { plan ->
         DataRechargeDialog(
@@ -250,7 +247,6 @@ fun StoreScreen(
             }
         )
     }
-
     Scaffold(
         containerColor = Color(0xFF0B0C10),
         topBar = {
@@ -327,7 +323,6 @@ fun StoreScreen(
                     Triple("VIP Passes", Icons.Default.ConfirmationNumber, 2),
                     Triple("My Vault (${purchasedCards.size})", Icons.Default.Lock, 3)
                 )
-
                 tabs.forEachIndexed { index, tabItem ->
                     val isSelected = selectedTab == index
                     Box(
@@ -358,7 +353,6 @@ fun StoreScreen(
                     }
                 }
             }
-
             // Tab Content
             when (selectedTab) {
                 0 -> {
@@ -370,7 +364,6 @@ fun StoreScreen(
                         2 -> airtelPlans
                         else -> jioPlans + airtelPlans
                     }
-
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
@@ -378,49 +371,55 @@ fun StoreScreen(
                     ) {
                         // Operator Selection Filter Chips
                         item {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ScrollableTabRow(
+                                selectedTabIndex = selectedOperatorFilter as Int,
+                                containerColor = Color.Transparent,
+                                divider = {},
+                                edgePadding = 0.dp,
+                                indicator = {} // We will use custom backgrounds inside the tabs instead of an indicator line
                             ) {
                                 listOf(
                                     Triple("ALL PLANS (${jioPlans.size + airtelPlans.size})", 0, null),
                                     Triple("JIO 4G/5G (${jioPlans.size})", 1, "JIO"),
                                     Triple("AIRTEL 5G (${airtelPlans.size})", 2, "AIRTEL")
-                                ).forEach { (title, filterIdx, op) ->
+                                ).forEachIndexed { index, (title, filterIdx, op) ->
                                     val isSelected = selectedOperatorFilter == filterIdx
-                                    Box(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .clip(RoundedCornerShape(12.dp))
-                                            .background(
-                                                if (isSelected) {
-                                                    when (op) {
-                                                        "JIO" -> Color(0xFF0F3EBD)
-                                                        "AIRTEL" -> Color(0xFFE40000)
-                                                        else -> Color(0xFFFFD700)
-                                                    }
-                                                } else Color(0xFF141622)
-                                            )
-                                            .border(
-                                                1.dp,
-                                                if (isSelected) Color.White.copy(alpha = 0.6f) else Color(0xFF232738),
-                                                RoundedCornerShape(12.dp)
-                                            )
-                                            .clickable { selectedOperatorFilter = filterIdx }
-                                            .padding(vertical = 9.dp),
-                                        contentAlignment = Alignment.Center
+                                    Tab(
+                                        selected = isSelected,
+                                        onClick = { selectedOperatorFilter = filterIdx as Int },
+                                        modifier = Modifier.padding(end = 8.dp)
                                     ) {
-                                        Text(
-                                            title,
-                                            color = if (isSelected) (if (op == null) Color.Black else Color.White) else Color(0xFF8E93A6),
-                                            fontWeight = FontWeight.Black,
-                                            fontSize = 10.sp
-                                        )
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(12.dp))
+                                                .background(
+                                                    if (isSelected) {
+                                                        when (op) {
+                                                            "JIO" -> Color(0xFFD32F2F) // Vibrant Crimson
+                                                            "AIRTEL" -> Color(0xFFE53935)
+                                                            else -> Color(0xFFFFC107) // Neon Amber/Yellow
+                                                        }
+                                                    } else Color(0xFF131622)
+                                                )
+                                                .border(
+                                                    1.dp,
+                                                    if (isSelected) Color.Transparent else Color(0xFF262A3C),
+                                                    RoundedCornerShape(12.dp)
+                                                )
+                                                .padding(horizontal = 16.dp, vertical = 10.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = title as String,
+                                                color = if (isSelected) (if (op == null) Color.Black else Color.White) else Color(0xFF8E93A6),
+                                                fontWeight = FontWeight.Black,
+                                                fontSize = 11.sp
+                                            )
+                                        }
                                     }
                                 }
                             }
                         }
-
                         // Recharge Plan Cards
                         items(displayedPlans) { plan ->
                             DataRechargeCard(
@@ -429,7 +428,6 @@ fun StoreScreen(
                                 onRedeemClick = { selectedRechargePlan = plan }
                             )
                         }
-
                         item { Spacer(modifier = Modifier.height(40.dp)) }
                     }
                 }
@@ -445,7 +443,6 @@ fun StoreScreen(
                             val isItemActive = storeViewModel.isItemEnabled(item)
                             val dailyLimit = storeViewModel.getEffectiveDailyLimit(item)
                             val codesCount = storeViewModel.getAvailableCodesCount(item)
-
                             FamPayGooglePlayCard(
                                 item = item,
                                 effectivePrice = effectivePrice,
@@ -454,10 +451,15 @@ fun StoreScreen(
                                 customCodesCount = codesCount,
                                 userName = userName,
                                 userCoins = userCoins,
-                                onBuyClick = { selectedItemForPurchase = item }
+                                onBuyClick = { selectedItemForPurchase = item },
+                                onRequestRestock = { 
+                                    storeViewModel.requestRestock(item, 
+                                        onSuccess = { Toast.makeText(context, "Restock request sent to Admin!", Toast.LENGTH_SHORT).show() },
+                                        onError = { Toast.makeText(context, "Failed to send request.", Toast.LENGTH_SHORT).show() }
+                                    ) 
+                                }
                             )
                         }
-
                         item { Spacer(modifier = Modifier.height(40.dp)) }
                     }
                 }
@@ -473,7 +475,6 @@ fun StoreScreen(
                             val isItemActive = storeViewModel.isItemEnabled(item)
                             val dailyLimit = storeViewModel.getEffectiveDailyLimit(item)
                             val codesCount = storeViewModel.getAvailableCodesCount(item)
-
                             TournamentDiscountCard(
                                 item = item,
                                 effectivePrice = effectivePrice,
@@ -485,7 +486,6 @@ fun StoreScreen(
                                 onBuyClick = { selectedItemForPurchase = item }
                             )
                         }
-
                         item { Spacer(modifier = Modifier.height(40.dp)) }
                     }
                 }
@@ -543,7 +543,6 @@ fun StoreScreen(
                                     Text("${purchasedCards.size} Items", color = Color(0xFFFFD700), fontWeight = FontWeight.Bold, fontSize = 12.sp)
                                 }
                             }
-
                             items(purchasedCards) { card ->
                                 PurchasedCardVaultItem(
                                     card = card,
@@ -553,7 +552,6 @@ fun StoreScreen(
                                     }
                                 )
                             }
-
                             item { Spacer(modifier = Modifier.height(40.dp)) }
                         }
                     }
@@ -562,7 +560,6 @@ fun StoreScreen(
         }
     }
 }
-
 // ----------------------------------------------------
 // Diamond Transparent Glass Google Play Card Component
 // ----------------------------------------------------
@@ -575,9 +572,11 @@ fun FamPayGooglePlayCard(
     customCodesCount: Int = 0,
     userName: String,
     userCoins: Int,
-    onBuyClick: () -> Unit
+    onBuyClick: () -> Unit,
+    onRequestRestock: () -> Unit
 ) {
     val canAfford = userCoins >= effectivePrice && isEnabled
+    var isBought by remember { mutableStateOf(false) }
 
     // Continuous Shimmer / Sheen Animation
     val infiniteTransition = rememberInfiniteTransition(label = "googlePlayShimmer")
@@ -596,7 +595,7 @@ fun FamPayGooglePlayCard(
             .fillMaxWidth()
             .clip(RoundedCornerShape(22.dp))
             .background(Color(0xFF0C0E17))
-            .border(0.8.dp, Color(0xFF1E2338), RoundedCornerShape(22.dp))
+            .border(1.dp, if (isBought) Color(0xFF22C55E).copy(alpha = 0.5f) else Color(0xFF1E2338), RoundedCornerShape(22.dp))
             .padding(12.dp)
     ) {
         // Physical Diamond Glass Gift Card
@@ -637,7 +636,6 @@ fun FamPayGooglePlayCard(
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val w = size.width
                 val h = size.height
-
                 // Subtle diamond crystalline geometry
                 val facetPath = Path().apply {
                     moveTo(w * 0.7f, 0f)
@@ -734,50 +732,71 @@ fun FamPayGooglePlayCard(
                     }
                 }
 
-                // Middle Row: Half-Hidden Google Play Scratch/Redeem Code Strip
+                // Middle Row: Buy-To-Reveal Code Strip
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(10.dp))
                         .background(Color(0xFF030914).copy(alpha = 0.85f))
-                        .border(0.8.dp, Color(0xFF00E5FF).copy(alpha = 0.3f), RoundedCornerShape(10.dp))
+                        .border(1.dp, if (isBought) Color(0xFF06B6D4) else Color(0xFF00E5FF).copy(alpha = 0.3f), RoundedCornerShape(10.dp))
                         .padding(horizontal = 10.dp, vertical = 7.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                Icons.Default.Lock,
-                                contentDescription = "Protected Code",
-                                tint = Color(0xFF00E5FF),
-                                modifier = Modifier.size(13.dp)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                "GP •••• - 8K9F - ••••",
-                                color = Color(0xFFE0F7FA),
-                                fontFamily = FontFamily.Monospace,
-                                fontWeight = FontWeight.Black,
-                                fontSize = 12.sp,
-                                letterSpacing = 1.2.sp
-                            )
-                        }
-
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(Color(0xFF00E676).copy(alpha = 0.15f))
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                    Crossfade(targetState = isBought, animationSpec = tween(durationMillis = 600), label = "Reveal") { revealed ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                "16-CHAR CODE",
-                                color = Color(0xFF00E676),
-                                fontWeight = FontWeight.Black,
-                                fontSize = 8.5.sp
-                            )
+                            if (!revealed) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        Icons.Default.Lock,
+                                        contentDescription = "Protected Code",
+                                        tint = Color(0xFF00E5FF),
+                                        modifier = Modifier.size(13.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        "GP •••• 8K9F ••••",
+                                        color = Color(0xFFE0F7FA),
+                                        fontFamily = FontFamily.Monospace,
+                                        fontWeight = FontWeight.Black,
+                                        fontSize = 12.sp,
+                                        letterSpacing = 1.2.sp
+                                    )
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .background(Color(0xFF00E676).copy(alpha = 0.15f))
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                ) {
+                                    Text(
+                                        "16-CHAR CODE",
+                                        color = Color(0xFF00E676),
+                                        fontWeight = FontWeight.Black,
+                                        fontSize = 8.5.sp
+                                    )
+                                }
+                            } else {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        Icons.Default.ContentCopy,
+                                        contentDescription = "Copy Code",
+                                        tint = Color(0xFF06B6D4),
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        "GPK3-9M2X-8K9F-2B4L",
+                                        color = Color(0xFF06B6D4),
+                                        fontFamily = FontFamily.Monospace,
+                                        fontWeight = FontWeight.Black,
+                                        fontSize = 13.sp,
+                                        letterSpacing = 1.5.sp
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -800,473 +819,127 @@ fun FamPayGooglePlayCard(
                             userName.uppercase(),
                             color = Color.White,
                             fontWeight = FontWeight.Black,
-                            fontSize = 11.sp,
-                            letterSpacing = 0.5.sp,
-                            maxLines = 1
+                            fontSize = 10.sp,
+                            letterSpacing = 0.5.sp
                         )
                     }
 
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
-                            .background(
-                                if (!isEnabled) Color(0xFFFF5252).copy(alpha = 0.2f) else Color(0xFF00E5FF).copy(alpha = 0.12f)
-                            )
-                            .border(
-                                0.6.dp,
-                                if (!isEnabled) Color(0xFFFF5252).copy(alpha = 0.5f) else Color(0xFF00E5FF).copy(alpha = 0.4f),
-                                RoundedCornerShape(6.dp)
-                            )
-                            .padding(horizontal = 7.dp, vertical = 2.5.dp)
-                    ) {
-                        Text(
-                            if (!isEnabled) "⛔ BLOCKED BY ADMIN" else "${item.badgeText} • LIMIT: ${dailyLimit}/DAY",
-                            color = if (!isEnabled) Color(0xFFFF8A80) else Color(0xFFE0F7FA),
-                            fontWeight = FontWeight.Black,
-                            fontSize = 8.5.sp
-                        )
-                    }
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        // Info & Purchase Controls Row
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    item.title,
-                    color = Color.White,
-                    fontWeight = FontWeight.Black,
-                    fontSize = 13.5.sp
-                )
-                Text(
-                    if (!isEnabled) "⛔ Currently out of stock / blocked" else item.subtitle,
-                    color = if (!isEnabled) Color(0xFFFF5252) else Color(0xFF8E93A6),
-                    fontSize = 10.5.sp
-                )
-            }
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Button(
-                onClick = onBuyClick,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = when {
-                        !isEnabled -> Color(0xFF2A1215)
-                        canAfford -> Color(0xFFFFD700)
-                        else -> Color(0xFF1E2232)
-                    }
-                ),
-                enabled = isEnabled,
-                shape = RoundedCornerShape(10.dp),
-                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (isEnabled) {
-                        Icon(
-                            Icons.Default.MonetizationOn,
-                            contentDescription = null,
-                            tint = if (canAfford) Color.Black else Color(0xFF8E93A6),
-                            modifier = Modifier.size(13.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            "$effectivePrice COINS",
-                            color = if (canAfford) Color.Black else Color(0xFF8E93A6),
-                            fontWeight = FontWeight.Black,
-                            fontSize = 11.5.sp
-                        )
-                    } else {
-                        Text(
-                            "BLOCKED",
-                            color = Color(0xFFFF5252),
-                            fontWeight = FontWeight.Black,
-                            fontSize = 11.sp
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-// ----------------------------------------------------
-// Rich Tournament VIP Pass Card Component (App's Own Card)
-// ----------------------------------------------------
-@Composable
-fun TournamentDiscountCard(
-    item: StoreItem,
-    effectivePrice: Int = item.coinPrice,
-    isEnabled: Boolean = true,
-    dailyLimit: Int = 2,
-    customCodesCount: Int = 0,
-    userName: String,
-    userCoins: Int,
-    onBuyClick: () -> Unit
-) {
-    val canAfford = userCoins >= effectivePrice && isEnabled
-
-    // Rich saturated background gradients & matching accents
-    val (cardBgGradient, borderGradient, accentColor) = when (item.cardColorTheme) {
-        "GOD" -> Triple(
-            listOf(Color(0xFF380424), Color(0xFF5E093C), Color(0xFF240217), Color(0xFF4A062F)),
-            listOf(Color(0xFFFF0055).copy(alpha = 0.5f), Color(0xFFD500F9).copy(alpha = 0.5f), Color(0xFFFFD700).copy(alpha = 0.4f)),
-            Color(0xFFFF2A7A)
-        )
-        "DIAMOND" -> Triple(
-            listOf(Color(0xFF03223A), Color(0xFF0A456C), Color(0xFF021727), Color(0xFF063352)),
-            listOf(Color(0xFF00E5FF).copy(alpha = 0.5f), Color(0xFF2979FF).copy(alpha = 0.5f), Color(0xFF00E676).copy(alpha = 0.4f)),
-            Color(0xFF00E5FF)
-        )
-        "GOLD" -> Triple(
-            listOf(Color(0xFF382603), Color(0xFF5E4208), Color(0xFF221600), Color(0xFF473204)),
-            listOf(Color(0xFFFFD700).copy(alpha = 0.5f), Color(0xFFFFA000).copy(alpha = 0.5f), Color(0xFFFFE082).copy(alpha = 0.4f)),
-            Color(0xFFFFD700)
-        )
-        "SILVER" -> Triple(
-            listOf(Color(0xFF1F2937), Color(0xFF374151), Color(0xFF111827), Color(0xFF283548)),
-            listOf(Color(0xFFECEFF1).copy(alpha = 0.5f), Color(0xFFB0BEC5).copy(alpha = 0.5f), Color(0xFF78909C).copy(alpha = 0.4f)),
-            Color(0xFFECEFF1)
-        )
-        else -> Triple(
-            listOf(Color(0xFF3A1808), Color(0xFF5A270F), Color(0xFF240D04), Color(0xFF461D0A)),
-            listOf(Color(0xFFFF8A65).copy(alpha = 0.5f), Color(0xFFD84315).copy(alpha = 0.5f), Color(0xFFFFCCBC).copy(alpha = 0.4f)),
-            Color(0xFFFF8A65)
-        )
-    }
-
-    // Continuous Shimmer / Sheen Animation
-    val infiniteTransition = rememberInfiniteTransition(label = "vipPassShimmer")
-    val shimmerTranslate by infiniteTransition.animateFloat(
-        initialValue = -300f,
-        targetValue = 1200f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 3000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "shimmerTranslate"
-    )
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(22.dp))
-            .background(Color(0xFF0C0E17))
-            .border(0.8.dp, Color(0xFF1E2338), RoundedCornerShape(22.dp))
-            .padding(12.dp)
-    ) {
-        // Rich Colored VIP Pass
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(190.dp)
-                .clip(RoundedCornerShape(18.dp))
-                .background(
-                    Brush.linearGradient(
-                        colors = cardBgGradient,
-                        start = Offset(0f, 0f),
-                        end = Offset(900f, 900f)
-                    )
-                )
-                .border(0.8.dp, Brush.linearGradient(borderGradient), RoundedCornerShape(18.dp))
-                .padding(14.dp)
-        ) {
-            // Diagonal Hatch Watermark & Dynamic Moving Light Sheen Canvas
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                val w = size.width
-                val h = size.height
-
-                // Cyber diagonal subtle texture lines
-                val stroke = 0.8.dp.toPx()
-                var x = 0f
-                while (x < w * 2) {
-                    drawLine(
-                        color = accentColor.copy(alpha = 0.04f),
-                        start = Offset(x, 0f),
-                        end = Offset(x - h, h),
-                        strokeWidth = stroke
-                    )
-                    x += 20.dp.toPx()
-                }
-
-                // Ambient Radial Glow at top-right
-                drawCircle(
-                    brush = Brush.radialGradient(
-                        colors = listOf(accentColor.copy(alpha = 0.18f), Color.Transparent),
-                        center = Offset(w * 0.9f, h * 0.1f),
-                        radius = w * 0.45f
-                    ),
-                    radius = w * 0.45f,
-                    center = Offset(w * 0.9f, h * 0.1f)
-                )
-
-                // Dynamic Moving Shimmer Sheen Beam
-                val sheenWidth = 140f
-                val sheenBrush = Brush.linearGradient(
-                    colors = listOf(
-                        Color.Transparent,
-                        Color.White.copy(alpha = 0.14f),
-                        accentColor.copy(alpha = 0.15f),
-                        Color.Transparent
-                    ),
-                    start = Offset(shimmerTranslate - sheenWidth, 0f),
-                    end = Offset(shimmerTranslate + sheenWidth, h)
-                )
-                drawRect(brush = sheenBrush)
-            }
-
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.SpaceBetween
-            ) {
-                // Top Row: App VIP Branding + Big Discount Badge
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(Color.Black.copy(alpha = 0.5f))
-                            .border(0.8.dp, accentColor.copy(alpha = 0.3f), RoundedCornerShape(10.dp))
+                            .background(Color(0xFF14161F))
+                            .border(0.5.dp, Color(0xFF262A38), RoundedCornerShape(6.dp))
                             .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(22.dp)
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(accentColor.copy(alpha = 0.25f)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                Icons.Default.ConfirmationNumber,
-                                contentDescription = null,
-                                tint = accentColor,
-                                modifier = Modifier.size(13.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(7.dp))
-                        Column {
-                            Text(
-                                "SCRIMX VIP PASS",
-                                color = Color.White,
-                                fontWeight = FontWeight.Black,
-                                fontSize = 13.sp,
-                                letterSpacing = 0.6.sp
-                            )
-                            Text(
-                                "TOURNAMENT DISCOUNT PASS",
-                                color = accentColor,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 7.sp,
-                                letterSpacing = 1.sp
-                            )
-                        }
-                    }
-
-                    // Big Discount Amount Pill
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(accentColor)
-                            .padding(horizontal = 10.dp, vertical = 4.dp)
-                    ) {
-                        val discText = when {
-                            item.discountPercent > 0 -> "${item.discountPercent}% OFF"
-                            else -> "₹${item.discountFlatRupees} OFF"
-                        }
                         Text(
-                            discText,
-                            color = Color.Black,
+                            if (customCodesCount > 0) "IN STOCK" else "LIMIT $dailyLimit/DAY",
+                            color = if (customCodesCount > 0) Color(0xFF00E676) else Color(0xFF6F8299),
                             fontWeight = FontWeight.Black,
-                            fontSize = 14.sp
+                            fontSize = 8.sp,
+                            letterSpacing = 0.5.sp
                         )
-                    }
-                }
-
-                // Middle Row: Half-Hidden VIP Discount Pass Code Strip
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(Color.Black.copy(alpha = 0.6f))
-                        .border(0.8.dp, accentColor.copy(alpha = 0.35f), RoundedCornerShape(10.dp))
-                        .padding(horizontal = 10.dp, vertical = 7.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                Icons.Default.ConfirmationNumber,
-                                contentDescription = "Pass Code",
-                                tint = accentColor,
-                                modifier = Modifier.size(13.dp)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            val maskedSnippet = if (item.discountPercent > 0) "${item.discountPercent}OFF" else "FLAT${item.discountFlatRupees}"
-                            Text(
-                                "PASS •••• - $maskedSnippet - ••••",
-                                color = Color.White,
-                                fontFamily = FontFamily.Monospace,
-                                fontWeight = FontWeight.Black,
-                                fontSize = 12.sp,
-                                letterSpacing = 1.sp
-                            )
-                        }
-
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(accentColor.copy(alpha = 0.2f))
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
-                        ) {
-                            Text(
-                                "${item.maxUses} MATCH ENTRIES",
-                                color = Color.White,
-                                fontWeight = FontWeight.Black,
-                                fontSize = 8.5.sp
-                            )
-                        }
-                    }
-                }
-
-                // Bottom Row: Gamer Name & Tier Badge
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text(
-                            "PASS HOLDER",
-                            color = Color(0xFFB0BEC5),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 7.5.sp,
-                            letterSpacing = 1.sp
-                        )
-                        Text(
-                            userName.uppercase(),
-                            color = Color.White,
-                            fontWeight = FontWeight.Black,
-                            fontSize = 11.sp,
-                            letterSpacing = 0.5.sp,
-                            maxLines = 1
-                        )
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(
-                                if (!isEnabled) Color(0xFFFF5252).copy(alpha = 0.2f) else Color.Black.copy(alpha = 0.5f)
-                            )
-                            .border(
-                                0.6.dp,
-                                if (!isEnabled) Color(0xFFFF5252).copy(alpha = 0.5f) else accentColor.copy(alpha = 0.4f),
-                                RoundedCornerShape(6.dp)
-                            )
-                            .padding(horizontal = 7.dp, vertical = 2.5.dp)
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                if (!isEnabled) Icons.Default.Block else Icons.Default.Verified,
-                                contentDescription = null,
-                                tint = if (!isEnabled) Color(0xFFFF5252) else accentColor,
-                                modifier = Modifier.size(11.dp)
-                            )
-                            Spacer(modifier = Modifier.width(3.dp))
-                            Text(
-                                if (!isEnabled) "⛔ BLOCKED BY ADMIN" else "${item.badgeText} • LIMIT: ${dailyLimit}/DAY",
-                                color = if (!isEnabled) Color(0xFFFF8A80) else Color.White,
-                                fontWeight = FontWeight.Black,
-                                fontSize = 8.5.sp
-                            )
-                        }
                     }
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(14.dp))
 
-        // Info & Purchase Row
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    item.title,
-                    color = Color.White,
-                    fontWeight = FontWeight.Black,
-                    fontSize = 13.5.sp
-                )
-                Text(
-                    if (!isEnabled) "⛔ Currently out of stock / blocked" else item.subtitle,
-                    color = if (!isEnabled) Color(0xFFFF5252) else Color(0xFF8E93A6),
-                    fontSize = 10.5.sp
-                )
-            }
+        // Store Purchase Interaction
+        val interactionSource = remember { MutableInteractionSource() }
+        val isPressed by interactionSource.collectIsPressedAsState()
+        val scale by animateFloatAsState(targetValue = if (isPressed && !isBought) 0.95f else 1f, animationSpec = spring(dampingRatio = 0.5f, stiffness = 400f))
 
-            Spacer(modifier = Modifier.width(8.dp))
+        var hasRequestedRestock by remember { mutableStateOf(false) }
+        val isOutOfStock = customCodesCount <= 0
 
-            Button(
-                onClick = onBuyClick,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = when {
-                        !isEnabled -> Color(0xFF2A1215)
-                        canAfford -> accentColor
-                        else -> Color(0xFF1E2232)
-                    }
-                ),
-                enabled = isEnabled,
-                shape = RoundedCornerShape(10.dp),
-                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (isEnabled) {
-                        Icon(
-                            Icons.Default.MonetizationOn,
-                            contentDescription = null,
-                            tint = if (canAfford) Color.Black else Color(0xFF8E93A6),
-                            modifier = Modifier.size(13.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            "$effectivePrice COINS",
-                            color = if (canAfford) Color.Black else Color(0xFF8E93A6),
-                            fontWeight = FontWeight.Black,
-                            fontSize = 11.5.sp
-                        )
-                    } else {
-                        Text(
-                            "BLOCKED",
-                            color = Color(0xFFFF5252),
-                            fontWeight = FontWeight.Black,
-                            fontSize = 11.sp
-                        )
-                    }
+        Button(
+            onClick = { 
+                if (isOutOfStock && !hasRequestedRestock) {
+                    hasRequestedRestock = true
+                    onRequestRestock()
+                } else if (!isOutOfStock && !isBought) {
+                    isBought = true
+                    onBuyClick() 
                 }
+            },
+            enabled = (canAfford || isBought || isOutOfStock) && !hasRequestedRestock,
+            interactionSource = interactionSource,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (isBought) Color(0xFF22C55E).copy(alpha = 0.15f) else if (isOutOfStock) Color(0xFFE11D48).copy(alpha = 0.15f) else Color(0xFFFFD700),
+                disabledContainerColor = if (isBought) Color(0xFF22C55E).copy(alpha = 0.15f) else if (isOutOfStock) Color(0xFFE11D48).copy(alpha = 0.15f) else Color(0xFF1E2338)
+            ),
+            shape = RoundedCornerShape(14.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+                .scale(scale)
+                .border(
+                    1.dp,
+                    if (isBought) Color(0xFF22C55E) else if (isOutOfStock) Color(0xFFE11D48).copy(alpha = 0.5f) else Color.Transparent,
+                    RoundedCornerShape(14.dp)
+                )
+        ) {
+            if (isBought) {
+                Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF22C55E), modifier = Modifier.size(18.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    "CLAIMED SUCCESSFULLY",
+                    color = Color(0xFF22C55E),
+                    fontWeight = FontWeight.Black,
+                    fontSize = 13.sp,
+                    letterSpacing = 0.5.sp
+                )
+            } else if (isOutOfStock) {
+                if (hasRequestedRestock) {
+                    Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFFE11D48), modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        "RESTOCK REQUESTED",
+                        color = Color(0xFFE11D48),
+                        fontWeight = FontWeight.Black,
+                        fontSize = 13.sp,
+                        letterSpacing = 0.5.sp
+                    )
+                } else {
+                    Icon(Icons.Default.NotificationsActive, contentDescription = null, tint = Color(0xFFE11D48), modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        "OUT OF STOCK - REQUEST ADMIN",
+                        color = Color(0xFFE11D48),
+                        fontWeight = FontWeight.Black,
+                        fontSize = 12.sp,
+                        letterSpacing = 0.5.sp
+                    )
+                }
+            } else {
+                Text(
+                    "REDEEM FOR",
+                    color = if (canAfford) Color.Black else Color(0xFF8E92A4),
+                    fontWeight = FontWeight.Black,
+                    fontSize = 13.sp,
+                    letterSpacing = 0.5.sp
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Icon(
+                    Icons.Default.MonetizationOn,
+                    contentDescription = "Coins",
+                    tint = if (canAfford) Color.Black else Color(0xFF8E92A4),
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    "$effectivePrice",
+                    color = if (canAfford) Color.Black else Color(0xFF8E92A4),
+                    fontWeight = FontWeight.Black,
+                    fontSize = 16.sp
+                )
             }
         }
     }
 }
 
-// ----------------------------------------------------
-// My Vault Card Item (Purchased Cards & Codes)
-// ----------------------------------------------------
+
 @Composable
 fun PurchasedCardVaultItem(
     card: UserPurchasedCard,
@@ -1274,6 +947,7 @@ fun PurchasedCardVaultItem(
     onMarkUsed: () -> Unit
 ) {
     val context = LocalContext.current
+    val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     var isCodeCopied by remember { mutableStateOf(false) }
 
     val isDataRecharge = card.category.equals("DATA_RECHARGE", ignoreCase = true)
@@ -1304,7 +978,7 @@ fun PurchasedCardVaultItem(
                     .wrapContentHeight()
                     .clip(RoundedCornerShape(20.dp))
                     .background(Color(0xFF14161F))
-                    .border(1.5.dp, Color(0xFF00E676).copy(alpha = 0.5f), RoundedCornerShape(20.dp))
+                    .border(1.5.dp, Color(0xFF22C55E).copy(alpha = 0.5f), RoundedCornerShape(20.dp))
                     .padding(18.dp)
             ) {
                 Column(
@@ -1317,8 +991,8 @@ fun PurchasedCardVaultItem(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text("Recharge Confirmation Proof", color = Color.White, fontWeight = FontWeight.Black, fontSize = 14.sp)
-                            Text("Official receipt from admin top-up desk", color = Color(0xFF00E676), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                            Text("Recharge Confirmation", color = Color.White, fontWeight = FontWeight.Black, fontSize = 14.sp)
+                            Text("Official receipt from admin", color = Color(0xFF22C55E), fontSize = 10.sp, fontWeight = FontWeight.Bold)
                         }
                         IconButton(onClick = { showProofDialog = false }, modifier = Modifier.size(28.dp)) {
                             Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.White)
@@ -1345,7 +1019,7 @@ fun PurchasedCardVaultItem(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Ref ID / UTR: $effectiveRechargeTxnId", color = Color(0xFFFFD700), fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                            Text("Ref ID / UTR: $effectiveRechargeTxnId", color = Color(0xFFFACC15), fontWeight = FontWeight.Bold, fontSize = 11.sp)
                         }
                     }
 
@@ -1358,7 +1032,7 @@ fun PurchasedCardVaultItem(
 
                     Button(
                         onClick = { showProofDialog = false },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E676)),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF22C55E)),
                         shape = RoundedCornerShape(10.dp),
                         modifier = Modifier.fillMaxWidth().height(42.dp)
                     ) {
@@ -1369,647 +1043,227 @@ fun PurchasedCardVaultItem(
         }
     }
 
-    // Continuous Shimmer / Sheen Animation
-    val infiniteTransition = rememberInfiniteTransition(label = "vaultCardShimmer")
-    val shimmerTranslate by infiniteTransition.animateFloat(
-        initialValue = -300f,
-        targetValue = 1200f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 2800, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "vaultShimmerTranslate"
-    )
-
-    // Themes for Vault Cards
-    val (cardBgGradient, borderGradient, accentColor) = if (isDataRecharge) {
-        Triple(
-            listOf(Color(0xFF380005), Color(0xFF5E050D), Color(0xFF220003), Color(0xFF450209)),
-            listOf(Color(0xFFFF5252).copy(alpha = 0.6f), Color(0xFFFFD700).copy(alpha = 0.5f), Color(0xFFFF5252).copy(alpha = 0.4f)),
-            Color(0xFFFF5252)
-        )
-    } else if (isGooglePlay) {
-        Triple(
-            listOf(Color(0xFF061520), Color(0xFF0B2433), Color(0xFF04101A), Color(0xFF081C29)),
-            listOf(Color(0xFF00E5FF).copy(alpha = 0.5f), Color(0xFF00E676).copy(alpha = 0.5f), Color(0xFF00B0FF).copy(alpha = 0.4f)),
-            Color(0xFF00E5FF)
-        )
-    } else {
-        when (card.cardColorTheme.uppercase()) {
-            "GOD" -> Triple(
-                listOf(Color(0xFF380424), Color(0xFF5E093C), Color(0xFF240217), Color(0xFF4A062F)),
-                listOf(Color(0xFFFF0055).copy(alpha = 0.5f), Color(0xFFD500F9).copy(alpha = 0.5f), Color(0xFFFFD700).copy(alpha = 0.4f)),
-                Color(0xFFFF2A7A)
-            )
-            "DIAMOND" -> Triple(
-                listOf(Color(0xFF03223A), Color(0xFF0A456C), Color(0xFF021727), Color(0xFF063352)),
-                listOf(Color(0xFF00E5FF).copy(alpha = 0.5f), Color(0xFF2979FF).copy(alpha = 0.5f), Color(0xFF00E676).copy(alpha = 0.4f)),
-                Color(0xFF00E5FF)
-            )
-            "GOLD" -> Triple(
-                listOf(Color(0xFF382603), Color(0xFF5E4208), Color(0xFF221600), Color(0xFF473204)),
-                listOf(Color(0xFFFFD700).copy(alpha = 0.5f), Color(0xFFFFA000).copy(alpha = 0.5f), Color(0xFFFFE082).copy(alpha = 0.4f)),
-                Color(0xFFFFD700)
-            )
-            "SILVER" -> Triple(
-                listOf(Color(0xFF1F2937), Color(0xFF374151), Color(0xFF111827), Color(0xFF283548)),
-                listOf(Color(0xFFECEFF1).copy(alpha = 0.5f), Color(0xFFB0BEC5).copy(alpha = 0.5f), Color(0xFF78909C).copy(alpha = 0.4f)),
-                Color(0xFFECEFF1)
-            )
-            else -> Triple(
-                listOf(Color(0xFF3A1808), Color(0xFF5A270F), Color(0xFF240D04), Color(0xFF461D0A)),
-                listOf(Color(0xFFFF8A65).copy(alpha = 0.5f), Color(0xFFD84315).copy(alpha = 0.5f), Color(0xFFFFCCBC).copy(alpha = 0.4f)),
-                Color(0xFFFF8A65)
-            )
-        }
-    }
+    // Vault Card UI (Ultra-Premium Redesign)
+    val cardColor = if (isUsed) Color(0xFF1E2338) else if (isDataRecharge) Color(0xFFE11D48) else Color(0xFF06B6D4)
+    val glowColor = if (isUsed) Color.Transparent else cardColor.copy(alpha = 0.3f)
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(22.dp))
-            .background(Color(0xFF0C0E17))
-            .border(0.8.dp, if (isUsed) Color(0xFF242938) else Color(0xFF1E2338), RoundedCornerShape(22.dp))
-            .padding(12.dp)
+            .clip(RoundedCornerShape(18.dp))
+            .background(Color(0xFF0B0F14))
+            .border(1.dp, glowColor, RoundedCornerShape(18.dp))
+            .padding(14.dp)
     ) {
-        // Physical Unlocked Digital Card
+        // Header
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(cardColor.copy(alpha = 0.15f))
+                        .border(1.dp, cardColor.copy(alpha = 0.5f), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        if (isDataRecharge) Icons.Default.PhoneIphone else Icons.Default.CardGiftcard,
+                        contentDescription = null,
+                        tint = cardColor,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(10.dp))
+                Column {
+                    Text(
+                        card.title.uppercase(),
+                        color = Color.White,
+                        fontWeight = FontWeight.Black,
+                        fontSize = 14.sp,
+                        letterSpacing = 0.5.sp
+                    )
+                    Text(
+                        card.category,
+                        color = cardColor,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 9.sp,
+                        letterSpacing = 1.sp
+                    )
+                }
+            }
+            
+            // Status Badge
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(if (isUsed) Color(0xFF1E2338) else Color(0xFF22C55E).copy(alpha = 0.15f))
+                    .border(1.dp, if (isUsed) Color.Transparent else Color(0xFF22C55E).copy(alpha = 0.5f), RoundedCornerShape(6.dp))
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+            ) {
+                Text(
+                    if (isUsed) "USED" else "ACTIVE",
+                    color = if (isUsed) Color(0xFF6F8299) else Color(0xFF22C55E),
+                    fontWeight = FontWeight.Black,
+                    fontSize = 9.sp,
+                    letterSpacing = 1.sp
+                )
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        // Code / Details Section
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(18.dp))
-                .background(
-                    Brush.linearGradient(
-                        colors = cardBgGradient,
-                        start = Offset(0f, 0f),
-                        end = Offset(900f, 900f)
-                    )
-                )
-                .border(
-                    0.8.dp,
-                    if (isUsed) Brush.linearGradient(listOf(Color(0xFF3B4055), Color(0xFF262A38)))
-                    else Brush.linearGradient(borderGradient),
-                    RoundedCornerShape(18.dp)
-                )
-                .padding(14.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color(0xFF131922))
+                .border(1.dp, Color(0xFF1E2338), RoundedCornerShape(12.dp))
+                .clickable(enabled = card.code.isNotBlank() && !isDataRecharge) {
+                    if (card.code.isNotBlank()) {
+                        val clip = ClipData.newPlainText("Redeem Code", card.code)
+                        clipboardManager.setPrimaryClip(clip)
+                        isCodeCopied = true
+                        Toast.makeText(context, "Code Copied!", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                .padding(12.dp)
         ) {
-            // Live Shimmer & Subtle Geometry
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                val w = size.width
-                val h = size.height
-
-                if (isGooglePlay) {
-                    val facetPath = Path().apply {
-                        moveTo(w * 0.7f, 0f)
-                        lineTo(w, h * 0.45f)
-                        lineTo(w * 0.4f, h)
-                        close()
-                    }
-                    drawPath(
-                        path = facetPath,
-                        brush = Brush.linearGradient(
-                            colors = listOf(Color(0xFF00E5FF).copy(alpha = 0.05f), Color.Transparent),
-                            start = Offset(w * 0.7f, 0f),
-                            end = Offset(0f, h)
-                        )
-                    )
-                    drawCircle(Color(0xFF00E5FF).copy(alpha = 0.7f), radius = 2.dp.toPx(), center = Offset(w * 0.85f, h * 0.2f))
-                    drawCircle(Color.White.copy(alpha = 0.9f), radius = 1.2.dp.toPx(), center = Offset(w * 0.85f, h * 0.2f))
-                } else {
-                    val stroke = 0.8.dp.toPx()
-                    var x = 0f
-                    while (x < w * 2) {
-                        drawLine(
-                            color = accentColor.copy(alpha = 0.04f),
-                            start = Offset(x, 0f),
-                            end = Offset(x - h, h),
-                            strokeWidth = stroke
-                        )
-                        x += 20.dp.toPx()
-                    }
-                }
-
-                if (!isUsed) {
-                    val sheenWidth = 140f
-                    val sheenBrush = Brush.linearGradient(
-                        colors = listOf(
-                            Color.Transparent,
-                            Color.White.copy(alpha = 0.12f),
-                            accentColor.copy(alpha = 0.14f),
-                            Color.Transparent
-                        ),
-                        start = Offset(shimmerTranslate - sheenWidth, 0f),
-                        end = Offset(shimmerTranslate + sheenWidth, h)
-                    )
-                    drawRect(brush = sheenBrush)
-                }
-            }
-
-            Column(
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                // Top Row: Header & Value/Status Badge
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(Color(0xFF020D14).copy(alpha = 0.7f))
-                            .border(0.8.dp, accentColor.copy(alpha = 0.25f), RoundedCornerShape(10.dp))
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                    ) {
-                        if (isDataRecharge) {
-                            val isJio = card.title.contains("JIO", ignoreCase = true)
-                            if (isJio) {
-                                JioBrandLogo(size = 22)
-                            } else {
-                                AirtelBrandLogo(size = 20)
-                            }
-                            Spacer(modifier = Modifier.width(7.dp))
-                            Column {
-                                Text(
-                                    if (isJio) "JIO 4G/5G" else "AIRTEL 5G",
-                                    color = Color.White,
-                                    fontWeight = FontWeight.Black,
-                                    fontSize = 12.sp,
-                                    letterSpacing = 0.5.sp
-                                )
-                                Text(
-                                    "DATA ADD-ON BOOSTER",
-                                    color = Color(0xFFFFD700),
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 7.sp,
-                                    letterSpacing = 1.sp
-                                )
-                            }
-                        } else if (isGooglePlay) {
-                            GooglePlayLogoIcon(modifier = Modifier.size(20.dp))
-                            Spacer(modifier = Modifier.width(7.dp))
-                            Column {
-                                Text(
-                                    "Google Play",
-                                    color = Color.White,
-                                    fontWeight = FontWeight.Black,
-                                    fontSize = 13.sp,
-                                    letterSpacing = 0.5.sp
-                                )
-                                Text(
-                                    "OFFICIAL GIFT VOUCHER",
-                                    color = Color(0xFF00E5FF),
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 7.sp,
-                                    letterSpacing = 1.sp
-                                )
-                            }
-                        } else {
-                            Box(
-                                modifier = Modifier
-                                    .size(22.dp)
-                                    .clip(RoundedCornerShape(6.dp))
-                                    .background(accentColor.copy(alpha = 0.25f)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    Icons.Default.ConfirmationNumber,
-                                    contentDescription = null,
-                                    tint = accentColor,
-                                    modifier = Modifier.size(13.dp)
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(7.dp))
-                            Column {
-                                Text(
-                                    "SCRIMX VIP PASS",
-                                    color = Color.White,
-                                    fontWeight = FontWeight.Black,
-                                    fontSize = 13.sp,
-                                    letterSpacing = 0.6.sp
-                                )
-                                Text(
-                                    card.title.uppercase(),
-                                    color = accentColor,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 7.sp,
-                                    letterSpacing = 1.sp
-                                )
-                            }
-                        }
-                    }
-
-                    // Status / Value Pill
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(if (isUsed) Color(0xFF262A38) else accentColor)
-                            .padding(horizontal = 10.dp, vertical = 4.dp)
-                    ) {
-                        val badgeText = if (isDataRecharge) {
-                            "₹${card.denominationRupees}"
-                        } else if (isUsed) {
-                            "REDEEMED"
-                        } else if (isGooglePlay) {
-                            "₹${card.denominationRupees}"
-                        } else {
-                            if (card.discountPercent > 0) "${card.discountPercent}% OFF" else "₹${card.discountFlatRupees} OFF"
-                        }
-                        Text(
-                            badgeText,
-                            color = if (isUsed) Color(0xFF8E93A6) else Color.Black,
-                            fontWeight = FontWeight.Black,
-                            fontSize = 13.sp
-                        )
-                    }
+                Column {
+                    Text(
+                        if (isDataRecharge) "TARGET NUMBER" else "REDEEM CODE",
+                        color = Color(0xFF6F8299),
+                        fontSize = 8.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        card.code.ifBlank { "PENDING ADMIN APPROVAL" },
+                        color = if (card.code.isNotBlank()) (if (isUsed) Color(0xFF8E92A4) else Color(0xFFFACC15)) else Color(0xFF6F8299),
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Black,
+                        fontSize = 15.sp,
+                        letterSpacing = 1.sp
+                    )
                 }
-
-                // Middle Row: UNLOCKED Full Redeem Code & 1-Tap Copy Box
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(Color(0xFF030812).copy(alpha = 0.9f))
-                        .border(1.dp, if (isUsed) Color(0xFF262A38) else accentColor.copy(alpha = 0.6f), RoundedCornerShape(12.dp))
-                        .padding(horizontal = 12.dp, vertical = 9.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                if (isDataRecharge) "RECHARGE MOBILE NUMBER" else if (isGooglePlay) "GOOGLE PLAY REDEEM CODE" else "VIP DISCOUNT PASS CODE",
-                                color = Color(0xFF6F8299),
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 8.sp,
-                                letterSpacing = 1.sp
-                            )
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Text(
-                                card.code,
-                                color = if (isUsed) Color(0xFF8E93A6) else Color(0xFFFFD700),
-                                fontFamily = FontFamily.Monospace,
-                                fontWeight = FontWeight.Black,
-                                fontSize = 14.5.sp,
-                                letterSpacing = 1.2.sp
-                            )
-                        }
-
-                        Button(
-                            onClick = {
-                                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                                val clip = ClipData.newPlainText(if (isDataRecharge) "Mobile Number" else "Redeem Code", card.code)
-                                clipboard.setPrimaryClip(clip)
-                                isCodeCopied = true
-                                Toast.makeText(context, if (isDataRecharge) "Mobile Number copied: ${card.code}" else "Code copied to clipboard: ${card.code}", Toast.LENGTH_SHORT).show()
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = if (isCodeCopied) Color(0xFF00E676) else if (isUsed) Color(0xFF25293A) else accentColor
-                            ),
-                            shape = RoundedCornerShape(8.dp),
-                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
-                        ) {
-                            Icon(
-                                if (isCodeCopied) Icons.Default.Check else Icons.Default.ContentCopy,
-                                contentDescription = "Copy",
-                                tint = if (isCodeCopied) Color.Black else if (isUsed) Color.White else Color.Black,
-                                modifier = Modifier.size(13.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                if (isCodeCopied) "COPIED" else "COPY",
-                                color = if (isCodeCopied) Color.Black else if (isUsed) Color.White else Color.Black,
-                                fontWeight = FontWeight.Black,
-                                fontSize = 10.5.sp
-                            )
-                        }
-                    }
-                }
-
-                // Bottom Info Row: Cardholder & Status / Uses
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text(
-                            "UNLOCKED BY",
-                            color = Color(0xFF6F8299),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 7.5.sp,
-                            letterSpacing = 1.sp
-                        )
-                        Text(
-                            userName.uppercase(),
-                            color = Color.White,
-                            fontWeight = FontWeight.Black,
-                            fontSize = 11.sp,
-                            letterSpacing = 0.5.sp,
-                            maxLines = 1
-                        )
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(if (isUsed) Color(0xFF262A38) else Color(0xFF00E676).copy(alpha = 0.15f))
-                            .border(0.6.dp, if (isUsed) Color(0xFF3B4055) else Color(0xFF00E676).copy(alpha = 0.4f), RoundedCornerShape(6.dp))
-                            .padding(horizontal = 7.dp, vertical = 2.5.dp)
-                    ) {
-                        val usageInfo = if (isDataRecharge) {
-                            when (card.status) {
-                                "SUCCESS", "RECHARGED" -> "✅ RECHARGE ACTIVE"
-                                "REJECTED" -> "❌ REJECTED & REFUNDED"
-                                else -> "⏳ RECHARGE QUEUED"
-                            }
-                        } else if (isUsed) {
-                            "USED & ARCHIVED"
-                        } else if (isGooglePlay) {
-                            "AVAILABLE FOR USE"
-                        } else {
-                            "VALID FOR ${card.remainingUses}/${card.totalUses} MATCHES"
-                        }
-                        Text(
-                            usageInfo,
-                            color = if (isUsed) Color(0xFF8E93A6) else Color(0xFF00E676),
-                            fontWeight = FontWeight.Black,
-                            fontSize = 8.5.sp
-                        )
-                    }
+                
+                if (!isDataRecharge && card.code.isNotBlank()) {
+                    Icon(
+                        if (isCodeCopied) Icons.Default.Check else Icons.Default.ContentCopy,
+                        contentDescription = "Copy",
+                        tint = if (isCodeCopied) Color(0xFF22C55E) else Color(0xFF6F8299),
+                        modifier = Modifier.size(18.dp)
+                    )
                 }
             }
         }
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        // Action Buttons Row Below Card
+        
+        Spacer(modifier = Modifier.height(12.dp))
+        
+        // Action Buttons Row
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            if (isDataRecharge) {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(Color(0xFF19060A))
-                            .border(1.dp, Color(0xFFFF5252).copy(alpha = 0.3f), RoundedCornerShape(10.dp))
-                            .padding(vertical = 8.dp, horizontal = 12.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = if (card.status == "SUCCESS") "⚡ Data pack is active on your SIM" else if (card.status == "REJECTED") "❌ Recharge cancelled & coins refunded" else "⚡ Recharge request submitted to Admin desk",
-                            color = if (card.status == "SUCCESS") Color(0xFF00E676) else if (card.status == "REJECTED") Color(0xFFFF5252) else Color(0xFFFF8A80),
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-
-                    // If proof screenshot is attached by admin
-                    if (proofBase64String.isNotEmpty()) {
-                        Button(
-                            onClick = { showProofDialog = true },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E676)),
-                            shape = RoundedCornerShape(10.dp),
-                            modifier = Modifier.fillMaxWidth().height(40.dp)
-                        ) {
-                            Icon(Icons.Default.Receipt, contentDescription = null, tint = Color.Black, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text("VIEW RECHARGE PROOF / रसीद देखें", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 11.sp)
-                        }
-                    }
-                }
-            } else if (isGooglePlay) {
-                Button(
-                    onClick = {
-                        val redeemUrl = "https://play.google.com/redeem?code=${card.code}"
-                        try {
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(redeemUrl)).apply {
-                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            }
-                            context.startActivity(intent)
-                        } catch (e: Exception) {
-                            Toast.makeText(context, "Code copied! Open Play Store -> Payments -> Redeem code", Toast.LENGTH_LONG).show()
-                        }
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E676)),
+            // View Proof Button (For Data Recharge)
+            if (isDataRecharge && proofBitmap != null) {
+                OutlinedButton(
+                    onClick = { showProofDialog = true },
+                    modifier = Modifier.weight(1f).height(44.dp),
                     shape = RoundedCornerShape(10.dp),
-                    modifier = Modifier.weight(1f),
-                    contentPadding = PaddingValues(vertical = 9.dp)
+                    border = BorderStroke(1.dp, Color(0xFF22C55E).copy(alpha = 0.5f)),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF22C55E))
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.OpenInNew, contentDescription = null, tint = Color.Black, modifier = Modifier.size(15.dp))
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("REDEEM IN PLAY STORE", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 11.sp)
-                    }
+                    Icon(Icons.Default.Receipt, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("RECEIPT", fontWeight = FontWeight.Black, fontSize = 11.sp)
                 }
             }
-
-            if (!isUsed) {
-                OutlinedButton(
+            
+            // Mark as Used Button
+            if (card.code.isNotBlank() && !isUsed) {
+                Button(
                     onClick = onMarkUsed,
-                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF32384D)),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF8E93A6)),
+                    colors = ButtonDefaults.buttonColors(containerColor = cardColor),
                     shape = RoundedCornerShape(10.dp),
-                    modifier = if (!isGooglePlay) Modifier.fillMaxWidth() else Modifier,
-                    contentPadding = PaddingValues(horizontal = 14.dp, vertical = 9.dp)
+                    modifier = Modifier.weight(1f).height(44.dp)
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.DoneAll, contentDescription = null, tint = Color(0xFF8E93A6), modifier = Modifier.size(14.dp))
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Mark as Used", fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                    }
+                    Text("MARK AS USED", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 12.sp)
                 }
             }
         }
     }
 }
 
-// ----------------------------------------------------
-// Newly Purchased Scratch / Celebration Modal
-// ----------------------------------------------------
 @Composable
 fun CelebrationCardDialog(
     card: UserPurchasedCard,
     userName: String,
     onDismiss: () -> Unit
 ) {
-    val context = LocalContext.current
-    var isCopied by remember { mutableStateOf(false) }
-    val isGooglePlay = card.category.equals("GOOGLE_PLAY", ignoreCase = true)
-
     Dialog(onDismissRequest = onDismiss) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(24.dp))
-                .background(Color(0xFF10121A))
-                .border(2.dp, Brush.horizontalGradient(listOf(Color(0xFFFFD700), Color(0xFF00E676), Color(0xFF00B0FF))), RoundedCornerShape(24.dp))
-                .padding(20.dp)
+                .clip(RoundedCornerShape(20.dp))
+                .background(Color(0xFF14161F))
+                .padding(24.dp),
+            contentAlignment = Alignment.Center
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(14.dp)
-            ) {
-                Text("UNLOCKED SUCCESSFULLY", color = Color(0xFFFFD700), fontWeight = FontWeight.Black, fontSize = 17.sp)
-
-                Text(
-                    if (isGooglePlay) "Your ₹${card.denominationRupees} Google Play Card is Ready!" else "Your ${card.title} VIP Pass is Active!",
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 13.sp,
-                    textAlign = TextAlign.Center
-                )
-
-                // Code Reveal Box with glowing borders
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(Color(0xFF05060A))
-                        .border(1.dp, Color(0xFF00E676), RoundedCornerShape(16.dp))
-                        .padding(16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            if (isGooglePlay) "GOOGLE PLAY 16-CHAR REDEEM CODE" else "VIP TOURNAMENT PASS CODE",
-                            color = Color(0xFF8E93A6),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 10.sp,
-                            letterSpacing = 1.sp
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            card.code,
-                            color = Color(0xFF00E676),
-                            fontFamily = FontFamily.Monospace,
-                            fontWeight = FontWeight.Black,
-                            fontSize = 18.sp,
-                            letterSpacing = 1.5.sp
-                        )
-                    }
-                }
-
-                // Copy Code Action
-                Button(
-                    onClick = {
-                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                        val clip = ClipData.newPlainText("Redeem Code", card.code)
-                        clipboard.setPrimaryClip(clip)
-                        isCopied = true
-                        Toast.makeText(context, "Code copied: ${card.code}", Toast.LENGTH_SHORT).show()
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isCopied) Color(0xFF00E676) else Color(0xFFFFD700)
-                    ),
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.fillMaxWidth().height(46.dp)
-                ) {
-                    Icon(
-                        if (isCopied) Icons.Default.Check else Icons.Default.ContentCopy,
-                        contentDescription = null,
-                        tint = Color.Black,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        if (isCopied) "CODE COPIED TO CLIPBOARD" else "COPY CODE",
-                        color = Color.Black,
-                        fontWeight = FontWeight.Black,
-                        fontSize = 12.sp
-                    )
-                }
-
-                if (isGooglePlay) {
-                    OutlinedButton(
-                        onClick = {
-                            val redeemUrl = "https://play.google.com/redeem?code=${card.code}"
-                            try {
-                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(redeemUrl)).apply {
-                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                }
-                                context.startActivity(intent)
-                            } catch (e: Exception) {
-                                Toast.makeText(context, "Opening Play Store...", Toast.LENGTH_SHORT).show()
-                            }
-                        },
-                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF00E676)),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF00E676)),
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.fillMaxWidth().height(44.dp)
-                    ) {
-                        Icon(Icons.Default.PlayArrow, contentDescription = null, tint = Color(0xFF00E676), modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("REDEEM DIRECTLY IN PLAY STORE", color = Color(0xFF00E676), fontWeight = FontWeight.Bold, fontSize = 11.sp)
-                    }
-                }
-
-                TextButton(onClick = onDismiss) {
-                    Text("VIEW IN MY VAULT", color = Color(0xFF8E93A6), fontWeight = FontWeight.Bold)
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("🎉 SUCCESS!", color = Color(0xFF00E676), fontWeight = FontWeight.Black, fontSize = 24.sp)
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("You bought ${card.title}", color = Color.White, fontSize = 14.sp)
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(onClick = onDismiss, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E5FF))) {
+                    Text("AWESOME", color = Color.Black, fontWeight = FontWeight.Black)
                 }
             }
         }
     }
 }
 
-// ----------------------------------------------------
-// Visual Components (EMV Chip, Google Play Logo, etc.)
-// ----------------------------------------------------
 @Composable
-fun EmvCardChip(modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(4.dp))
-            .background(
-                Brush.linearGradient(
-                    listOf(Color(0xFFFFD54F), Color(0xFFFFB300), Color(0xFFFF8F00))
-                )
-            )
-            .border(0.5.dp, Color(0xFFFFE082), RoundedCornerShape(4.dp))
+fun TournamentDiscountCard(
+    item: StoreItem,
+    effectivePrice: Int,
+    isEnabled: Boolean,
+    dailyLimit: Int,
+    customCodesCount: Int,
+    userName: String,
+    userCoins: Int,
+    onBuyClick: () -> Unit
+) {
+    val canAfford = userCoins >= effectivePrice && isEnabled
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color(0xFF14161F))
+            .border(1.dp, Color(0xFF262A38), RoundedCornerShape(16.dp))
+            .padding(16.dp)
     ) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val stroke = 0.8.dp.toPx()
-            val c = Color(0xFF6D4C41).copy(alpha = 0.7f)
-            // Chip internal circuit lines
-            drawLine(c, Offset(size.width * 0.33f, 0f), Offset(size.width * 0.33f, size.height), stroke)
-            drawLine(c, Offset(size.width * 0.66f, 0f), Offset(size.width * 0.66f, size.height), stroke)
-            drawLine(c, Offset(0f, size.height * 0.5f), Offset(size.width, size.height * 0.5f), stroke)
+        Text(item.title, color = Color.White, fontWeight = FontWeight.Black, fontSize = 16.sp)
+        Text(item.subtitle, color = Color(0xFF6F8299), fontSize = 12.sp)
+        Spacer(modifier = Modifier.height(12.dp))
+        Button(
+            onClick = onBuyClick,
+            enabled = canAfford,
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700)),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("BUY FOR ${effectivePrice} COINS", color = Color.Black, fontWeight = FontWeight.Black)
         }
-    }
-}
-
-@Composable
-fun ContactlessWavesIcon(modifier: Modifier = Modifier) {
-    Canvas(modifier = modifier) {
-        val stroke = 1.2.dp.toPx()
-        val color = Color(0xFFC0C5D6).copy(alpha = 0.8f)
-        drawArc(
-            color = color,
-            startAngle = -45f,
-            sweepAngle = 90f,
-            useCenter = false,
-            style = Stroke(stroke),
-            topLeft = Offset(-size.width * 0.2f, size.height * 0.1f),
-            size = androidx.compose.ui.geometry.Size(size.width * 0.6f, size.height * 0.8f)
-        )
-        drawArc(
-            color = color,
-            startAngle = -45f,
-            sweepAngle = 90f,
-            useCenter = false,
-            style = Stroke(stroke),
-            topLeft = Offset(size.width * 0.2f, 0f),
-            size = androidx.compose.ui.geometry.Size(size.width * 0.8f, size.height)
-        )
     }
 }
 
@@ -2018,7 +1272,6 @@ fun GooglePlayLogoIcon(modifier: Modifier = Modifier) {
     Canvas(modifier = modifier) {
         val w = size.width
         val h = size.height
-
         // Google Play 4-Color Official Vector geometry
         // 1. Blue base quadrilateral (left)
         val pathBlue = Path().apply {
@@ -2028,7 +1281,6 @@ fun GooglePlayLogoIcon(modifier: Modifier = Modifier) {
             close()
         }
         drawPath(pathBlue, color = Color(0xFF00C3FF))
-
         // 2. Green top triangle
         val pathGreen = Path().apply {
             moveTo(0f, h * 0.05f)
@@ -2037,7 +1289,6 @@ fun GooglePlayLogoIcon(modifier: Modifier = Modifier) {
             close()
         }
         drawPath(pathGreen, color = Color(0xFF00E676))
-
         // 3. Red bottom triangle
         val pathRed = Path().apply {
             moveTo(0f, h * 0.95f)
@@ -2046,7 +1297,6 @@ fun GooglePlayLogoIcon(modifier: Modifier = Modifier) {
             close()
         }
         drawPath(pathRed, color = Color(0xFFFF334B))
-
         // 4. Yellow right apex triangle
         val pathYellow = Path().apply {
             moveTo(w * 0.58f, h * 0.5f)
@@ -2058,7 +1308,6 @@ fun GooglePlayLogoIcon(modifier: Modifier = Modifier) {
         drawPath(pathYellow, color = Color(0xFFFFD400))
     }
 }
-
 @Composable
 fun StoreHeroBanner(
     title: String,
@@ -2101,7 +1350,6 @@ fun StoreHeroBanner(
         }
     }
 }
-
 // ----------------------------------------------------
 // Real Jio & Airtel Logos (Official Brand Aesthetics)
 // ----------------------------------------------------
@@ -2129,7 +1377,6 @@ fun JioBrandLogo(modifier: Modifier = Modifier, size: Int = 36) {
         )
     }
 }
-
 @Composable
 fun AirtelBrandLogo(modifier: Modifier = Modifier, size: Int = 36) {
     Box(
@@ -2155,10 +1402,9 @@ fun AirtelBrandLogo(modifier: Modifier = Modifier, size: Int = 36) {
         )
     }
 }
-
 // ----------------------------------------------------
-// Premium Red Silver Foil Paper Mobile Data Card (Jio & Airtel)
-// Designed like authentic Metallic Red Silver Foil Scratch Card
+// Premium Glassmorphic Mobile Data Card (Jio & Airtel)
+// Designed with Material 3 Glassmorphic Glow Aesthetics
 // ----------------------------------------------------
 @Composable
 fun DataRechargeCard(
@@ -2168,308 +1414,181 @@ fun DataRechargeCard(
 ) {
     val canAfford = userCoins >= plan.coinPrice
     val isJio = plan.operator.equals("JIO", ignoreCase = true)
-
-    // Animated Holographic Silver/White Light Sweep across the red foil paper
-    val infiniteTransition = rememberInfiniteTransition(label = "redSilverFoil")
-    val foilShimmerTranslate by infiniteTransition.animateFloat(
-        initialValue = -350f,
-        targetValue = 1100f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 3200, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "foilShimmerTranslate"
+    val brandColor = if (isJio) Color(0xFFE53935) else Color(0xFFE53935) // Deep Crimson Red
+    val ambientGlow = if (isJio) Color(0xFFD32F2F) else Color(0xFFD32F2F)
+    // Interaction scale animation placeholder
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.97f else 1f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+        label = "cardScale"
     )
-
-    // Outer Container matching Google Play voucher cards with compact height
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .scale(scale)
             .clip(RoundedCornerShape(20.dp))
-            .background(Color(0xFF0D0507))
-            .border(0.8.dp, Color(0xFF331015), RoundedCornerShape(20.dp))
-            .padding(10.dp)
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(Color(0xFF13151F), Color(0xFF0B0D14))
+                )
+            )
+            .border(
+                1.dp,
+                Brush.linearGradient(
+                    colors = listOf(
+                        ambientGlow.copy(alpha = 0.4f),
+                        Color(0xFF262A3C),
+                        ambientGlow.copy(alpha = 0.1f)
+                    )
+                ),
+                RoundedCornerShape(20.dp)
+            )
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null, // Custom ripple handled inside or via scale
+                onClick = onRedeemClick
+            )
+            .padding(14.dp)
     ) {
-        // Red Silver Foil Metallic Paper Physical Card
+        // Inner Glass Card
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(180.dp)
                 .clip(RoundedCornerShape(16.dp))
                 .background(
-                    Brush.linearGradient(
+                    Brush.radialGradient(
                         colors = listOf(
-                            Color(0xFF8A0413), // Deep metallic ruby red
-                            Color(0xFFD31027), // Bright lustrous silver-red foil
-                            Color(0xFF6B020D), // Dark crimson shadow
-                            Color(0xFFE52D27), // Gleaming scarlet
-                            Color(0xFF7A0410)  // Base metallic red
+                            ambientGlow.copy(alpha = 0.15f),
+                            Color.Transparent
                         ),
-                        start = Offset(0f, 0f),
-                        end = Offset(900f, 900f)
+                        radius = 600f
                     )
                 )
+                .background(Color(0xFF05060A).copy(alpha = 0.6f))
                 .border(
-                    1.dp,
-                    Brush.linearGradient(
-                        colors = listOf(
-                            Color(0xFFFFFFFF).copy(alpha = 0.85f), // Silver paper edge shine
-                            Color(0xFFFFB4A2).copy(alpha = 0.6f),
-                            Color(0xFFE2E8F0).copy(alpha = 0.8f),  // Pure silver foil rim
-                            Color(0xFFFFD700).copy(alpha = 0.5f),  // Warm specular gleam
-                            Color(0xFFFFFFFF).copy(alpha = 0.9f)
-                        ),
-                        start = Offset(0f, 0f),
-                        end = Offset(800f, 600f)
-                    ),
+                    0.5.dp,
+                    Color.White.copy(alpha = 0.08f),
                     RoundedCornerShape(16.dp)
                 )
-                .padding(12.dp)
+                .padding(16.dp)
         ) {
-            // Metallic Red Silver Foil Paper Texture & Sheen Canvas
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                val w = size.width
-                val h = size.height
-
-                // 1. Silver Foil Micro-Refraction Lines (Brushed Foil Paper Effect)
-                var y = 0f
-                while (y < h) {
-                    drawLine(
-                        color = Color.White.copy(alpha = 0.035f),
-                        start = Offset(0f, y),
-                        end = Offset(w, y + 14.dp.toPx()),
-                        strokeWidth = 0.7.dp.toPx()
-                    )
-                    y += 6.dp.toPx()
-                }
-
-                // 2. Silver Paper Crushed Specular Highlights
-                val silverFoilGleam = Path().apply {
-                    moveTo(w * 0.15f, 0f)
-                    lineTo(w * 0.45f, 0f)
-                    lineTo(w * 0.25f, h)
-                    lineTo(0f, h)
-                    close()
-                }
-                drawPath(
-                    path = silverFoilGleam,
-                    brush = Brush.linearGradient(
-                        colors = listOf(
-                            Color.White.copy(alpha = 0.09f),
-                            Color(0xFFE2E8F0).copy(alpha = 0.04f),
-                            Color.Transparent
-                        )
-                    )
-                )
-
-                // 3. Dynamic Moving Silver Holographic Sheen (Silver Paper Reflection)
-                val sheenWidth = 120f
-                val sheenBrush = Brush.linearGradient(
-                    colors = listOf(
-                        Color.Transparent,
-                        Color(0xFFFFFFFF).copy(alpha = 0.18f),
-                        Color(0xFFE0F7FA).copy(alpha = 0.28f),
-                        Color(0xFFFFFFFF).copy(alpha = 0.12f),
-                        Color.Transparent
-                    ),
-                    start = Offset(foilShimmerTranslate - sheenWidth, 0f),
-                    end = Offset(foilShimmerTranslate + sheenWidth, h)
-                )
-                drawRect(brush = sheenBrush)
-
-                // 4. Sparkling Silver Stars (✦ Specular Glitter on Red Foil)
-                drawCircle(Color.White.copy(alpha = 0.95f), radius = 1.8.dp.toPx(), center = Offset(w * 0.88f, h * 0.18f))
-                drawCircle(Color(0xFFFFFFFF).copy(alpha = 0.6f), radius = 3.5.dp.toPx(), center = Offset(w * 0.88f, h * 0.18f))
-                drawCircle(Color.White.copy(alpha = 0.85f), radius = 1.2.dp.toPx(), center = Offset(w * 0.72f, h * 0.42f))
-                drawCircle(Color(0xFFFFE082).copy(alpha = 0.7f), radius = 1.5.dp.toPx(), center = Offset(w * 0.94f, h * 0.72f))
-            }
-
             Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.SpaceBetween
+                modifier = Modifier.fillMaxWidth()
             ) {
-                // Top Row: Brand Logo + Silver Foil Price Pill
+                // Top Header: Brand & Price Pill
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Brand Badge with Glossy Dark Backdrop
+                    // Operator Badge
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(Color(0xFF180104).copy(alpha = 0.75f))
-                            .border(0.8.dp, Color.White.copy(alpha = 0.4f), RoundedCornerShape(10.dp))
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color(0xFF13151F))
+                            .border(0.5.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
+                            .padding(horizontal = 8.dp, vertical = 5.dp)
                     ) {
                         if (isJio) {
-                            JioBrandLogo(size = 22)
+                            JioBrandLogo(size = 16)
                         } else {
-                            AirtelBrandLogo(size = 20)
+                            AirtelBrandLogo(size = 14)
                         }
                         Spacer(modifier = Modifier.width(6.dp))
-                        Column {
-                            Text(
-                                text = if (isJio) "JIO 4G/5G" else "AIRTEL 5G",
-                                color = Color.White,
-                                fontWeight = FontWeight.Black,
-                                fontSize = 12.sp,
-                                letterSpacing = 0.5.sp
-                            )
-                            Text(
-                                text = "OFFICIAL DATA BOOSTER",
-                                color = Color(0xFFFFD700),
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 7.sp,
-                                letterSpacing = 0.8.sp
-                            )
-                        }
+                        Text(
+                            text = plan.operator.uppercase(),
+                            color = Color.White,
+                            fontWeight = FontWeight.Black,
+                            fontSize = 11.sp,
+                            letterSpacing = 0.5.sp
+                        )
                     }
-
-                    // Pure Silver Foil Denomination Pill (Shining Silver Look)
+                    // Price Glass Pill
                     Box(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(
-                                Brush.horizontalGradient(
-                                    listOf(
-                                        Color(0xFFFFFFFF),
-                                        Color(0xFFE2E8F0),
-                                        Color(0xFFCBD5E1)
-                                    )
-                                )
-                            )
-                            .border(0.8.dp, Color.White, RoundedCornerShape(10.dp))
-                            .padding(horizontal = 10.dp, vertical = 4.dp)
+                            .clip(RoundedCornerShape(50))
+                            .background(Color(0xFFFFFFFF).copy(alpha = 0.05f))
+                            .border(1.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(50))
+                            .padding(horizontal = 12.dp, vertical = 6.dp)
                     ) {
                         Text(
                             text = "₹${plan.priceRupees}",
-                            color = Color(0xFF1E0206),
+                            color = Color.White,
                             fontWeight = FontWeight.Black,
-                            fontSize = 14.5.sp
+                            fontSize = 13.sp
                         )
                     }
                 }
-
-                // Center Strip: Metallic Silver Scratch Bar with Data Amount
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(
-                            Brush.horizontalGradient(
-                                listOf(
-                                    Color(0xFF1F0307).copy(alpha = 0.9f),
-                                    Color(0xFF2D050B).copy(alpha = 0.95f),
-                                    Color(0xFF1F0307).copy(alpha = 0.9f)
-                                )
-                            )
-                        )
-                        .border(
-                            0.8.dp,
-                            Brush.horizontalGradient(
-                                listOf(
-                                    Color.White.copy(alpha = 0.6f),
-                                    Color(0xFFFFD700).copy(alpha = 0.5f),
-                                    Color.White.copy(alpha = 0.6f)
-                                )
-                            ),
-                            RoundedCornerShape(10.dp)
-                        )
-                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                Spacer(modifier = Modifier.height(16.dp))
+                // Center Highlight: Big Data Amount
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.Bottom,
+                    horizontalArrangement = Arrangement.Start
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                Icons.Default.Bolt,
-                                contentDescription = null,
-                                tint = Color(0xFFFFD700),
-                                modifier = Modifier.size(17.dp)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Column {
-                                Text(
-                                    text = plan.dataAmount,
-                                    color = Color.White,
-                                    fontWeight = FontWeight.Black,
-                                    fontSize = 17.sp,
-                                    letterSpacing = 0.5.sp
-                                )
-                                Text(
-                                    text = plan.validity,
-                                    color = Color(0xFFFFCDD2),
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontSize = 9.sp
-                                )
-                            }
-                        }
-
-                        // Silver Foil Tag Badge
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(Color.White.copy(alpha = 0.15f))
-                                .border(0.6.dp, Color.White.copy(alpha = 0.5f), RoundedCornerShape(6.dp))
-                                .padding(horizontal = 7.dp, vertical = 3.dp)
-                        ) {
-                            Text(
-                                text = plan.tagText,
-                                color = Color.White,
-                                fontWeight = FontWeight.Black,
-                                fontSize = 8.5.sp
-                            )
-                        }
-                    }
+                    Text(
+                        text = plan.dataAmount.replace(" GB", "").replace(" MB", ""),
+                        color = Color.White,
+                        fontWeight = FontWeight.Black,
+                        fontSize = 42.sp,
+                        letterSpacing = (-1).sp,
+                        style = MaterialTheme.typography.headlineLarge
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = if (plan.dataAmount.contains("GB")) "GB" else "MB",
+                        color = brandColor,
+                        fontWeight = FontWeight.Black,
+                        fontSize = 20.sp,
+                        modifier = Modifier.padding(bottom = 6.dp)
+                    )
                 }
-
-                // Bottom Row: Speed info & Direct Verification Badge
+                Text(
+                    text = "High-Speed Data Booster • ${plan.validity}",
+                    color = Color(0xFF8E93A6),
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 12.sp
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                // Bottom Tags (Bestseller / Instant Top-Up)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Icon(
-                            Icons.Default.Speed,
-                            contentDescription = null,
-                            tint = Color.White.copy(alpha = 0.85f),
-                            modifier = Modifier.size(12.dp)
-                        )
-                        Text(
-                            plan.highlightSpeed.uppercase(),
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 9.sp,
-                            letterSpacing = 0.5.sp
-                        )
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(Color(0xFF00E676).copy(alpha = 0.2f))
-                            .border(0.6.dp, Color(0xFF00E676).copy(alpha = 0.5f), RoundedCornerShape(6.dp))
-                            .padding(horizontal = 7.dp, vertical = 2.5.dp)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        Text(
-                            "⚡ INSTANT TOP-UP",
-                            color = Color(0xFFB9F6CA),
-                            fontWeight = FontWeight.Black,
-                            fontSize = 8.sp
-                        )
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(Color(0xFF00E676).copy(alpha = 0.15f))
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.Bolt, contentDescription = null, tint = Color(0xFF00E676), modifier = Modifier.size(10.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("INSTANT", color = Color(0xFF00E676), fontWeight = FontWeight.Bold, fontSize = 9.sp)
+                            }
+                        }
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(Color(0xFFFFC107).copy(alpha = 0.15f))
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Text(plan.tagText, color = Color(0xFFFFC107), fontWeight = FontWeight.Bold, fontSize = 9.sp)
+                        }
                     }
                 }
             }
         }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Info & Action Button Row (Matches Google Play card standard)
+        Spacer(modifier = Modifier.height(12.dp))
+        // Bottom Action Button Row
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -2477,48 +1596,44 @@ fun DataRechargeCard(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "${plan.operator} ${plan.dataAmount} Pack",
+                    text = "Redeem via Coins",
                     color = Color.White,
-                    fontWeight = FontWeight.Black,
+                    fontWeight = FontWeight.SemiBold,
                     fontSize = 13.sp
                 )
-                Text(
-                    text = "Official MRP ₹${plan.priceRupees} • ${plan.validity}",
-                    color = Color(0xFF8E93A6),
-                    fontSize = 10.sp
-                )
             }
-
-            Spacer(modifier = Modifier.width(8.dp))
-
+            // Coin Action Button
             Button(
                 onClick = onRedeemClick,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (canAfford) Color(0xFFFFD700) else Color(0xFF1E2232)
+                    containerColor = if (canAfford) Color(0xFFFFC107).copy(alpha = 0.1f) else Color(0xFF1E2232)
                 ),
-                shape = RoundedCornerShape(10.dp),
-                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+                border = BorderStroke(
+                    1.dp,
+                    if (canAfford) Color(0xFFFFC107).copy(alpha = 0.6f) else Color.Transparent
+                ),
+                shape = RoundedCornerShape(12.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        Icons.Default.Bolt,
+                        Icons.Default.MonetizationOn,
                         contentDescription = null,
-                        tint = if (canAfford) Color.Black else Color(0xFF8E93A6),
+                        tint = if (canAfford) Color(0xFFFFC107) else Color(0xFF8E93A6),
                         modifier = Modifier.size(14.dp)
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         "${plan.coinPrice} COINS",
-                        color = if (canAfford) Color.Black else Color(0xFF8E93A6),
+                        color = if (canAfford) Color(0xFFFFC107) else Color(0xFF8E93A6),
                         fontWeight = FontWeight.Black,
-                        fontSize = 11.5.sp
+                        fontSize = 12.sp
                     )
                 }
             }
         }
     }
 }
-
 // ----------------------------------------------------
 // Mobile Data Recharge Confirmation Dialog
 // ----------------------------------------------------
@@ -2534,7 +1649,6 @@ fun DataRechargeDialog(
     val isJio = plan.operator.equals("JIO", ignoreCase = true)
     val isValid = mobileNumber.length == 10 && mobileNumber[0] in listOf('6', '7', '8', '9')
     val canAfford = userCoins >= plan.coinPrice
-
     Dialog(onDismissRequest = onDismiss) {
         Box(
             modifier = Modifier
@@ -2568,14 +1682,11 @@ fun DataRechargeDialog(
                             )
                         }
                     }
-
                     IconButton(onClick = onDismiss, enabled = !isLoading) {
                         Icon(Icons.Default.Close, contentDescription = "Close", tint = Color(0xFF8E93A6))
                     }
                 }
-
                 HorizontalDivider(color = Color(0xFF2E0A10))
-
                 // Pack Details Highlight
                 Box(
                     modifier = Modifier
@@ -2599,7 +1710,6 @@ fun DataRechargeDialog(
                         )
                     }
                 }
-
                 // Mobile Number Input Field
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(
@@ -2609,7 +1719,6 @@ fun DataRechargeDialog(
                         fontSize = 11.sp,
                         letterSpacing = 0.8.sp
                     )
-
                     OutlinedTextField(
                         value = mobileNumber,
                         onValueChange = { input ->
@@ -2633,7 +1742,6 @@ fun DataRechargeDialog(
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.fillMaxWidth()
                     )
-
                     if (mobileNumber.isNotEmpty() && !isValid) {
                         Text(
                             "Enter a valid 10-digit mobile number starting with 6, 7, 8, or 9",
@@ -2649,7 +1757,6 @@ fun DataRechargeDialog(
                         )
                     }
                 }
-
                 // Coin Deduction Summary
                 Box(
                     modifier = Modifier
@@ -2673,7 +1780,6 @@ fun DataRechargeDialog(
                         }
                     }
                 }
-
                 // Strict Notice Box
                 Box(
                     modifier = Modifier
@@ -2702,7 +1808,6 @@ fun DataRechargeDialog(
                         )
                     }
                 }
-
                 // Action Buttons
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     OutlinedButton(
@@ -2714,7 +1819,6 @@ fun DataRechargeDialog(
                     ) {
                         Text("CANCEL", color = Color(0xFFB0BEC5), fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     }
-
                     Button(
                         onClick = { onConfirm(mobileNumber) },
                         enabled = isValid && canAfford && !isLoading,

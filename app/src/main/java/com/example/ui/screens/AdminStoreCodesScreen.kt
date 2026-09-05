@@ -28,7 +28,18 @@ import androidx.navigation.NavController
 import com.example.FirebaseHelper
 import com.example.security.AppSecurityGuard
 
+
+data class RestockRequest(
+    val id: String = "",
+    val itemId: String = "",
+    val itemTitle: String = "",
+    val userId: String = "",
+    val userEmail: String = "",
+    val timestamp: Long = 0L
+)
+
 data class AdminStoreStockItem(
+
     val itemId: String = "",
     val title: String = "",
     val denominationRupees: Int = 0,
@@ -37,6 +48,30 @@ data class AdminStoreStockItem(
     val dailyLimitPerUser: Int = 2,
     val customCodesPool: List<String> = emptyList()
 )
+
+
+@Composable
+fun RestockRequestCard(request: RestockRequest, onDismiss: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E070B)),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE11D48).copy(alpha = 0.5f))
+    ) {
+        Row(
+            modifier = Modifier.padding(12.dp).fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(request.itemTitle, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                Text(request.userEmail, color = Color(0xFFB0BEC5), fontSize = 11.sp)
+            }
+            IconButton(onClick = onDismiss, modifier = Modifier.size(32.dp)) {
+                Icon(Icons.Default.Check, contentDescription = "Done", tint = Color(0xFFE11D48))
+            }
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,6 +92,7 @@ fun AdminStoreCodesScreen(navController: NavController) {
 
     val storeViewModel = remember { StoreViewModel() }
     var stockDataMap by remember { mutableStateOf<Map<String, Map<String, Any>>>(emptyMap()) }
+    var restockRequests by remember { mutableStateOf<List<RestockRequest>>(emptyList()) }
 
     LaunchedEffect(currentUid) {
         if (isOwner) {
@@ -97,6 +133,12 @@ fun AdminStoreCodesScreen(navController: NavController) {
                     map[doc.id] = doc.data ?: emptyMap()
                 }
                 stockDataMap = map
+            }
+        }
+        db?.collection("store_restock_requests")?.whereEqualTo("status", "PENDING")?.addSnapshotListener { snapshot, error ->
+            if (snapshot != null) {
+                val reqs = snapshot.documents.mapNotNull { it.toObject(RestockRequest::class.java)?.copy(id = it.id) }
+                restockRequests = reqs
             }
         }
     }
@@ -171,7 +213,7 @@ fun AdminStoreCodesScreen(navController: NavController) {
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                "Add batch Google Play codes. When players redeem, the system instantly delivers available codes from your pool or auto-generates formatted codes!",
+                                "Add batch Google Play codes. When players redeem, the system instantly delivers available codes from your pool!",
                                 color = Color(0xFFB0BEC5),
                                 fontSize = 11.sp,
                                 lineHeight = 14.5.sp
@@ -179,6 +221,27 @@ fun AdminStoreCodesScreen(navController: NavController) {
                         }
                     }
                 }
+            }
+
+            if (restockRequests.isNotEmpty()) {
+                item {
+                    Text(
+                        "RESTOCK REQUESTS",
+                        color = Color(0xFFE11D48),
+                        fontWeight = FontWeight.Black,
+                        fontSize = 11.5.sp,
+                        letterSpacing = 1.2.sp
+                    )
+                }
+                items(restockRequests) { req ->
+                    RestockRequestCard(
+                        request = req,
+                        onDismiss = {
+                            FirebaseHelper.getFirestore()?.collection("store_restock_requests")?.document(req.id)?.update("status", "DISMISSED")
+                        }
+                    )
+                }
+                item { Spacer(modifier = Modifier.height(16.dp)) }
             }
 
             item {

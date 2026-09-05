@@ -372,6 +372,29 @@ class StoreViewModel : ViewModel() {
             }
     }
 
+    
+    fun requestRestock(item: StoreItem, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        val user = getAuth()?.currentUser ?: return
+        val db = getDb() ?: return
+        
+        val requestRef = db.collection("store_restock_requests").document("${item.id}_${user.uid}")
+        
+        requestRef.set(
+            mapOf(
+                "itemId" to item.id,
+                "itemTitle" to item.title,
+                "userId" to user.uid,
+                "userEmail" to user.email,
+                "timestamp" to System.currentTimeMillis(),
+                "status" to "PENDING"
+            )
+        ).addOnSuccessListener {
+            onSuccess()
+        }.addOnFailureListener {
+            onError(it.localizedMessage ?: "Failed to send request.")
+        }
+    }
+
     fun purchaseItem(
         item: StoreItem,
         userCoins: Int,
@@ -412,7 +435,7 @@ class StoreViewModel : ViewModel() {
 
         // Generate stylized Code
         val generatedCode = if (item.category == StoreItemCategory.GOOGLE_PLAY) {
-            generateGooglePlayCode()
+            "" // Wait for real code inside transaction
         } else {
             generateAppDiscountCode(item.cardColorTheme)
         }
@@ -487,6 +510,12 @@ class StoreViewModel : ViewModel() {
                     finalCode = codesList.first()
                     val remainingCodes = codesList.drop(1)
                     tx.update(settingsDocRef, "codes", remainingCodes)
+                } else if (item.category == StoreItemCategory.GOOGLE_PLAY) {
+                    throw Exception("OUT_OF_STOCK")
+                }
+            } else {
+                if (item.category == StoreItemCategory.GOOGLE_PLAY) {
+                    throw Exception("OUT_OF_STOCK")
                 }
             }
 
