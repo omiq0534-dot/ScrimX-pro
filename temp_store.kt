@@ -123,7 +123,7 @@ fun StoreScreen(
                             ) {
                                 Text("Item Price:", color = Color(0xFF8E93A6), fontSize = 12.sp)
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Default.Star, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(14.dp))
+                                    Icon(Icons.Default.MonetizationOn, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(14.dp))
                                     Spacer(modifier = Modifier.width(3.dp))
                                     Text("$effectivePrice Coins", color = Color(0xFFFFD700), fontWeight = FontWeight.Bold, fontSize = 12.sp)
                                 }
@@ -134,7 +134,7 @@ fun StoreScreen(
                             ) {
                                 Text("Your Balance:", color = Color(0xFF8E93A6), fontSize = 12.sp)
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Default.Star, contentDescription = null, tint = Color.Black, modifier = Modifier.size(14.dp))
+                                    Icon(Icons.Default.MonetizationOn, contentDescription = null, tint = Color.Black, modifier = Modifier.size(14.dp))
                                     Spacer(modifier = Modifier.width(3.dp))
                                     Text("$userCoins Coins", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                                 }
@@ -289,7 +289,7 @@ fun StoreScreen(
                             .padding(horizontal = 10.dp, vertical = 6.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Default.Star, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(15.dp))
+                        Icon(Icons.Default.MonetizationOn, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(15.dp))
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             "$userCoins",
@@ -488,51 +488,7 @@ fun StoreScreen(
                 }
                 3 -> {
                     // My Vault / Purchased Cards
-                    var selectedVaultCat by remember { mutableIntStateOf(0) }
-                    
-                    val filteredVault = purchasedCards.filter {
-                        when (selectedVaultCat) {
-                            1 -> it.category.equals("DATA_RECHARGE", ignoreCase = true)
-                            2 -> it.category.equals("GOOGLE_PLAY", ignoreCase = true)
-                            3 -> !it.category.equals("DATA_RECHARGE", ignoreCase = true) && !it.category.equals("GOOGLE_PLAY", ignoreCase = true)
-                            else -> true
-                        }
-                    }
-
-                    Column(modifier = Modifier.fillMaxSize()) {
-                        ScrollableTabRow(
-                            selectedTabIndex = selectedVaultCat,
-                            containerColor = Color.Transparent,
-                            divider = {},
-                            edgePadding = 16.dp,
-                            indicator = {}
-                        ) {
-                            listOf("ALL", "RECHARGE", "GOOGLE PLAY", "TICKET").forEachIndexed { idx, title ->
-                                val isCatSelected = selectedVaultCat == idx
-                                Tab(
-                                    selected = isCatSelected,
-                                    onClick = { selectedVaultCat = idx },
-                                    modifier = Modifier.padding(end = 8.dp, bottom = 12.dp)
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .clip(RoundedCornerShape(8.dp))
-                                            .background(if (isCatSelected) Color.Black else Color(0xFFF3F4F6))
-                                            .padding(horizontal = 16.dp, vertical = 8.dp)
-                                    ) {
-                                        Text(
-                                            title,
-                                            color = if (isCatSelected) Color.White else Color(0xFF8E93A6),
-                                            fontWeight = FontWeight.Black,
-                                            fontSize = 11.sp,
-                                            letterSpacing = 1.sp
-                                        )
-                                    }
-                                }
-                            }
-                        }
-
-                    if (filteredVault.isEmpty()) {
+                    if (purchasedCards.isEmpty()) {
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -581,10 +537,10 @@ fun StoreScreen(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text("My Unlocked Cards & Codes", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 15.sp)
-                                    Text("${filteredVault.size} Items", color = Color(0xFFFFD700), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                    Text("${purchasedCards.size} Items", color = Color(0xFFFFD700), fontWeight = FontWeight.Bold, fontSize = 12.sp)
                                 }
                             }
-                            items(filteredVault) { card ->
+                            items(purchasedCards) { card ->
                                 PurchasedCardVaultItem(
                                     card = card,
                                     userName = userName,
@@ -595,7 +551,6 @@ fun StoreScreen(
                             }
                             item { Spacer(modifier = Modifier.height(40.dp)) }
                         }
-                    }
                     }
                 }
             }
@@ -1620,7 +1575,7 @@ fun DataRechargeDialog(
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                         Text(
-                            text = "SELECTED: ${plan.dataAmount} high-speed data",
+                            text = "⚡ Selected: ${plan.dataAmount} high-speed data",
                             color = Color.Black,
                             fontWeight = FontWeight.Black,
                             fontSize = 12.sp
@@ -1667,7 +1622,7 @@ fun DataRechargeDialog(
                     if (mobileNumber.isNotEmpty() && !isValid) {
                         Text("Enter a valid 10-digit mobile number", color = Color.Red, fontSize = 10.sp)
                     } else if (isValid) {
-                        Text("VALID INDIAN MOBILE NUMBER", color = Color(0xFF16A34A), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        Text("✅ Valid Indian mobile number", color = Color(0xFF16A34A), fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     }
                 }
                 // Coin Deduction Summary
@@ -1704,7 +1659,7 @@ fun DataRechargeDialog(
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("", fontSize = 10.sp)
+                            Text("⚠️ ", fontSize = 10.sp)
                             Text(
                                 "महत्वपूर्ण सूचना / Notice:",
                                 color = Color.Red,

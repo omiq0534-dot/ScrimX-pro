@@ -37,15 +37,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.animation.*
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -123,7 +120,7 @@ fun StoreScreen(
                             ) {
                                 Text("Item Price:", color = Color(0xFF8E93A6), fontSize = 12.sp)
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Default.Star, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(14.dp))
+                                    Icon(Icons.Default.MonetizationOn, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(14.dp))
                                     Spacer(modifier = Modifier.width(3.dp))
                                     Text("$effectivePrice Coins", color = Color(0xFFFFD700), fontWeight = FontWeight.Bold, fontSize = 12.sp)
                                 }
@@ -134,7 +131,7 @@ fun StoreScreen(
                             ) {
                                 Text("Your Balance:", color = Color(0xFF8E93A6), fontSize = 12.sp)
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Default.Star, contentDescription = null, tint = Color.Black, modifier = Modifier.size(14.dp))
+                                    Icon(Icons.Default.MonetizationOn, contentDescription = null, tint = Color.Black, modifier = Modifier.size(14.dp))
                                     Spacer(modifier = Modifier.width(3.dp))
                                     Text("$userCoins Coins", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                                 }
@@ -289,7 +286,7 @@ fun StoreScreen(
                             .padding(horizontal = 10.dp, vertical = 6.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Default.Star, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(15.dp))
+                        Icon(Icons.Default.MonetizationOn, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(15.dp))
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             "$userCoins",
@@ -332,7 +329,7 @@ fun StoreScreen(
                         modifier = Modifier
                             .weight(1f)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(if (isSelected) Color(0xFF262626) else Color.Transparent)
+                            .background(if (isSelected) Color(0xFFFFD700) else Color.Transparent)
                             .clickable { selectedTab = index }
                             .padding(vertical = 10.dp),
                         contentAlignment = Alignment.Center
@@ -341,13 +338,13 @@ fun StoreScreen(
                             Icon(
                                 tabItem.second,
                                 contentDescription = null,
-                                tint = if (isSelected) Color.White else Color(0xFF8E93A6),
+                                tint = if (isSelected) Color.Black else Color(0xFF8E93A6),
                                 modifier = Modifier.size(13.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 text = tabItem.first,
-                                color = if (isSelected) Color.White else Color(0xFF8E93A6),
+                                color = if (isSelected) Color.Black else Color(0xFF8E93A6),
                                 fontWeight = if (isSelected) FontWeight.Black else FontWeight.SemiBold,
                                 fontSize = 10.sp,
                                 maxLines = 1
@@ -396,7 +393,13 @@ fun StoreScreen(
                                             modifier = Modifier
                                                 .clip(RoundedCornerShape(12.dp))
                                                 .background(
-                                                    if (isSelected) Color(0xFF141414) else Color.White
+                                                    if (isSelected) {
+                                                        when (op) {
+                                                            "JIO" -> Color(0xFFD32F2F) // Vibrant Crimson
+                                                            "AIRTEL" -> Color(0xFFE53935)
+                                                            else -> Color(0xFFFFC107) // Neon Amber/Yellow
+                                                        }
+                                                    } else Color.White
                                                 )
                                                 .border(
                                                     1.dp,
@@ -408,7 +411,7 @@ fun StoreScreen(
                                         ) {
                                             Text(
                                                 text = title as String,
-                                                color = if (isSelected) Color.White else Color(0xFF8E93A6),
+                                                color = if (isSelected) (if (op == null) Color.Black else Color.White) else Color(0xFF8E93A6),
                                                 fontWeight = FontWeight.Black,
                                                 fontSize = 11.sp
                                             )
@@ -488,51 +491,7 @@ fun StoreScreen(
                 }
                 3 -> {
                     // My Vault / Purchased Cards
-                    var selectedVaultCat by remember { mutableIntStateOf(0) }
-                    
-                    val filteredVault = purchasedCards.filter {
-                        when (selectedVaultCat) {
-                            1 -> it.category.equals("DATA_RECHARGE", ignoreCase = true)
-                            2 -> it.category.equals("GOOGLE_PLAY", ignoreCase = true)
-                            3 -> !it.category.equals("DATA_RECHARGE", ignoreCase = true) && !it.category.equals("GOOGLE_PLAY", ignoreCase = true)
-                            else -> true
-                        }
-                    }
-
-                    Column(modifier = Modifier.fillMaxSize()) {
-                        ScrollableTabRow(
-                            selectedTabIndex = selectedVaultCat,
-                            containerColor = Color.Transparent,
-                            divider = {},
-                            edgePadding = 16.dp,
-                            indicator = {}
-                        ) {
-                            listOf("ALL", "RECHARGE", "GOOGLE PLAY", "TICKET").forEachIndexed { idx, title ->
-                                val isCatSelected = selectedVaultCat == idx
-                                Tab(
-                                    selected = isCatSelected,
-                                    onClick = { selectedVaultCat = idx },
-                                    modifier = Modifier.padding(end = 8.dp, bottom = 12.dp)
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .clip(RoundedCornerShape(8.dp))
-                                            .background(if (isCatSelected) Color.Black else Color(0xFFF3F4F6))
-                                            .padding(horizontal = 16.dp, vertical = 8.dp)
-                                    ) {
-                                        Text(
-                                            title,
-                                            color = if (isCatSelected) Color.White else Color(0xFF8E93A6),
-                                            fontWeight = FontWeight.Black,
-                                            fontSize = 11.sp,
-                                            letterSpacing = 1.sp
-                                        )
-                                    }
-                                }
-                            }
-                        }
-
-                    if (filteredVault.isEmpty()) {
+                    if (purchasedCards.isEmpty()) {
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -581,10 +540,10 @@ fun StoreScreen(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text("My Unlocked Cards & Codes", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 15.sp)
-                                    Text("${filteredVault.size} Items", color = Color(0xFFFFD700), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                    Text("${purchasedCards.size} Items", color = Color(0xFFFFD700), fontWeight = FontWeight.Bold, fontSize = 12.sp)
                                 }
                             }
-                            items(filteredVault) { card ->
+                            items(purchasedCards) { card ->
                                 PurchasedCardVaultItem(
                                     card = card,
                                     userName = userName,
@@ -595,7 +554,6 @@ fun StoreScreen(
                             }
                             item { Spacer(modifier = Modifier.height(40.dp)) }
                         }
-                    }
                     }
                 }
             }
@@ -636,7 +594,7 @@ fun FamPayGooglePlayCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 12.dp, horizontal = 16.dp)
-            .shadow(16.dp, RoundedCornerShape(16.dp), spotColor = Color(0xFFE2E8F0).copy(alpha = 0.2f))
+            .shadow(16.dp, RoundedCornerShape(16.dp), spotColor = Color(0xFF00E5FF).copy(alpha = 0.2f))
             .clip(RoundedCornerShape(16.dp))
             .background(Color(0xFF141414)) // Base Dark
             .clickable(enabled = canAfford && !isOutOfStock) { onBuyClick() }
@@ -674,7 +632,7 @@ fun FamPayGooglePlayCard(
 
                 // Cyber/Icy Blue subtle accent lines
                 drawLine(
-                    color = Color(0xFFE2E8F0).copy(alpha = 0.5f),
+                    color = Color(0xFF00E5FF).copy(alpha = 0.5f),
                     start = Offset(w * 0.1f, 0f),
                     end = Offset(w * 0.9f, h),
                     strokeWidth = 2f
@@ -748,8 +706,8 @@ fun FamPayGooglePlayCard(
                             letterSpacing = 1.5.sp
                         )
                         Text(
-                            "$effectivePrice COINS",
-                            color = Color(0xFFE2E8F0), // Icy Cyan
+                            "${plan.coinPrice} COINS",
+                            color = Color(0xFF00E5FF), // Icy Cyan
                             fontWeight = FontWeight.Black,
                             fontSize = 14.sp,
                             letterSpacing = 1.sp
@@ -776,7 +734,7 @@ fun FamPayGooglePlayCard(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(if (canAfford) Color(0xFFE2E8F0) else Color(0xFF333333))
+                                .background(if (canAfford) Color(0xFF00E5FF) else Color(0xFF333333))
                                 .padding(horizontal = 24.dp, vertical = 10.dp)
                         ) {
                             Text(
@@ -847,7 +805,7 @@ fun PurchasedCardVaultItem(
                     ) {
                         Column {
                             Text("Recharge Confirmation", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 14.sp)
-                            Text("Official receipt from admin", color = Color(0xFF16A34A), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                            Text("Official receipt from admin", color = Color(0xFF00E5FF), fontSize = 10.sp, fontWeight = FontWeight.Bold)
                         }
                         IconButton(onClick = { showProofDialog = false }, modifier = Modifier.size(28.dp)) {
                             Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.Black)
@@ -899,7 +857,6 @@ fun PurchasedCardVaultItem(
             .shadow(12.dp, RoundedCornerShape(16.dp))
             .clip(RoundedCornerShape(16.dp))
             .background(Color(0xFF141414)) // Hardcore Black Base
-            .border(1.dp, Color(0xFF333333), RoundedCornerShape(16.dp))
     ) {
         // Header
         Row(
@@ -930,12 +887,12 @@ fun PurchasedCardVaultItem(
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(4.dp))
-                    .border(1.dp, if (isUsed) Color(0xFF444444) else Color(0xFFE2E8F0), RoundedCornerShape(4.dp))
+                    .border(1.dp, if (isUsed) Color(0xFF444444) else Color(0xFF00E5FF), RoundedCornerShape(4.dp))
                     .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
                 Text(
                     if (isUsed) "USED" else "ACTIVE",
-                    color = if (isUsed) Color(0xFF444444) else Color(0xFFE2E8F0),
+                    color = if (isUsed) Color(0xFF444444) else Color(0xFF00E5FF),
                     fontWeight = FontWeight.Black,
                     fontSize = 10.sp,
                     letterSpacing = 2.sp
@@ -943,127 +900,128 @@ fun PurchasedCardVaultItem(
             }
         }
 
-        // Details and Blur Area
-        Column(
+        // Action Area (Code / Proof Reveal)
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .height(110.dp)
+                .background(Color.Black),
+            contentAlignment = Alignment.Center
         ) {
-            if (isDataRecharge) {
-                // Data Recharge Proof View
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        "STATUS",
-                        color = Color(0xFF555555),
-                        fontWeight = FontWeight.Black,
-                        fontSize = 10.sp,
-                        letterSpacing = 2.sp
-                    )
-                    Text(
-                        if (proofBitmap != null) "SUCCESSFUL" else "PENDING",
-                        color = if (proofBitmap != null) Color(0xFFE2E8F0) else Color(0xFF8E93A6),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 12.sp,
-                        letterSpacing = 1.sp
-                    )
-                }
-                
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color(0xFF262626))
-                        .clickable(enabled = proofBitmap != null) {
-                            if (proofBitmap != null) showProofDialog = true
+            // Using AnimatedContent for a slick reveal
+            AnimatedContent(
+                targetState = isRevealed || isUsed,
+                transitionSpec = {
+                    (slideInVertically { height -> height } + fadeIn(tween(400)))
+                        .togetherWith(slideOutVertically { height -> -height } + fadeOut(tween(400)))
+                },
+                label = "revealAnimation"
+            ) { revealed ->
+                if (revealed) {
+                    // Code or Proof is Revealed
+                    if (isDataRecharge) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxSize().clickable(enabled = proofBitmap != null) {
+                                if (proofBitmap != null) showProofDialog = true
+                            }
+                        ) {
+                            Text(
+                                if (proofBitmap != null) "VIEW RECEIPT" else "PROCESSING...",
+                                color = Color(0xFF00E5FF),
+                                fontWeight = FontWeight.Black,
+                                fontSize = 18.sp,
+                                letterSpacing = 2.sp
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                if (proofBitmap != null) "TAP TO OPEN" else "PLEASE WAIT",
+                                color = Color(0xFFA0AAB2),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 10.sp,
+                                letterSpacing = 2.sp
+                            )
                         }
-                        .padding(vertical = 14.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        if (proofBitmap != null) "VIEW RECEIPT" else "PROCESSING...",
-                        color = Color.White,
-                        fontWeight = FontWeight.Black,
-                        fontSize = 14.sp,
-                        letterSpacing = 2.sp
+                    } else {
+                        // Gift Card / VIP Code
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxSize().clickable(enabled = card.code.isNotBlank()) {
+                                if (card.code.isNotBlank()) {
+                                    clipboardManager.setPrimaryClip(ClipData.newPlainText("Code", card.code))
+                                    isCodeCopied = true
+                                    Toast.makeText(context, "Code copied to clipboard!", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        ) {
+                            Text(
+                                card.code.ifBlank { "PENDING..." },
+                                color = Color(0xFF00E5FF),
+                                fontWeight = FontWeight.Black,
+                                fontSize = 22.sp,
+                                letterSpacing = 4.sp
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                if (isCodeCopied) "COPIED TO CLIPBOARD" else "TAP TO COPY",
+                                color = Color(0xFFA0AAB2),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 10.sp,
+                                letterSpacing = 2.sp
+                            )
+                        }
+                    }
+                } else {
+                    // Hidden State - "TAP TO REVEAL"
+                    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
+                    val alphaPulse by infiniteTransition.animateFloat(
+                        initialValue = 0.5f,
+                        targetValue = 1f,
+                        animationSpec = infiniteRepeatable(
+                            animation = tween(1000, easing = FastOutSlowInEasing),
+                            repeatMode = RepeatMode.Reverse
+                        ),
+                        label = "alphaPulse"
                     )
-                }
-            } else {
-                // Redeem Code / Gift Card View
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        "REDEEM CODE",
-                        color = Color(0xFF555555),
-                        fontWeight = FontWeight.Black,
-                        fontSize = 10.sp,
-                        letterSpacing = 2.sp
-                    )
-                }
 
-                // Blur container
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color(0xFF262626))
-                        .clickable(enabled = card.code.isNotBlank()) {
-                            if (!isRevealed && card.code.isNotBlank()) {
-                                isRevealed = true
-                            } else if (isRevealed && card.code.isNotBlank()) {
-                                clipboardManager.setPrimaryClip(ClipData.newPlainText("Code", card.code))
-                                isCodeCopied = true
-                                Toast.makeText(context, "Code copied to clipboard!", Toast.LENGTH_SHORT).show()
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clickable { isRevealed = true },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Canvas(modifier = Modifier.fillMaxSize()) {
+                            // Dark metallic plate
+                            drawRect(color = Color(0xFF0A0A0A))
+                            // Subtle scanlines
+                            for (i in 0..10) {
+                                drawLine(
+                                    color = Color.White.copy(alpha = 0.05f),
+                                    start = Offset(0f, i * 30f),
+                                    end = Offset(size.width, i * 30f),
+                                    strokeWidth = 2f
+                                )
                             }
                         }
-                        .padding(vertical = 16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    // We apply blur modifier to the text if it's not revealed
-                    val codeToDisplay = card.code.ifBlank { "PENDING..." }
-                    
-                    Text(
-                        text = codeToDisplay,
-                        color = Color.White,
-                        fontWeight = FontWeight.Black,
-                        fontSize = 18.sp,
-                        letterSpacing = 4.sp,
-                        modifier = Modifier.then(
-                            if (!isRevealed && card.code.isNotBlank()) androidx.compose.ui.Modifier.blur(radius = 8.dp) else androidx.compose.ui.Modifier
-                        )
-                    )
-                    
-                    // Overlay for Tap to Claim (only when blurred)
-                    if (!isRevealed && card.code.isNotBlank()) {
-                        Text(
-                            "TAP TO CLAIM",
-                            color = Color.White,
-                            fontWeight = FontWeight.Black,
-                            fontSize = 14.sp,
-                            letterSpacing = 2.sp,
+                        
+                        Box(
                             modifier = Modifier
-                                .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
-                        )
+                                .clip(RoundedCornerShape(8.dp))
+                                .border(1.dp, Color(0xFF00E5FF).copy(alpha = alphaPulse), RoundedCornerShape(8.dp))
+                                .background(Color(0xFF00E5FF).copy(alpha = 0.1f))
+                                .padding(horizontal = 24.dp, vertical = 12.dp)
+                        ) {
+                            Text(
+                                "TAP TO REVEAL",
+                                color = Color(0xFF00E5FF),
+                                fontWeight = FontWeight.Black,
+                                fontSize = 14.sp,
+                                letterSpacing = 3.sp
+                            )
+                        }
                     }
-                }
-                
-                if (isRevealed) {
-                    Text(
-                        text = if (isCodeCopied) "COPIED TO CLIPBOARD" else "TAP TO COPY CODE",
-                        color = Color(0xFFA0AAB2),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 10.sp,
-                        letterSpacing = 1.sp,
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
-                    )
                 }
             }
         }
@@ -1073,9 +1031,9 @@ fun PurchasedCardVaultItem(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.White)
+                    .background(Color(0xFF00E5FF))
                     .clickable { onMarkUsed() }
-                    .padding(vertical = 14.dp),
+                    .padding(vertical = 16.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -1083,7 +1041,7 @@ fun PurchasedCardVaultItem(
                     color = Color.Black,
                     fontWeight = FontWeight.Black,
                     fontSize = 12.sp,
-                    letterSpacing = 2.sp
+                    letterSpacing = 4.sp
                 )
             }
         }
@@ -1110,7 +1068,7 @@ fun CelebrationCardDialog(
                 Spacer(modifier = Modifier.height(8.dp))
                 Text("You bought ${card.title}", color = Color.White, fontSize = 14.sp)
                 Spacer(modifier = Modifier.height(16.dp))
-                Button(onClick = onDismiss, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE2E8F0))) {
+                Button(onClick = onDismiss, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E5FF))) {
                     Text("AWESOME", color = Color.Black, fontWeight = FontWeight.Black)
                 }
             }
@@ -1203,7 +1161,7 @@ fun TournamentDiscountCard(
                 // Top Row
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.VerifiedUser, contentDescription = null, tint = Color(0xFFE2E8F0), modifier = Modifier.size(24.dp))
+                        Icon(Icons.Default.VerifiedUser, contentDescription = null, tint = Color(0xFF00E5FF), modifier = Modifier.size(24.dp))
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             "VIP PASS",
@@ -1215,12 +1173,12 @@ fun TournamentDiscountCard(
                     }
                     Box(
                         modifier = Modifier
-                            .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(4.dp))
+                            .border(1.dp, Color(0xFF00E5FF), RoundedCornerShape(4.dp))
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(
                             "EXCLUSIVE",
-                            color = Color(0xFFE2E8F0),
+                            color = Color(0xFF00E5FF),
                             fontWeight = FontWeight.Bold,
                             fontSize = 8.sp,
                             letterSpacing = 2.sp
@@ -1229,7 +1187,7 @@ fun TournamentDiscountCard(
                 }
 
                 Text(
-                    item.title.uppercase(),
+                    ("${plan.operator} PACK - ${plan.validity}").uppercase(),
                     color = Color.White,
                     fontWeight = FontWeight.Black,
                     fontSize = 18.sp,
@@ -1243,7 +1201,7 @@ fun TournamentDiscountCard(
                     verticalAlignment = Alignment.Bottom
                 ) {
                     Text(
-                        "$effectivePrice COINS",
+                        "${plan.coinPrice} COINS",
                         color = Color(0xFFA0AAB2),
                         fontWeight = FontWeight.Black,
                         fontSize = 14.sp,
@@ -1447,7 +1405,7 @@ fun DataRechargeCard(
             .shadow(12.dp, RoundedCornerShape(16.dp))
             .clip(RoundedCornerShape(16.dp))
             .background(Color(0xFF111111)) // Deep Obsidian Black
-            .clickable(enabled = canAfford && !isLoading) { onRedeemClick(plan) }
+            .clickable(enabled = canAfford && !isOutOfStock) { onBuyClick() }
     ) {
         Box(modifier = Modifier.fillMaxWidth().height(140.dp)) {
             Canvas(modifier = Modifier.fillMaxSize()) {
@@ -1507,7 +1465,7 @@ fun DataRechargeCard(
                     }
                     Text(
                         plan.dataAmount,
-                        color = Color(0xFFE2E8F0),
+                        color = Color(0xFF00E5FF),
                         fontWeight = FontWeight.Black,
                         fontSize = 16.sp,
                         letterSpacing = 1.sp
@@ -1620,7 +1578,7 @@ fun DataRechargeDialog(
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                         Text(
-                            text = "SELECTED: ${plan.dataAmount} high-speed data",
+                            text = "⚡ Selected: ${plan.dataAmount} high-speed data",
                             color = Color.Black,
                             fontWeight = FontWeight.Black,
                             fontSize = 12.sp
@@ -1667,7 +1625,7 @@ fun DataRechargeDialog(
                     if (mobileNumber.isNotEmpty() && !isValid) {
                         Text("Enter a valid 10-digit mobile number", color = Color.Red, fontSize = 10.sp)
                     } else if (isValid) {
-                        Text("VALID INDIAN MOBILE NUMBER", color = Color(0xFF16A34A), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        Text("✅ Valid Indian mobile number", color = Color(0xFF16A34A), fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     }
                 }
                 // Coin Deduction Summary
@@ -1704,7 +1662,7 @@ fun DataRechargeDialog(
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("", fontSize = 10.sp)
+                            Text("⚠️ ", fontSize = 10.sp)
                             Text(
                                 "महत्वपूर्ण सूचना / Notice:",
                                 color = Color.Red,
