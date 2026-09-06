@@ -194,21 +194,9 @@ class StoreViewModel : ViewModel() {
 
     val appDiscountCards = listOf(
         StoreItem(
-            id = "disc_flat_5",
-            category = StoreItemCategory.APP_DISCOUNT,
-            title = "Bronze Flat ₹5 OFF Card",
-            subtitle = "Save ₹5 on your next 3 match entries",
-            coinPrice = 40,
-            discountFlatRupees = 5,
-            maxUses = 3,
-            cardColorTheme = "BRONZE",
-            badgeText = "3 USES",
-            description = "Gives you a Flat ₹5 instant deduction on the next 3 tournament scrims you join!"
-        ),
-        StoreItem(
             id = "disc_flat_10",
             category = StoreItemCategory.APP_DISCOUNT,
-            title = "Silver Flat ₹10 OFF Card",
+            title = "Silver Ticket",
             subtitle = "Save ₹10 on your next 3 match entries",
             coinPrice = 75,
             discountFlatRupees = 10,
@@ -220,41 +208,29 @@ class StoreViewModel : ViewModel() {
         StoreItem(
             id = "disc_pct_25",
             category = StoreItemCategory.APP_DISCOUNT,
-            title = "Gold 25% OFF VIP Pass",
+            title = "Gold Ticket",
             subtitle = "25% discount on all entry fees",
             coinPrice = 110,
             discountPercent = 25,
             maxUses = 5,
             cardColorTheme = "GOLD",
             badgeText = "5 MATCHES VIP",
-            description = "Get 25% OFF on up to 5 tournament entry tickets. High savings on mega prize pools!"
+            description = "Get 25% OFF on up to 5 tournament entry tickets."
         ),
         StoreItem(
             id = "disc_pct_50",
             category = StoreItemCategory.APP_DISCOUNT,
-            title = "Diamond 50% Half-Price Pass",
+            title = "Diamond Ticket",
             subtitle = "Play top tournaments at half price",
             coinPrice = 190,
             discountPercent = 50,
             maxUses = 3,
             cardColorTheme = "DIAMOND",
             badgeText = "HALF PRICE 🔥",
-            description = "Pay only 50% entry fee on 3 mega tournaments. Top choice for competitive esports players!"
-        ),
-        StoreItem(
-            id = "disc_free_100",
-            category = StoreItemCategory.APP_DISCOUNT,
-            title = "God-Tier 100% Free Pass",
-            subtitle = "100% Free Entry for any 1 Match",
-            coinPrice = 280,
-            discountPercent = 100,
-            maxUses = 1,
-            cardColorTheme = "GOD",
-            badgeText = "100% FREE ENTRY 👑",
-            description = "Enjoy completely free entry to any paid tournament of your choice without spending real money!"
+            description = "Pay only 50% entry fee on 3 mega tournaments."
         )
     )
-
+    
     // JIO Official Data Booster Plans (2024-2026 Latest)
     val jioRechargePlans = listOf(
         DataRechargePlan(

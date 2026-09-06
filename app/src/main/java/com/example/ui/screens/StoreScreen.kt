@@ -83,7 +83,7 @@ fun StoreScreen(
         val effectivePrice = storeViewModel.getEffectivePrice(item)
         val isItemActive = storeViewModel.isItemEnabled(item)
         AlertDialog(
-            containerColor = Color(0xFF13151F),
+            containerColor = Color.White,
             onDismissRequest = { if (!isLoading) selectedItemForPurchase = null },
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -94,14 +94,14 @@ fun StoreScreen(
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(10.dp))
-                    Text("Confirm Redemption", color = Color.White, fontWeight = FontWeight.Black, fontSize = 17.sp)
+                    Text("Confirm Redemption", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 17.sp)
                 }
             },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(
                         "Are you sure you want to unlock ${item.title}?",
-                        color = Color(0xFFC4C8D8),
+                        color = Color.DarkGray,
                         fontSize = 13.sp
                     )
                     // Price Breakdown Box
@@ -131,9 +131,9 @@ fun StoreScreen(
                             ) {
                                 Text("Your Balance:", color = Color(0xFF8E93A6), fontSize = 12.sp)
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Default.MonetizationOn, contentDescription = null, tint = Color.White, modifier = Modifier.size(14.dp))
+                                    Icon(Icons.Default.MonetizationOn, contentDescription = null, tint = Color.Black, modifier = Modifier.size(14.dp))
                                     Spacer(modifier = Modifier.width(3.dp))
-                                    Text("$userCoins Coins", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                    Text("$userCoins Coins", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                                 }
                             }
                             Divider(color = Color(0xFF262938), modifier = Modifier.padding(vertical = 2.dp))
@@ -248,7 +248,7 @@ fun StoreScreen(
         )
     }
     Scaffold(
-        containerColor = Color(0xFF0B0C10),
+        containerColor = Color(0xFFF7F7FA),
         topBar = {
             TopAppBar(
                 title = {
@@ -257,7 +257,7 @@ fun StoreScreen(
                             "GAMING REWARDS STORE",
                             fontWeight = FontWeight.Black,
                             fontSize = 17.sp,
-                            color = Color.White,
+                            color = Color.Black,
                             letterSpacing = 0.8.sp
                         )
                         Text(
@@ -269,7 +269,7 @@ fun StoreScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.Black)
                     }
                 },
                 actions = {
@@ -278,7 +278,7 @@ fun StoreScreen(
                         modifier = Modifier
                             .padding(end = 14.dp)
                             .clip(RoundedCornerShape(20.dp))
-                            .background(Color(0xFF171924))
+                            .background(Color.White)
                             .border(1.dp, Color(0xFFFFD700).copy(alpha = 0.5f), RoundedCornerShape(20.dp))
                             .clickable {
                                 Toast.makeText(context, "Coins Balance: $userCoins\nEarn coins via Spin Wheel & Daily Check-in!", Toast.LENGTH_SHORT).show()
@@ -290,14 +290,14 @@ fun StoreScreen(
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             "$userCoins",
-                            color = Color(0xFFFFD700),
+                            color = Color.Black,
                             fontWeight = FontWeight.Black,
                             fontSize = 13.sp
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF0B0C10)
+                    containerColor = Color.White
                 )
             )
         }
@@ -399,11 +399,11 @@ fun StoreScreen(
                                                             "AIRTEL" -> Color(0xFFE53935)
                                                             else -> Color(0xFFFFC107) // Neon Amber/Yellow
                                                         }
-                                                    } else Color(0xFF131622)
+                                                    } else Color.White
                                                 )
                                                 .border(
                                                     1.dp,
-                                                    if (isSelected) Color.Transparent else Color(0xFF262A3C),
+                                                    if (isSelected) Color.Transparent else Color(0xFFE5E7EB),
                                                     RoundedCornerShape(12.dp)
                                                 )
                                                 .padding(horizontal = 16.dp, vertical = 10.dp),
@@ -511,7 +511,7 @@ fun StoreScreen(
                                 ) {
                                     Icon(Icons.Default.Inventory2, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(36.dp))
                                 }
-                                Text("Your Vault is Empty", color = Color.White, fontWeight = FontWeight.Black, fontSize = 18.sp)
+                                Text("Your Vault is Empty", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 18.sp)
                                 Text(
                                     "You haven't unlocked any Google Play cards or VIP Discount Passes yet. Earn coins and redeem your first card!",
                                     color = Color(0xFF8E93A6),
@@ -539,7 +539,7 @@ fun StoreScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text("My Unlocked Cards & Codes", color = Color.White, fontWeight = FontWeight.Black, fontSize = 15.sp)
+                                    Text("My Unlocked Cards & Codes", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 15.sp)
                                     Text("${purchasedCards.size} Items", color = Color(0xFFFFD700), fontWeight = FontWeight.Bold, fontSize = 12.sp)
                                 }
                             }
@@ -594,8 +594,7 @@ fun FamPayGooglePlayCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(22.dp))
-            .background(Color(0xFF0C0E17))
-            .border(1.dp, if (isBought) Color(0xFF22C55E).copy(alpha = 0.5f) else Color(0xFF1E2338), RoundedCornerShape(22.dp))
+            .background(Color.Transparent)
             .padding(12.dp)
     ) {
         // Physical Diamond Glass Gift Card
@@ -810,14 +809,14 @@ fun FamPayGooglePlayCard(
                     Column {
                         Text(
                             "CLAIMANT",
-                            color = Color(0xFF6F8299),
+                            color = Color.Gray,
                             fontWeight = FontWeight.Bold,
                             fontSize = 7.5.sp,
                             letterSpacing = 1.sp
                         )
                         Text(
                             userName.uppercase(),
-                            color = Color.White,
+                            color = Color.Black,
                             fontWeight = FontWeight.Black,
                             fontSize = 10.sp,
                             letterSpacing = 0.5.sp
@@ -827,13 +826,13 @@ fun FamPayGooglePlayCard(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
-                            .background(Color(0xFF14161F))
-                            .border(0.5.dp, Color(0xFF262A38), RoundedCornerShape(6.dp))
+                            .background(Color(0xFFF3F4F6))
+                            .border(0.5.dp, Color.LightGray, RoundedCornerShape(6.dp))
                             .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Text(
                             if (customCodesCount > 0) "IN STOCK" else "LIMIT $dailyLimit/DAY",
-                            color = if (customCodesCount > 0) Color(0xFF00E676) else Color(0xFF6F8299),
+                            color = if (customCodesCount > 0) Color(0xFF22C55E) else Color.Gray,
                             fontWeight = FontWeight.Black,
                             fontSize = 8.sp,
                             letterSpacing = 0.5.sp
@@ -977,8 +976,8 @@ fun PurchasedCardVaultItem(
                     .fillMaxWidth()
                     .wrapContentHeight()
                     .clip(RoundedCornerShape(20.dp))
-                    .background(Color(0xFF14161F))
-                    .border(1.5.dp, Color(0xFF22C55E).copy(alpha = 0.5f), RoundedCornerShape(20.dp))
+                    .background(Color.White)
+                    .border(1.dp, Color.LightGray, RoundedCornerShape(20.dp))
                     .padding(18.dp)
             ) {
                 Column(
@@ -991,11 +990,11 @@ fun PurchasedCardVaultItem(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text("Recharge Confirmation", color = Color.White, fontWeight = FontWeight.Black, fontSize = 14.sp)
+                            Text("Recharge Confirmation", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 14.sp)
                             Text("Official receipt from admin", color = Color(0xFF22C55E), fontSize = 10.sp, fontWeight = FontWeight.Bold)
                         }
                         IconButton(onClick = { showProofDialog = false }, modifier = Modifier.size(28.dp)) {
-                            Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.White)
+                            Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.Black)
                         }
                     }
 
@@ -1014,18 +1013,18 @@ fun PurchasedCardVaultItem(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(Color(0xFF0A0C14))
+                                .background(Color(0xFFE5E7EB))
                                 .padding(horizontal = 10.dp, vertical = 6.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Ref ID / UTR: $effectiveRechargeTxnId", color = Color(0xFFFACC15), fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                            Text("Ref ID / UTR: $effectiveRechargeTxnId", color = Color.DarkGray, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                         }
                     }
 
                     Text(
                         "Number: ${card.code} • Plan: ${card.title}",
-                        color = Color(0xFFB0BEC5),
+                        color = Color.DarkGray,
                         fontSize = 11.sp,
                         textAlign = TextAlign.Center
                     )
@@ -1044,15 +1043,15 @@ fun PurchasedCardVaultItem(
     }
 
     // Vault Card UI (Ultra-Premium Redesign)
-    val cardColor = if (isUsed) Color(0xFF1E2338) else if (isDataRecharge) Color(0xFFE11D48) else Color(0xFF06B6D4)
+    val cardColor = if (isUsed) Color.Gray else if (isDataRecharge) Color(0xFFE11D48) else Color(0xFF06B6D4)
     val glowColor = if (isUsed) Color.Transparent else cardColor.copy(alpha = 0.3f)
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(18.dp))
-            .background(Color(0xFF0B0F14))
-            .border(1.dp, glowColor, RoundedCornerShape(18.dp))
+            .background(Color(0xFFF3F4F6))
+            .border(1.dp, Color.LightGray, RoundedCornerShape(18.dp))
             .padding(14.dp)
     ) {
         // Header
@@ -1081,7 +1080,7 @@ fun PurchasedCardVaultItem(
                 Column {
                     Text(
                         card.title.uppercase(),
-                        color = Color.White,
+                        color = Color.Black,
                         fontWeight = FontWeight.Black,
                         fontSize = 14.sp,
                         letterSpacing = 0.5.sp
@@ -1100,13 +1099,13 @@ fun PurchasedCardVaultItem(
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(6.dp))
-                    .background(if (isUsed) Color(0xFF1E2338) else Color(0xFF22C55E).copy(alpha = 0.15f))
+                    .background(if (isUsed) Color.LightGray else Color(0xFF22C55E).copy(alpha = 0.15f))
                     .border(1.dp, if (isUsed) Color.Transparent else Color(0xFF22C55E).copy(alpha = 0.5f), RoundedCornerShape(6.dp))
                     .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
                 Text(
                     if (isUsed) "USED" else "ACTIVE",
-                    color = if (isUsed) Color(0xFF6F8299) else Color(0xFF22C55E),
+                    color = if (isUsed) Color.DarkGray else Color(0xFF22C55E),
                     fontWeight = FontWeight.Black,
                     fontSize = 9.sp,
                     letterSpacing = 1.sp
@@ -1121,8 +1120,8 @@ fun PurchasedCardVaultItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(12.dp))
-                .background(Color(0xFF131922))
-                .border(1.dp, Color(0xFF1E2338), RoundedCornerShape(12.dp))
+                .background(Color.White)
+                .border(1.dp, Color.LightGray, RoundedCornerShape(12.dp))
                 .clickable(enabled = card.code.isNotBlank() && !isDataRecharge) {
                     if (card.code.isNotBlank()) {
                         val clip = ClipData.newPlainText("Redeem Code", card.code)
@@ -1141,7 +1140,7 @@ fun PurchasedCardVaultItem(
                 Column {
                     Text(
                         if (isDataRecharge) "TARGET NUMBER" else "REDEEM CODE",
-                        color = Color(0xFF6F8299),
+                        color = Color.Gray,
                         fontSize = 8.sp,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 1.sp
@@ -1149,7 +1148,7 @@ fun PurchasedCardVaultItem(
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         card.code.ifBlank { "PENDING ADMIN APPROVAL" },
-                        color = if (card.code.isNotBlank()) (if (isUsed) Color(0xFF8E92A4) else Color(0xFFFACC15)) else Color(0xFF6F8299),
+                        color = if (card.code.isNotBlank()) (if (isUsed) Color.Gray else Color.Black) else Color.Gray,
                         fontFamily = FontFamily.Monospace,
                         fontWeight = FontWeight.Black,
                         fontSize = 15.sp,
@@ -1161,7 +1160,7 @@ fun PurchasedCardVaultItem(
                     Icon(
                         if (isCodeCopied) Icons.Default.Check else Icons.Default.ContentCopy,
                         contentDescription = "Copy",
-                        tint = if (isCodeCopied) Color(0xFF22C55E) else Color(0xFF6F8299),
+                        tint = if (isCodeCopied) Color(0xFF22C55E) else Color.Gray,
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -1245,27 +1244,169 @@ fun TournamentDiscountCard(
     onBuyClick: () -> Unit
 ) {
     val canAfford = userCoins >= effectivePrice && isEnabled
-    Column(
+    
+    data class ThemeColors(val gradient: List<Color>, val text: Color, val button: Color, val icon: Color)
+    val theme = when (item.cardColorTheme) {
+        "GOLD" -> ThemeColors(
+            listOf(Color(0xFFFFF9E6), Color(0xFFFBE49D), Color(0xFFE5B935), Color(0xFFC0931B)),
+            Color(0xFF452B05), Color(0xFF2C1A02), Color(0xFFE5B935)
+        )
+        "DIAMOND" -> ThemeColors(
+            listOf(Color(0xFFF0FBFF), Color(0xFFD8F2FB), Color(0xFFA1E3F9), Color(0xFF4AC4E9)),
+            Color(0xFF0C3852), Color(0xFF062336), Color(0xFF4AC4E9)
+        )
+        else -> ThemeColors( // SILVER
+            listOf(Color(0xFFF8F9FA), Color(0xFFE2E8F0), Color(0xFFCBD5E1), Color(0xFF94A3B8)),
+            Color(0xFF1E293B), Color(0xFF0F172A), Color(0xFF94A3B8)
+        )
+    }
+    val gradientColors = theme.gradient
+    val textColor = theme.text
+    val buttonColor = theme.button
+    val iconColor = theme.icon
+
+    val metallicBrush = Brush.linearGradient(
+        colors = gradientColors as List<Color>,
+        start = Offset(0f, 0f),
+        end = Offset(1000f, 1000f)
+    )
+
+    Box(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(Color(0xFF14161F))
-            .border(1.dp, Color(0xFF262A38), RoundedCornerShape(16.dp))
-            .padding(16.dp)
+            .background(metallicBrush)
+            .border(1.dp, Color.White.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
+            .clickable(enabled = canAfford, onClick = onBuyClick)
     ) {
-        Text(item.title, color = Color.White, fontWeight = FontWeight.Black, fontSize = 16.sp)
-        Text(item.subtitle, color = Color(0xFF6F8299), fontSize = 12.sp)
-        Spacer(modifier = Modifier.height(12.dp))
-        Button(
-            onClick = onBuyClick,
-            enabled = canAfford,
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700)),
-            modifier = Modifier.fillMaxWidth()
+        // Shine overlay
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(Color.White.copy(alpha = 0.6f), Color.Transparent),
+                        center = Offset(200f, -100f),
+                        radius = 800f
+                    )
+                )
+        )
+
+        Column(
+            modifier = Modifier.padding(18.dp)
         ) {
-            Text("BUY FOR ${effectivePrice} COINS", color = Color.Black, fontWeight = FontWeight.Black)
+            // Header
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(textColor.copy(alpha = 0.15f))
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        "VIP PASS",
+                        color = textColor,
+                        fontWeight = FontWeight.Black,
+                        fontSize = 10.sp,
+                        letterSpacing = 1.sp
+                    )
+                }
+                
+                Icon(
+                    Icons.Default.LocalPlay, 
+                    contentDescription = null, 
+                    tint = textColor.copy(alpha = 0.7f), 
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // Title & Description
+            Text(
+                text = item.title.uppercase(),
+                color = textColor,
+                fontWeight = FontWeight.Black,
+                fontSize = 24.sp,
+                letterSpacing = (-0.5).sp
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = item.subtitle,
+                color = textColor.copy(alpha = 0.85f),
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = item.description,
+                color = textColor.copy(alpha = 0.75f),
+                fontSize = 12.sp,
+                lineHeight = 16.sp
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+            Divider(color = textColor.copy(alpha = 0.15f), thickness = 1.dp)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Footer (Price & Buy)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "PRICE",
+                        color = textColor.copy(alpha = 0.6f),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 10.sp,
+                        letterSpacing = 1.sp
+                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            Icons.Default.MonetizationOn, 
+                            contentDescription = null, 
+                            tint = textColor, 
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = effectivePrice.toString(),
+                            color = textColor,
+                            fontWeight = FontWeight.Black,
+                            fontSize = 18.sp
+                        )
+                    }
+                }
+
+                Button(
+                    onClick = onBuyClick,
+                    enabled = canAfford,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = buttonColor as Color,
+                        disabledContainerColor = buttonColor.copy(alpha = 0.3f)
+                    ),
+                    shape = RoundedCornerShape(50),
+                    contentPadding = PaddingValues(horizontal = 24.dp, vertical = 0.dp),
+                    modifier = Modifier.height(42.dp)
+                ) {
+                    Text(
+                        "GET TICKET", 
+                        color = if (canAfford) Color.White else Color.White.copy(alpha = 0.5f), 
+                        fontWeight = FontWeight.Bold, 
+                        fontSize = 13.sp
+                    )
+                }
+            }
         }
     }
 }
+
 
 @Composable
 fun GooglePlayLogoIcon(modifier: Modifier = Modifier) {
@@ -1343,7 +1484,7 @@ fun StoreHeroBanner(
             }
             Spacer(modifier = Modifier.width(14.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(title, color = Color.White, fontWeight = FontWeight.Black, fontSize = 14.sp)
+                Text(title, color = Color.Black, fontWeight = FontWeight.Black, fontSize = 14.sp)
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(subtitle, color = Color(0xFF8E93A6), fontSize = 11.sp, lineHeight = 15.sp)
             }
@@ -1414,226 +1555,117 @@ fun DataRechargeCard(
 ) {
     val canAfford = userCoins >= plan.coinPrice
     val isJio = plan.operator.equals("JIO", ignoreCase = true)
-    val brandColor = if (isJio) Color(0xFFE53935) else Color(0xFFE53935) // Deep Crimson Red
-    val ambientGlow = if (isJio) Color(0xFFD32F2F) else Color(0xFFD32F2F)
-    // Interaction scale animation placeholder
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.97f else 1f,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
-        label = "cardScale"
-    )
-    Column(
+    
+    val bgColor = if (isJio && plan.priceRupees == 349) androidx.compose.ui.graphics.Color(0xFFFFF6E5) else androidx.compose.ui.graphics.Color(0xFFF3F4F6)
+    val bannerColor = if (isJio && plan.priceRupees == 349) androidx.compose.ui.graphics.Color(0xFFE58B29) else androidx.compose.ui.graphics.Color(0xFFD1E8F8)
+    val bannerTextColor = if (isJio && plan.priceRupees == 349) androidx.compose.ui.graphics.Color.White else androidx.compose.ui.graphics.Color(0xFF0F4770)
+    val buyBtnColor = if (isJio && plan.priceRupees == 349) androidx.compose.ui.graphics.Color(0xFFE58B29) else androidx.compose.ui.graphics.Color(0xFF1D4ED8)
+
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .scale(scale)
-            .clip(RoundedCornerShape(20.dp))
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(Color(0xFF13151F), Color(0xFF0B0D14))
-                )
-            )
-            .border(
-                1.dp,
-                Brush.linearGradient(
-                    colors = listOf(
-                        ambientGlow.copy(alpha = 0.4f),
-                        Color(0xFF262A3C),
-                        ambientGlow.copy(alpha = 0.1f)
-                    )
-                ),
-                RoundedCornerShape(20.dp)
-            )
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null, // Custom ripple handled inside or via scale
-                onClick = onRedeemClick
-            )
-            .padding(14.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(bgColor)
+            .border(1.dp, androidx.compose.ui.graphics.Color.LightGray, RoundedCornerShape(16.dp))
+            .clickable(onClick = onRedeemClick)
     ) {
-        // Inner Glass Card
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
-                .background(
-                    Brush.radialGradient(
-                        colors = listOf(
-                            ambientGlow.copy(alpha = 0.15f),
-                            Color.Transparent
-                        ),
-                        radius = 600f
-                    )
-                )
-                .background(Color(0xFF05060A).copy(alpha = 0.6f))
-                .border(
-                    0.5.dp,
-                    Color.White.copy(alpha = 0.08f),
-                    RoundedCornerShape(16.dp)
-                )
-                .padding(16.dp)
+        Column(
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Column(
-                modifier = Modifier.fillMaxWidth()
+            // Top Section (Banner & 5G)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
             ) {
-                // Top Header: Brand & Price Pill
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // Operator Badge
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(Color(0xFF13151F))
-                            .border(0.5.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
-                            .padding(horizontal = 8.dp, vertical = 5.dp)
-                    ) {
-                        if (isJio) {
-                            JioBrandLogo(size = 16)
-                        } else {
-                            AirtelBrandLogo(size = 14)
-                        }
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = plan.operator.uppercase(),
-                            color = Color.White,
-                            fontWeight = FontWeight.Black,
-                            fontSize = 11.sp,
-                            letterSpacing = 0.5.sp
-                        )
-                    }
-                    // Price Glass Pill
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(50))
-                            .background(Color(0xFFFFFFFF).copy(alpha = 0.05f))
-                            .border(1.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(50))
-                            .padding(horizontal = 12.dp, vertical = 6.dp)
-                    ) {
-                        Text(
-                            text = "₹${plan.priceRupees}",
-                            color = Color.White,
-                            fontWeight = FontWeight.Black,
-                            fontSize = 13.sp
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-                // Center Highlight: Big Data Amount
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.Bottom,
-                    horizontalArrangement = Arrangement.Start
+                // Top-Left Banner
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(topStart = 16.dp, bottomEnd = 8.dp))
+                        .background(bannerColor)
+                        .padding(horizontal = 12.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = plan.dataAmount.replace(" GB", "").replace(" MB", ""),
-                        color = Color.White,
-                        fontWeight = FontWeight.Black,
-                        fontSize = 42.sp,
-                        letterSpacing = (-1).sp,
-                        style = MaterialTheme.typography.headlineLarge
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = if (plan.dataAmount.contains("GB")) "GB" else "MB",
-                        color = brandColor,
-                        fontWeight = FontWeight.Black,
-                        fontSize = 20.sp,
-                        modifier = Modifier.padding(bottom = 6.dp)
+                        text = plan.tagText,
+                        color = bannerTextColor,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 11.sp
                     )
                 }
-                Text(
-                    text = "High-Speed Data Booster • ${plan.validity}",
-                    color = Color(0xFF8E93A6),
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 12.sp
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                // Bottom Tags (Bestseller / Instant Top-Up)
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(Color(0xFF00E676).copy(alpha = 0.15f))
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Bolt, contentDescription = null, tint = Color(0xFF00E676), modifier = Modifier.size(10.dp))
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("INSTANT", color = Color(0xFF00E676), fontWeight = FontWeight.Bold, fontSize = 9.sp)
-                            }
-                        }
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(Color(0xFFFFC107).copy(alpha = 0.15f))
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
-                        ) {
-                            Text(plan.tagText, color = Color(0xFFFFC107), fontWeight = FontWeight.Bold, fontSize = 9.sp)
-                        }
-                    }
+                
+                // TRUE 5G
+                if (plan.highlightSpeed.contains("5G")) {
+                    Text(
+                        text = "TRUE 5G",
+                        color = androidx.compose.ui.graphics.Color(0xFFB91C1C),
+                        fontWeight = FontWeight.Black,
+                        fontSize = 11.sp,
+                        modifier = Modifier.padding(top = 8.dp, end = 12.dp)
+                    )
                 }
             }
-        }
-        Spacer(modifier = Modifier.height(12.dp))
-        // Bottom Action Button Row
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "Redeem via Coins",
-                    color = Color.White,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 13.sp
-                )
-            }
-            // Coin Action Button
-            Button(
-                onClick = onRedeemClick,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (canAfford) Color(0xFFFFC107).copy(alpha = 0.1f) else Color(0xFF1E2232)
-                ),
-                border = BorderStroke(
-                    1.dp,
-                    if (canAfford) Color(0xFFFFC107).copy(alpha = 0.6f) else Color.Transparent
-                ),
-                shape = RoundedCornerShape(12.dp),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Price and Details
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.MonetizationOn,
-                        contentDescription = null,
-                        tint = if (canAfford) Color(0xFFFFC107) else Color(0xFF8E93A6),
-                        modifier = Modifier.size(14.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        "${plan.coinPrice} COINS",
-                        color = if (canAfford) Color(0xFFFFC107) else Color(0xFF8E93A6),
-                        fontWeight = FontWeight.Black,
-                        fontSize = 12.sp
-                    )
+                Text(
+                    text = "₹${plan.priceRupees}",
+                    color = androidx.compose.ui.graphics.Color.Black,
+                    fontWeight = FontWeight.Black,
+                    fontSize = 32.sp
+                )
+                
+                Column {
+                    Text("Validity", color = androidx.compose.ui.graphics.Color.Gray, fontSize = 12.sp)
+                    Text(plan.validity, color = androidx.compose.ui.graphics.Color.Black, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                }
+                
+                Column {
+                    Text("Data", color = androidx.compose.ui.graphics.Color.Gray, fontSize = 12.sp)
+                    Text(plan.dataAmount, color = androidx.compose.ui.graphics.Color.Black, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                }
+                
+                Icon(Icons.Default.ChevronRight, contentDescription = null, tint = buyBtnColor, modifier = Modifier.size(20.dp))
+            }
+            
+            Divider(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp), color = androidx.compose.ui.graphics.Color.LightGray.copy(alpha = 0.5f))
+
+            // Bottom Section (OTT & Buy)
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "${plan.coinPrice} Coins",
+                    color = androidx.compose.ui.graphics.Color.DarkGray,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp
+                )
+
+                Button(
+                    onClick = onRedeemClick,
+                    enabled = canAfford,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = buyBtnColor,
+                        disabledContainerColor = androidx.compose.ui.graphics.Color.Gray
+                    ),
+                    shape = RoundedCornerShape(50),
+                    contentPadding = PaddingValues(horizontal = 24.dp, vertical = 0.dp),
+                    modifier = Modifier.height(36.dp)
+                ) {
+                    Text("Buy", color = androidx.compose.ui.graphics.Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                 }
             }
         }
     }
 }
+
 // ----------------------------------------------------
 // Mobile Data Recharge Confirmation Dialog
 // ----------------------------------------------------
@@ -1817,7 +1849,7 @@ fun DataRechargeDialog(
                         modifier = Modifier.weight(1f).height(46.dp),
                         border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF4A1017))
                     ) {
-                        Text("CANCEL", color = Color(0xFFB0BEC5), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text("CANCEL", color = Color.DarkGray, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     }
                     Button(
                         onClick = { onConfirm(mobileNumber) },
