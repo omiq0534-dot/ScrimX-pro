@@ -581,13 +581,31 @@ fun FamPayGooglePlayCard(
     // Continuous Shimmer / Sheen Animation
     val infiniteTransition = rememberInfiniteTransition(label = "googlePlayShimmer")
     val shimmerTranslate by infiniteTransition.animateFloat(
-        initialValue = -300f,
-        targetValue = 1200f,
+        initialValue = -500f,
+        targetValue = 2000f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 2800, easing = LinearEasing),
+            animation = tween(durationMillis = 2500, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
         ),
         label = "shimmerTranslate"
+    )
+    val fastShimmer by infiniteTransition.animateFloat(
+        initialValue = -300f,
+        targetValue = 1500f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1500, easing = LinearEasing, delayMillis = 1000),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "fastShimmer"
+    )
+    val pulseAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.5f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1200, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulseAlpha"
     )
 
     Column(
@@ -604,76 +622,74 @@ fun FamPayGooglePlayCard(
                 .height(190.dp)
                 .clip(RoundedCornerShape(18.dp))
                 .background(
-                    Brush.linearGradient(
+                    Brush.radialGradient(
                         colors = listOf(
+                            Color(0xFF0A2940),
                             Color(0xFF061520),
-                            Color(0xFF0B2433),
-                            Color(0xFF04101A),
-                            Color(0xFF081C29)
+                            Color(0xFF02070A)
                         ),
-                        start = Offset(0f, 0f),
-                        end = Offset(900f, 900f)
+                        center = Offset(400f, 200f),
+                        radius = 800f
                     )
                 )
                 .border(
-                    0.8.dp,
+                    1.5.dp,
                     Brush.linearGradient(
                         colors = listOf(
-                            Color(0xFF00E5FF).copy(alpha = 0.5f),
-                            Color(0xFF00E676).copy(alpha = 0.5f),
-                            Color(0xFF00B0FF).copy(alpha = 0.4f),
-                            Color(0xFFFFD700).copy(alpha = 0.3f)
+                            Color(0xFF00E5FF).copy(alpha = pulseAlpha),
+                            Color(0xFF00E676).copy(alpha = pulseAlpha),
+                            Color(0xFF00B0FF).copy(alpha = pulseAlpha),
+                            Color(0xFF00E5FF).copy(alpha = pulseAlpha)
                         ),
-                        start = Offset(0f, 0f),
-                        end = Offset(800f, 600f)
+                        start = Offset(shimmerTranslate - 500f, 0f),
+                        end = Offset(shimmerTranslate + 500f, 600f)
                     ),
                     RoundedCornerShape(18.dp)
                 )
-                .padding(14.dp)
         ) {
-            // Diamond Glass Facets & Moving Shimmer Canvas
+            // Background Canvas (Crystals)
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val w = size.width
                 val h = size.height
-                // Subtle diamond crystalline geometry
-                val facetPath = Path().apply {
-                    moveTo(w * 0.7f, 0f)
-                    lineTo(w, h * 0.45f)
-                    lineTo(w * 0.5f, h)
-                    lineTo(0f, h * 0.35f)
+                
+                // Holographic crystalline geometry 1
+                val facetPath1 = Path().apply {
+                    moveTo(w * 0.6f, 0f)
+                    lineTo(w, h * 0.4f)
+                    lineTo(w * 0.4f, h)
+                    lineTo(0f, h * 0.4f)
                     close()
                 }
                 drawPath(
-                    path = facetPath,
+                    path = facetPath1,
                     brush = Brush.linearGradient(
-                        colors = listOf(Color(0xFF00E5FF).copy(alpha = 0.05f), Color.Transparent),
-                        start = Offset(w * 0.7f, 0f),
+                        colors = listOf(Color(0xFF00E5FF).copy(alpha = 0.15f), Color.Transparent),
+                        start = Offset(w * 0.6f, 0f),
                         end = Offset(0f, h)
                     )
                 )
 
-                // Dynamic Moving Shimmer Sheen Beam
-                val sheenWidth = 140f
-                val sheenBrush = Brush.linearGradient(
-                    colors = listOf(
-                        Color.Transparent,
-                        Color.White.copy(alpha = 0.12f),
-                        Color(0xFF00E5FF).copy(alpha = 0.15f),
-                        Color.Transparent
-                    ),
-                    start = Offset(shimmerTranslate - sheenWidth, 0f),
-                    end = Offset(shimmerTranslate + sheenWidth, h)
+                // Holographic crystalline geometry 2
+                val facetPath2 = Path().apply {
+                    moveTo(w * 0.2f, h)
+                    lineTo(w * 0.8f, h * 0.3f)
+                    lineTo(w, h * 0.7f)
+                    lineTo(w, h)
+                    close()
+                }
+                drawPath(
+                    path = facetPath2,
+                    brush = Brush.linearGradient(
+                        colors = listOf(Color(0xFF00E676).copy(alpha = 0.12f), Color.Transparent),
+                        start = Offset(w * 0.8f, h),
+                        end = Offset(w * 0.2f, 0f)
+                    )
                 )
-                drawRect(brush = sheenBrush)
-
-                // Sparkling Diamond Stars (✦)
-                drawCircle(Color(0xFF00E5FF).copy(alpha = 0.7f), radius = 2.dp.toPx(), center = Offset(w * 0.85f, h * 0.2f))
-                drawCircle(Color.White.copy(alpha = 0.9f), radius = 1.2.dp.toPx(), center = Offset(w * 0.85f, h * 0.2f))
-                drawCircle(Color(0xFF69F0AE).copy(alpha = 0.6f), radius = 1.5.dp.toPx(), center = Offset(w * 0.92f, h * 0.38f))
             }
 
+            // Content inside the card
             Column(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize().padding(14.dp),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 // Top Row: Authentic Google Play Logo + Denomination Badge
@@ -865,8 +881,8 @@ fun FamPayGooglePlayCard(
             enabled = (canAfford || isBought || isOutOfStock) && !hasRequestedRestock,
             interactionSource = interactionSource,
             colors = ButtonDefaults.buttonColors(
-                containerColor = if (isBought) Color(0xFF22C55E).copy(alpha = 0.15f) else if (isOutOfStock) Color(0xFFE11D48).copy(alpha = 0.15f) else Color(0xFFFFD700),
-                disabledContainerColor = if (isBought) Color(0xFF22C55E).copy(alpha = 0.15f) else if (isOutOfStock) Color(0xFFE11D48).copy(alpha = 0.15f) else Color(0xFF1E2338)
+                containerColor = if (isBought) Color(0xFF22C55E).copy(alpha = 0.15f) else if (isOutOfStock) Color(0xFF262626).copy(alpha = 0.15f) else Color(0xFFFFD700),
+                disabledContainerColor = if (isBought) Color(0xFF22C55E).copy(alpha = 0.15f) else if (isOutOfStock) Color(0xFF262626).copy(alpha = 0.15f) else Color(0xFF1E2338)
             ),
             shape = RoundedCornerShape(14.dp),
             modifier = Modifier
@@ -875,7 +891,7 @@ fun FamPayGooglePlayCard(
                 .scale(scale)
                 .border(
                     1.dp,
-                    if (isBought) Color(0xFF22C55E) else if (isOutOfStock) Color(0xFFE11D48).copy(alpha = 0.5f) else Color.Transparent,
+                    if (isBought) Color(0xFF22C55E) else if (isOutOfStock) Color(0xFF262626).copy(alpha = 0.5f) else Color.Transparent,
                     RoundedCornerShape(14.dp)
                 )
         ) {
@@ -891,21 +907,21 @@ fun FamPayGooglePlayCard(
                 )
             } else if (isOutOfStock) {
                 if (hasRequestedRestock) {
-                    Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFFE11D48), modifier = Modifier.size(16.dp))
+                    Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF262626), modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         "RESTOCK REQUESTED",
-                        color = Color(0xFFE11D48),
+                        color = Color(0xFF262626),
                         fontWeight = FontWeight.Black,
                         fontSize = 13.sp,
                         letterSpacing = 0.5.sp
                     )
                 } else {
-                    Icon(Icons.Default.NotificationsActive, contentDescription = null, tint = Color(0xFFE11D48), modifier = Modifier.size(16.dp))
+                    Icon(Icons.Default.NotificationsActive, contentDescription = null, tint = Color(0xFF262626), modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         "OUT OF STOCK - REQUEST ADMIN",
-                        color = Color(0xFFE11D48),
+                        color = Color(0xFF262626),
                         fontWeight = FontWeight.Black,
                         fontSize = 12.sp,
                         letterSpacing = 0.5.sp
@@ -1043,7 +1059,7 @@ fun PurchasedCardVaultItem(
     }
 
     // Vault Card UI (Ultra-Premium Redesign)
-    val cardColor = if (isUsed) Color.Gray else if (isDataRecharge) Color(0xFFE11D48) else Color(0xFF06B6D4)
+    val cardColor = if (isUsed) Color.Gray else Color(0xFF262626)
     val glowColor = if (isUsed) Color.Transparent else cardColor.copy(alpha = 0.3f)
 
     Column(
@@ -1197,7 +1213,7 @@ fun PurchasedCardVaultItem(
                     shape = RoundedCornerShape(10.dp),
                     modifier = Modifier.weight(1f).height(44.dp)
                 ) {
-                    Text("MARK AS USED", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 12.sp)
+                    Text("MARK AS USED", color = Color.White, fontWeight = FontWeight.Black, fontSize = 12.sp)
                 }
             }
         }
@@ -1685,12 +1701,11 @@ fun DataRechargeDialog(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(24.dp))
-                .background(Color(0xFF140508))
-                .border(1.5.dp, Brush.horizontalGradient(listOf(Color(0xFFFF5252), Color(0xFFFFD700))), RoundedCornerShape(24.dp))
-                .padding(20.dp)
+                .clip(RoundedCornerShape(20.dp))
+                .background(Color.White)
+                .padding(16.dp)
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 // Header with Logo
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -1698,58 +1713,58 @@ fun DataRechargeDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        if (isJio) JioBrandLogo(size = 34) else AirtelBrandLogo(size = 30)
+                        if (isJio) JioBrandLogo(size = 32) else AirtelBrandLogo(size = 28)
                         Column {
                             Text(
                                 text = "${plan.operator} Data Recharge",
-                                color = Color.White,
+                                color = Color.Black,
                                 fontWeight = FontWeight.Black,
-                                fontSize = 16.sp
+                                fontSize = 15.sp
                             )
                             Text(
                                 text = "₹${plan.priceRupees} Pack • ${plan.dataAmount}",
-                                color = Color(0xFFFFD700),
+                                color = Color.DarkGray,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 11.sp
                             )
                         }
                     }
                     IconButton(onClick = onDismiss, enabled = !isLoading) {
-                        Icon(Icons.Default.Close, contentDescription = "Close", tint = Color(0xFF8E93A6))
+                        Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.Gray)
                     }
                 }
-                HorizontalDivider(color = Color(0xFF2E0A10))
+                HorizontalDivider(color = Color.LightGray)
                 // Pack Details Highlight
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(Color(0xFF22070C))
-                        .border(1.dp, Color(0xFFFF5252).copy(alpha = 0.3f), RoundedCornerShape(14.dp))
-                        .padding(12.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFFF3F4F6))
+                        .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(12.dp))
+                        .padding(10.dp)
                 ) {
-                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                         Text(
                             text = "⚡ Selected: ${plan.dataAmount} high-speed data",
-                            color = Color.White,
+                            color = Color.Black,
                             fontWeight = FontWeight.Black,
-                            fontSize = 13.sp
+                            fontSize = 12.sp
                         )
                         Text(
                             text = "Validity: ${plan.validity} • Official Price: ₹${plan.priceRupees}",
-                            color = Color(0xFFFFCDD2),
-                            fontSize = 11.sp
+                            color = Color.DarkGray,
+                            fontSize = 10.sp
                         )
                     }
                 }
                 // Mobile Number Input Field
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
                         text = "ENTER 10-DIGIT ${plan.operator} NUMBER",
-                        color = Color.White,
+                        color = Color.Black,
                         fontWeight = FontWeight.Black,
-                        fontSize = 11.sp,
-                        letterSpacing = 0.8.sp
+                        fontSize = 10.sp,
+                        letterSpacing = 0.5.sp
                     )
                     OutlinedTextField(
                         value = mobileNumber,
@@ -1757,58 +1772,49 @@ fun DataRechargeDialog(
                             val filtered = input.filter { it.isDigit() }
                             if (filtered.length <= 10) mobileNumber = filtered
                         },
-                        placeholder = { Text("e.g. 9876543210", color = Color(0xFF75798E)) },
+                        placeholder = { Text("e.g. 9876543210", color = Color.Gray, fontSize = 13.sp) },
                         prefix = {
-                            Text("+91 ", color = Color(0xFFFFD700), fontWeight = FontWeight.Black, fontSize = 15.sp)
+                            Text("+91 ", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 14.sp)
                         },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                         singleLine = true,
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFFFFD700),
-                            unfocusedBorderColor = Color(0xFF4A1017),
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White,
-                            focusedContainerColor = Color(0xFF1E070B),
-                            unfocusedContainerColor = Color(0xFF1A0508)
+                            focusedBorderColor = Color(0xFF262626),
+                            unfocusedBorderColor = Color.LightGray,
+                            focusedTextColor = Color.Black,
+                            unfocusedTextColor = Color.Black,
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color(0xFFF9FAFB)
                         ),
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.fillMaxWidth()
+                        shape = RoundedCornerShape(10.dp),
+                        modifier = Modifier.fillMaxWidth().height(52.dp)
                     )
                     if (mobileNumber.isNotEmpty() && !isValid) {
-                        Text(
-                            "Enter a valid 10-digit mobile number starting with 6, 7, 8, or 9",
-                            color = Color(0xFFFF5252),
-                            fontSize = 10.sp
-                        )
+                        Text("Enter a valid 10-digit mobile number", color = Color.Red, fontSize = 10.sp)
                     } else if (isValid) {
-                        Text(
-                            "✅ Valid Indian mobile number",
-                            color = Color(0xFF00E676),
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Text("✅ Valid Indian mobile number", color = Color(0xFF16A34A), fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     }
                 }
                 // Coin Deduction Summary
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(Color(0xFF19060A))
-                        .padding(12.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color(0xFFF9FAFB))
+                        .padding(10.dp)
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Recharge Cost:", color = Color(0xFF8E93A6), fontSize = 11.sp)
-                            Text("${plan.coinPrice} Coins", color = Color(0xFFFFD700), fontWeight = FontWeight.Black, fontSize = 12.sp)
+                            Text("Recharge Cost:", color = Color.Gray, fontSize = 11.sp)
+                            Text("${plan.coinPrice} Coins", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 11.sp)
                         }
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Your Current Coins:", color = Color(0xFF8E93A6), fontSize = 11.sp)
-                            Text("$userCoins Coins", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                            Text("Your Coins:", color = Color.Gray, fontSize = 11.sp)
+                            Text("$userCoins Coins", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                         }
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Coins After Recharge:", color = Color(0xFF8E93A6), fontSize = 11.sp)
-                            Text("${userCoins - plan.coinPrice} Coins", color = Color(0xFF00E676), fontWeight = FontWeight.Black, fontSize = 12.sp)
+                            Text("After Recharge:", color = Color.Gray, fontSize = 11.sp)
+                            Text("${userCoins - plan.coinPrice} Coins", color = Color(0xFF16A34A), fontWeight = FontWeight.Black, fontSize = 11.sp)
                         }
                     }
                 }
@@ -1816,26 +1822,26 @@ fun DataRechargeDialog(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(Color(0xFF2B0A0D))
-                        .border(1.dp, Color(0xFFFF5252).copy(alpha = 0.5f), RoundedCornerShape(10.dp))
-                        .padding(10.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color(0xFFFEF2F2))
+                        .border(1.dp, Color(0xFFFCA5A5), RoundedCornerShape(8.dp))
+                        .padding(8.dp)
                 ) {
-                    Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("⚠️ ", fontSize = 11.sp)
+                            Text("⚠️ ", fontSize = 10.sp)
                             Text(
                                 "महत्वपूर्ण सूचना / Notice:",
-                                color = Color(0xFFFF5252),
+                                color = Color.Red,
                                 fontWeight = FontWeight.Black,
-                                fontSize = 11.sp
+                                fontSize = 10.sp
                             )
                         }
                         Text(
-                            text = "अगर मोबाइल नंबर गलत हुआ तो यूजर की खुद की जिम्मेदारी होगी। कृपया अपना 10-अंकों का नंबर सही से जांच लें। रिचार्ज की पुष्टि रसीद/स्क्रीनशॉट एडमिन द्वारा प्रदान की जाएगी।",
-                            color = Color(0xFFFFCDD2),
-                            fontSize = 10.sp,
-                            lineHeight = 14.sp,
+                            text = "अगर मोबाइल नंबर गलत हुआ तो यूजर की खुद की जिम्मेदारी होगी।",
+                            color = Color.DarkGray,
+                            fontSize = 9.sp,
+                            lineHeight = 12.sp,
                             fontWeight = FontWeight.Medium
                         )
                     }
@@ -1845,29 +1851,29 @@ fun DataRechargeDialog(
                     OutlinedButton(
                         onClick = onDismiss,
                         enabled = !isLoading,
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.weight(1f).height(46.dp),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF4A1017))
+                        shape = RoundedCornerShape(10.dp),
+                        modifier = Modifier.weight(1f).height(42.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color.LightGray)
                     ) {
-                        Text("CANCEL", color = Color.DarkGray, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text("CANCEL", color = Color.Gray, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                     }
                     Button(
                         onClick = { onConfirm(mobileNumber) },
                         enabled = isValid && canAfford && !isLoading,
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFFFD700),
-                            disabledContainerColor = Color(0xFF2E0A10)
+                            containerColor = Color(0xFF262626), // Black/Dark Gray button
+                            disabledContainerColor = Color.LightGray
                         ),
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.weight(1.5f).height(46.dp)
+                        shape = RoundedCornerShape(10.dp),
+                        modifier = Modifier.weight(1.5f).height(42.dp)
                     ) {
                         if (isLoading) {
-                            CircularProgressIndicator(color = Color.Black, modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                            CircularProgressIndicator(color = Color.White, modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
                         } else {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Bolt, contentDescription = null, tint = Color.Black, modifier = Modifier.size(16.dp))
+                                Icon(Icons.Default.Bolt, contentDescription = null, tint = if (isValid && canAfford) Color.White else Color.Gray, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text("RECHARGE NOW", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 12.sp)
+                                Text("RECHARGE NOW", color = if (isValid && canAfford) Color.White else Color.Gray, fontWeight = FontWeight.Black, fontSize = 11.sp)
                             }
                         }
                     }
