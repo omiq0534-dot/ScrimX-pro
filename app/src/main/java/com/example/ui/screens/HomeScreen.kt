@@ -7,10 +7,16 @@ import android.app.Activity
 import com.example.ads.UnityAdsManager
 import com.example.ads.UnityBannerAd
 import androidx.compose.animation.core.*
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -22,6 +28,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
@@ -954,7 +961,7 @@ fun EarningZone(
             }
             Spacer(modifier = Modifier.width(12.dp))
             EarnCard(
-                title = "Watch",
+                title = "Video",
                 modifier = Modifier.weight(1f),
                 onClick = onWatchClick
             ) {
@@ -971,26 +978,78 @@ fun EarnCard(
     onClick: () -> Unit = {},
     iconContent: @Composable () -> Unit
 ) {
-    Column(
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(if (isPressed) 0.92f else 1f, label = "ScaleAnim")
+    
+    val baseGlowColor = Color.White
+
+    Box(
         modifier = modifier
+            .scale(scale)
             .clip(RoundedCornerShape(24.dp))
-            .clickable { onClick() }
-            .background(Color(0xFF111319))
+            .clickable(
+                interactionSource = interactionSource,
+                indication = androidx.compose.foundation.LocalIndication.current,
+                onClick = onClick
+            )
+            .background(Color(0xFF14161F))
             .border(1.dp, Color(0xFF262A38), RoundedCornerShape(24.dp))
-            .padding(vertical = 20.dp, horizontal = 8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Box(
-            modifier = Modifier
-                .size(56.dp)
-                .clip(CircleShape)
-                .background(Color(0xFF1E212D)),
-            contentAlignment = Alignment.Center
-        ) {
-            iconContent()
+        // Bottom Inner Glow and 3D effects (Static and Softer)
+        Canvas(modifier = Modifier.matchParentSize()) {
+            val w = size.width
+            val h = size.height
+
+            // Soft static white glow from bottom up (lighter)
+            drawRect(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color.Transparent,
+                        baseGlowColor.copy(alpha = 0.02f), // soft middle alpha
+                        baseGlowColor.copy(alpha = 0.1f)   // soft bottom alpha
+                    ),
+                    startY = h * 0.4f,
+                    endY = h
+                )
+            )
+
+            // Subtle Rim light at the bottom for 3D depth
+            drawLine(
+                color = baseGlowColor.copy(alpha = 0.25f),
+                start = Offset(0f, h),
+                end = Offset(w, h),
+                strokeWidth = 8f
+            )
+
+            // Top highlight
+            drawLine(
+                color = Color.White.copy(alpha = 0.04f),
+                start = Offset(0f, 0f),
+                end = Offset(w, 0f),
+                strokeWidth = 4f
+            )
         }
-        Spacer(modifier = Modifier.height(12.dp))
-        Text(title, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.White)
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 20.dp, horizontal = 8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFF1B1E2B))
+                    .border(1.dp, baseGlowColor.copy(alpha = 0.15f), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                iconContent()
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(title, fontWeight = FontWeight.Black, fontSize = 14.sp, color = Color.White, letterSpacing = 0.5.sp)
+        }
     }
 }
 
