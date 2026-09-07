@@ -33,9 +33,9 @@ fun AdminAppUpdateScreen(navController: NavController) {
     val context = LocalContext.current
     val db = remember { FirebaseHelper.getFirestore() }
 
-    // APK Version Update State (Current App is Build 4, Version 1.3.0)
+    // APK Version Update State (Current App is Build 5, Version 1.4.0)
     var latestVersionCode by remember { mutableStateOf("4") }
-    var latestVersionName by remember { mutableStateOf("1.3.0") }
+    var latestVersionName by remember { mutableStateOf("1.4.0") }
     var apkDownloadUrl by remember { mutableStateOf("https://website-scrim-x-pro.vercel.app/") }
     var whatsNewText by remember { mutableStateOf("• Bug fixes & performance improvements\n• Enhanced tournament room speed\n• New instant cashout options") }
     var isForceUpdate by remember { mutableStateOf(false) }
@@ -58,7 +58,7 @@ fun AdminAppUpdateScreen(navController: NavController) {
     var supportTelegram by remember { mutableStateOf("https://t.me/tournament_support") }
 
     // New Live Patch & Remote Switch System State
-    var patchTag by remember { mutableStateOf("v1.3.0-LIVE") }
+    var patchTag by remember { mutableStateOf("v1.4.0-LIVE") }
     var patchNotes by remember { mutableStateOf("All server systems operational & low-ping matchmaking active.") }
     var isLivePatchActive by remember { mutableStateOf(true) }
     var isRegistrationEnabled by remember { mutableStateOf(true) }
@@ -79,7 +79,7 @@ fun AdminAppUpdateScreen(navController: NavController) {
         }
 
         val rawName = doc.getString("latestVersionName") ?: doc.getString("versionName") ?: doc.getString("version")
-        latestVersionName = rawName?.trim()?.ifBlank { "1.3.0" } ?: "1.3.0"
+        latestVersionName = rawName?.trim()?.ifBlank { "1.4.0" } ?: "1.4.0"
 
         apkDownloadUrl = doc.getString("apkDownloadUrl") ?: ""
         whatsNewText = doc.getString("whatsNew") ?: whatsNewText
@@ -101,7 +101,7 @@ fun AdminAppUpdateScreen(navController: NavController) {
         supportWhatsapp = doc.getString("supportWhatsapp") ?: "+919876543210"
         supportTelegram = doc.getString("supportTelegram") ?: "https://t.me/tournament_support"
 
-        patchTag = doc.getString("patchTag") ?: "v1.3.0-LIVE"
+        patchTag = doc.getString("patchTag") ?: "v1.4.0-LIVE"
         patchNotes = doc.getString("patchNotes") ?: patchNotes
         isLivePatchActive = doc.getBoolean("isLivePatchActive") ?: true
         isRegistrationEnabled = doc.getBoolean("isRegistrationEnabled") ?: true
@@ -155,7 +155,7 @@ fun AdminAppUpdateScreen(navController: NavController) {
         }
         isSaving = true
         val targetCode = latestVersionCode.toIntOrNull() ?: 4
-        val targetName = latestVersionName.trim().ifBlank { "1.3.0" }
+        val targetName = latestVersionName.trim().ifBlank { "1.4.0" }
 
         val data = hashMapOf<String, Any>(
             "latestVersionCode" to targetCode,
@@ -460,7 +460,7 @@ fun AdminAppUpdateScreen(navController: NavController) {
                                 value = latestVersionName,
                                 onValueChange = { latestVersionName = it },
                                 label = { Text("Version Name") },
-                                placeholder = { Text("1.3.0") },
+                                placeholder = { Text("1.4.0") },
                                 singleLine = true,
                                 modifier = Modifier.weight(1f),
                                 colors = adminTextFieldColors()
@@ -579,8 +579,8 @@ fun AdminAppUpdateScreen(navController: NavController) {
                         OutlinedTextField(
                             value = patchTag,
                             onValueChange = { patchTag = it },
-                            label = { Text("Live Patch Tag (e.g. v1.3.0-HOTFIX-P1)") },
-                            placeholder = { Text("v1.3.0-LIVE") },
+                            label = { Text("Live Patch Tag (e.g. v1.4.0-HOTFIX-P1)") },
+                            placeholder = { Text("v1.4.0-LIVE") },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
                             colors = adminTextFieldColors(),

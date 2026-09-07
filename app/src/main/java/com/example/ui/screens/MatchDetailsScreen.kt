@@ -505,7 +505,7 @@ fun MatchDetailsScreen(
     }
 
     Scaffold(
-        containerColor = Color(0xFF0B0F14),
+        containerColor = Color(0xFF08080A),
         topBar = {
             TopAppBar(
                 title = { Text("Match Details", fontWeight = FontWeight.Black, color = Color.White) },
@@ -514,7 +514,7 @@ fun MatchDetailsScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF0B0F14))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF08080A))
             )
         },
         bottomBar = {
@@ -616,7 +616,7 @@ fun MatchDetailsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .background(Color(0xFF0B0F14))
+                .background(Color(0xFF08080A))
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp)
         ) {
@@ -646,13 +646,13 @@ fun MatchDetailsScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(18.dp))
-                    .background(Color(0xFFF7F7FA))
+                    .background(Color(0xFF131316))
                     .border(1.dp, Color(0xFF262A38), RoundedCornerShape(18.dp))
                     .padding(18.dp)
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.AccessTime, contentDescription = null, tint = Color.Black, modifier = Modifier.size(18.dp))
+                        Icon(Icons.Default.AccessTime, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("Match Timing: ${match.time}", fontWeight = FontWeight.Bold, color = Color.White, fontSize = 14.sp)
                     }
@@ -1095,7 +1095,7 @@ fun SlotCard(
     val bgColor = when {
         isMySlot -> Color(0xFF22C55E).copy(alpha = 0.15f)
         isSelected -> Color(0xFFFACC15).copy(alpha = 0.1f)
-        slot.isBooked -> Color(0xFF0B0F14).copy(alpha = 0.5f)
+        slot.isBooked -> Color(0xFF08080A).copy(alpha = 0.5f)
         else -> Color(0xFF131922)
     }
         
@@ -1131,7 +1131,7 @@ fun SlotCard(
                         if (isMySlot) Color(0xFF22C55E) 
                         else if (isSelected) Color(0xFFFACC15) 
                         else if (slot.isBooked) Color(0xFF1E2430) 
-                        else Color(0xFF0B0F14)
+                        else Color(0xFF08080A)
                     )
                     .border(1.dp, if (!slot.isBooked && !isMySlot && !isSelected) Color(0xFF262A38) else Color.Transparent, CircleShape),
                 contentAlignment = Alignment.Center
@@ -1231,13 +1231,24 @@ fun InfoChip(text: String) {
 fun DetailBox(title: String, value: String, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
-            .border(1.dp, Color(0xFF262A38), RoundedCornerShape(16.dp))
-            .background(Color(0xFFF7F7FA))
-            .padding(16.dp)
+            .clip(RoundedCornerShape(18.dp))
+            .background(Color(0xFF131316))
+            .border(1.2.dp, Color(0xFF26262D), RoundedCornerShape(18.dp))
+            .padding(18.dp)
     ) {
-        Text(title.uppercase(), fontSize = 10.sp, color = Color(0xFF8E8E93), fontWeight = FontWeight.Black, letterSpacing = 1.sp)
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(value, fontSize = 20.sp, fontWeight = FontWeight.Black, color = Color.White)
+        Text(
+            text = title.uppercase(),
+            fontSize = 9.5.sp,
+            color = Color(0xFF8E8E98),
+            fontWeight = FontWeight.Black,
+            letterSpacing = 1.2.sp
+        )
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(
+            text = value,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Black,
+            color = Color.White
+        )
     }
 }

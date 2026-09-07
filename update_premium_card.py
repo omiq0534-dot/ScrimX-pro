@@ -1,4 +1,4 @@
-package com.example.ui.components
+content = """package com.example.ui.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -265,3 +265,8 @@ fun PremiumMatchCard(
         }
     }
 }
+"""
+
+with open("app/src/main/java/com/example/ui/components/PremiumMatchCard.kt", "w") as f:
+    f.write(content)
+print("Updated PremiumMatchCard.kt successfully!")
