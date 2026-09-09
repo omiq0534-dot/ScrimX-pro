@@ -1,4 +1,5 @@
 package com.example.ui.components
+import com.example.ui.theme.AppColors
 
 import android.Manifest
 import android.content.ClipData
@@ -122,7 +123,7 @@ fun FloatingRoomLiveBanner(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = match.title.ifBlank { "Live Match" },
-                    color = Color.White,
+                    color = AppColors.TextPrimary,
                     fontWeight = FontWeight.Bold,
                     fontSize = 12.5.sp,
                     maxLines = 1,
@@ -238,7 +239,7 @@ fun RoomCredentialsDialog(
 
                 Text(
                     match.title.ifBlank { "Custom Tournament Room" },
-                    color = Color.White,
+                    color = AppColors.TextPrimary,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center
@@ -320,7 +321,7 @@ fun RoomCredentialsDialog(
                 ) {
                     Icon(Icons.Default.PlayArrow, contentDescription = null, tint = Color.White)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("OPEN GAME NOW", color = Color.White, fontWeight = FontWeight.Black, fontSize = 13.sp)
+                    Text("OPEN GAME NOW", color = AppColors.TextPrimary, fontWeight = FontWeight.Black, fontSize = 13.sp)
                 }
 
                 Spacer(modifier = Modifier.height(4.dp))
@@ -364,7 +365,7 @@ private fun CredentialBox(
             )
             Text(
                 value,
-                color = Color.White,
+                color = AppColors.TextPrimary,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Black,
                 letterSpacing = 1.sp

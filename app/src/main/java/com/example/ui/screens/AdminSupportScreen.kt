@@ -1,4 +1,5 @@
 package com.example.ui.screens
+import com.example.ui.theme.AppColors
 
 import android.widget.Toast
 import androidx.compose.animation.*
@@ -163,7 +164,7 @@ fun AdminSupportScreen(navController: NavController) {
                         Text(
                             "CUSTOMER HELPDESK",
                             fontWeight = FontWeight.Black,
-                            color = Color.White,
+                            color = AppColors.TextPrimary,
                             fontSize = 17.sp,
                             letterSpacing = 1.sp
                         )
@@ -224,7 +225,7 @@ fun AdminSupportScreen(navController: NavController) {
                                         .background(Color(0xFFFF3366)),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text("$pendingCount", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Black)
+                                    Text("$pendingCount", color = AppColors.TextPrimary, fontSize = 10.sp, fontWeight = FontWeight.Black)
                                 }
                             }
                         }
@@ -554,7 +555,7 @@ fun AdminSupportScreen(navController: NavController) {
                                                 Text(
                                                     "Q: ${faq.question}",
                                                     fontWeight = FontWeight.Bold,
-                                                    color = Color.White,
+                                                    color = AppColors.TextPrimary,
                                                     fontSize = 14.sp,
                                                     modifier = Modifier.weight(1f)
                                                 )
@@ -588,7 +589,7 @@ fun AdminSupportScreen(navController: NavController) {
         AlertDialog(
             onDismissRequest = { showAddFaqDialog = false },
             containerColor = Color(0xFF14161F),
-            title = { Text("Add New FAQ", color = Color.White, fontWeight = FontWeight.Bold) },
+            title = { Text("Add New FAQ", color = AppColors.TextPrimary, fontWeight = FontWeight.Bold) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     OutlinedTextField(
@@ -704,7 +705,7 @@ fun AdminTicketCard(
                     }
                     Spacer(modifier = Modifier.width(10.dp))
                     Column {
-                        Text(ticket.userName, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text(ticket.userName, color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         Text(ticket.userEmail, color = Color(0xFF8E92A4), fontSize = 11.sp)
                     }
                 }
@@ -755,7 +756,7 @@ fun AdminTicketCard(
             Text(
                 ticket.subject,
                 fontWeight = FontWeight.Black,
-                color = Color.White,
+                color = AppColors.TextPrimary,
                 fontSize = 15.sp
             )
 
@@ -801,7 +802,7 @@ fun AdminTicketCard(
                             )
                         }
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text(ticket.adminReply, color = Color.White, fontSize = 13.sp, lineHeight = 18.sp)
+                        Text(ticket.adminReply, color = AppColors.TextPrimary, fontSize = 13.sp, lineHeight = 18.sp)
                     }
                 }
             }

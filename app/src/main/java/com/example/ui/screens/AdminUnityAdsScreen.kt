@@ -1,4 +1,5 @@
 package com.example.ui.screens
+import com.example.ui.theme.AppColors
 
 import android.app.Activity
 import android.widget.Toast
@@ -101,7 +102,7 @@ fun AdminUnityAdsScreen(navController: NavController) {
                         Text(
                             "UNITY ADS CONTROL",
                             fontWeight = FontWeight.Black,
-                            color = Color.White,
+                            color = AppColors.TextPrimary,
                             fontSize = 17.sp,
                             letterSpacing = 1.sp
                         )
@@ -145,7 +146,7 @@ fun AdminUnityAdsScreen(navController: NavController) {
                     }
                     Text(
                         "Manage in-app ads, rewarded coin payouts & live placement IDs with your Unity Game ID.",
-                        color = Color.White.copy(alpha = 0.9f),
+                        color = AppColors.TextPrimary.copy(alpha = 0.9f),
                         fontSize = 12.sp,
                         lineHeight = 17.sp
                     )
@@ -186,7 +187,7 @@ fun AdminUnityAdsScreen(navController: NavController) {
                             if (UnityAds.isInitialized) "SDK Initialized with Game ID: ${UnityAdsManager.gameId}"
                             else if (!errorInfo.isNullOrBlank()) "Status: $errorInfo (Make sure to enter Android Game ID, not iOS)"
                             else "Ready to initialize with Android Game ID",
-                            color = Color.White.copy(alpha = 0.8f),
+                            color = AppColors.TextPrimary.copy(alpha = 0.8f),
                             fontSize = 10.5.sp
                         )
                     }
@@ -219,7 +220,7 @@ fun AdminUnityAdsScreen(navController: NavController) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Enable Unity Ads in App", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text("Enable Unity Ads in App", color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         Text("Toggle ads on/off across all user screens", color = Color(0xFF8E92A4), fontSize = 11.sp)
                     }
                     Switch(
@@ -244,7 +245,7 @@ fun AdminUnityAdsScreen(navController: NavController) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Unity Test Mode", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text("Unity Test Mode", color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         Text("Turn OFF when publishing real APK to earn actual revenue", color = Color(0xFFFFD700), fontSize = 11.sp)
                     }
                     Switch(
@@ -462,7 +463,7 @@ fun AdminUnityAdsScreen(navController: NavController) {
                     ) {
                         Icon(Icons.Default.Fullscreen, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Interstitial", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                        Text("Interstitial", color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                     }
                 }
 

@@ -16,6 +16,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import com.example.ui.theme.AppColors
+import com.example.ui.theme.glassCard
+import com.example.ui.theme.glassBackground
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -49,10 +51,11 @@ fun PremiumMatchCard(
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
             .clickable { onClick() }
-            .background(AppColors.CardBackground) // Deep Obsidian Black
+            .glassCard() // Deep Obsidian Black
             .border(1.2.dp, AppColors.BorderColor, RoundedCornerShape(20.dp))
     ) {
         // Enhanced 3D Glassmorphic Depth (Pure White/Silver Accents)
+        val textPrimaryColor = AppColors.TextPrimary
         Canvas(modifier = Modifier.matchParentSize()) {
             val w = size.width
             val h = size.height
@@ -62,8 +65,8 @@ fun PremiumMatchCard(
                 brush = Brush.verticalGradient(
                     colors = listOf(
                         Color.Transparent,
-                        Color.White.copy(alpha = 0.02f),
-                        Color.White.copy(alpha = 0.08f)
+                        textPrimaryColor.copy(alpha = 0.02f),
+                        textPrimaryColor.copy(alpha = 0.08f)
                     ),
                     startY = h * 0.35f,
                     endY = h
@@ -75,8 +78,8 @@ fun PremiumMatchCard(
                 brush = Brush.horizontalGradient(
                     colors = listOf(
                         Color.Transparent,
-                        Color.White.copy(alpha = 0.25f),
-                        Color.White.copy(alpha = 0.05f)
+                        textPrimaryColor.copy(alpha = 0.25f),
+                        textPrimaryColor.copy(alpha = 0.05f)
                     )
                 ),
                 start = Offset(0f, 0f),
@@ -88,8 +91,8 @@ fun PremiumMatchCard(
             drawLine(
                 brush = Brush.horizontalGradient(
                     colors = listOf(
-                        Color.White.copy(alpha = 0.05f),
-                        Color.White.copy(alpha = 0.15f),
+                        textPrimaryColor.copy(alpha = 0.05f),
+                        textPrimaryColor.copy(alpha = 0.15f),
                         Color.Transparent
                     )
                 ),
@@ -142,8 +145,7 @@ fun PremiumMatchCard(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(6.dp))
-                        .background(AppColors.SubCardBackground)
-                        .border(1.dp, AppColors.BorderColor, RoundedCornerShape(6.dp))
+                        .glassCard()
                         .padding(horizontal = 10.dp, vertical = 6.dp)
                 ) {
                     Text(
@@ -217,8 +219,8 @@ fun PremiumMatchCard(
                 Button(
                     onClick = onClick,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isLive || isCompleted) Color(0xFF222226) else Color.White,
-                        contentColor = if (isLive || isCompleted) Color.White else Color.Black
+                        containerColor = if (isLive || isCompleted) AppColors.SubCardBackground else AppColors.ButtonContainer,
+                        contentColor = if (isLive || isCompleted) AppColors.TextPrimary else AppColors.ButtonContent
                     ),
                     shape = RoundedCornerShape(12.dp),
                     contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp),

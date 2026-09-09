@@ -1,4 +1,5 @@
 package com.example.ui.components
+import com.example.ui.theme.AppColors
 
 import android.content.Intent
 import android.net.Uri
@@ -81,7 +82,7 @@ fun AppUpdateDialog(
                     Text(
                         if (config.isForceUpdate || !config.allowLaterButton) "CRITICAL UPDATE REQUIRED" else "NEW UPDATE AVAILABLE",
                         fontWeight = FontWeight.Black,
-                        color = Color.White,
+                        color = AppColors.TextPrimary,
                         fontSize = 17.sp,
                         letterSpacing = 0.5.sp,
                         textAlign = TextAlign.Center
@@ -261,7 +262,7 @@ fun UserBannedLockScreen(
             Text(
                 if (isTemp) "ACCOUNT TEMPORARILY SUSPENDED" else "ACCOUNT PERMANENTLY BANNED",
                 fontWeight = FontWeight.Black,
-                color = Color.White,
+                color = AppColors.TextPrimary,
                 fontSize = 17.sp,
                 letterSpacing = 0.5.sp,
                 textAlign = TextAlign.Center
@@ -312,7 +313,7 @@ fun UserBannedLockScreen(
             ) {
                 Icon(Icons.Default.ExitToApp, contentDescription = null, tint = Color.White)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("LOGOUT", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                Text("LOGOUT", color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
             }
         }
     }
@@ -365,7 +366,7 @@ fun ServerMaintenanceScreen(
             Text(
                 "SERVER MAINTENANCE",
                 fontWeight = FontWeight.Black,
-                color = Color.White,
+                color = AppColors.TextPrimary,
                 fontSize = 20.sp,
                 letterSpacing = 1.sp,
                 textAlign = TextAlign.Center
@@ -434,7 +435,7 @@ fun LiveAnnouncementMarquee(
             ) {
                 Text(
                     "LIVE",
-                    color = Color.White,
+                    color = AppColors.TextPrimary,
                     fontWeight = FontWeight.Black,
                     fontSize = 9.sp,
                     letterSpacing = 0.5.sp
@@ -443,7 +444,7 @@ fun LiveAnnouncementMarquee(
             Spacer(modifier = Modifier.width(10.dp))
             Text(
                 notice,
-                color = Color.White,
+                color = AppColors.TextPrimary,
                 fontWeight = FontWeight.Bold,
                 fontSize = 12.sp,
                 maxLines = 2,

@@ -1,4 +1,5 @@
 package com.example.ui.screens
+import com.example.ui.theme.AppColors
 
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -63,7 +64,7 @@ fun RestockRequestCard(request: RestockRequest, onDismiss: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(request.itemTitle, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                Text(request.itemTitle, color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                 Text(request.userEmail, color = Color(0xFFB0BEC5), fontSize = 11.sp)
             }
             IconButton(onClick = onDismiss, modifier = Modifier.size(32.dp)) {
@@ -150,7 +151,7 @@ fun AdminStoreCodesScreen(navController: NavController) {
                     Column {
                         Text(
                             "Store Codes & Stock Manager",
-                            color = Color.White,
+                            color = AppColors.TextPrimary,
                             fontWeight = FontWeight.Black,
                             fontSize = 17.sp
                         )
@@ -206,7 +207,7 @@ fun AdminStoreCodesScreen(navController: NavController) {
                         Column {
                             Text(
                                 "AUTOMATIC CODE DISPATCH ENGINE",
-                                color = Color.White,
+                                color = AppColors.TextPrimary,
                                 fontWeight = FontWeight.Black,
                                 fontSize = 13.sp,
                                 letterSpacing = 0.5.sp
@@ -335,7 +336,7 @@ fun AdminStoreCodesScreen(navController: NavController) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.Edit, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Configure ${targetItem.title}", color = Color.White, fontWeight = FontWeight.Black, fontSize = 16.sp)
+                    Text("Configure ${targetItem.title}", color = AppColors.TextPrimary, fontWeight = FontWeight.Black, fontSize = 16.sp)
                 }
             },
             text = {

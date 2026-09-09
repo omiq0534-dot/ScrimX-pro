@@ -69,7 +69,7 @@ fun ProfileScreen(navController: NavController, userViewModel: UserViewModel = v
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
                 ) {
-                    Text("Yes, Log Out", color = Color.White)
+                    Text("Yes, Log Out", color = AppColors.TextPrimary)
                 }
             },
             dismissButton = {
@@ -295,7 +295,7 @@ fun ReferAndEarnDialog(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.CardGiftcard, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(26.dp))
                 Spacer(modifier = Modifier.width(10.dp))
-                Text("REFER & EARN 🎁", color = Color.White, fontWeight = FontWeight.Black, fontSize = 18.sp)
+                Text("REFER & EARN 🎁", color = AppColors.TextPrimary, fontWeight = FontWeight.Black, fontSize = 18.sp)
             }
         },
         text = {
@@ -446,9 +446,9 @@ fun ReferAndEarnDialog(
                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF25D366)),
                                 shape = RoundedCornerShape(10.dp)
                             ) {
-                                Icon(Icons.Default.Share, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                                Icon(Icons.Default.Share, contentDescription = null, tint = AppColors.TextPrimary, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
-                                Text("SHARE", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                                Text("SHARE", color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                             }
                         }
                     }
@@ -481,8 +481,8 @@ fun ReferAndEarnDialog(
                                 singleLine = true,
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedTextColor = Color.White,
-                                    unfocusedTextColor = Color.White,
+                                    focusedTextColor = AppColors.TextPrimary,
+                                    unfocusedTextColor = AppColors.TextPrimary,
                                     focusedBorderColor = Color(0xFFFFD700),
                                     unfocusedBorderColor = Color(0xFF2E334D)
                                 )
@@ -509,7 +509,7 @@ fun ReferAndEarnDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("Close", color = Color.White, fontWeight = FontWeight.Bold)
+                Text("Close", color = AppColors.TextPrimary, fontWeight = FontWeight.Bold)
             }
         }
     )
@@ -541,7 +541,7 @@ fun ProfileHeader(
             val initial = name.trim().firstOrNull()?.toString()?.uppercase() ?: "P"
             Text(
                 text = initial,
-                color = Color.White,
+                color = AppColors.TextPrimary,
                 fontWeight = FontWeight.Black,
                 fontSize = 24.sp
             )
@@ -628,7 +628,7 @@ fun XBadgeStatusCard(profile: UserProfile?) {
                     } else {
                         Text(
                             "ROAD TO PRO [X]",
-                            color = Color.White,
+                            color = AppColors.TextPrimary,
                             fontWeight = FontWeight.Black,
                             fontSize = 13.sp,
                             letterSpacing = 0.5.sp
@@ -799,7 +799,7 @@ fun SettingsList(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
-            .background(Color.White)
+            .background(AppColors.TextPrimary)
             .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(24.dp))
             .padding(12.dp)
     ) {
@@ -879,7 +879,7 @@ fun SettingsRow(
                 ) {
                     Text(
                         badge,
-                        color = if (badge == "Owner") Color.White else AppColors.PrimaryAccentText,
+                        color = if (badge == "Owner") AppColors.TextPrimary else AppColors.PrimaryAccentText,
                         fontWeight = FontWeight.Black,
                         fontSize = 10.sp
                     )

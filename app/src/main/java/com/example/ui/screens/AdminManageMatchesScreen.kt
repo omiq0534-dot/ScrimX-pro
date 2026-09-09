@@ -1,4 +1,5 @@
 package com.example.ui.screens
+import com.example.ui.theme.AppColors
 
 import android.content.Intent
 import android.net.Uri
@@ -70,7 +71,7 @@ fun AdminManageMatchesScreen(
                 Text(
                     "EDIT MATCH & ROOM",
                     fontWeight = FontWeight.Black,
-                    color = Color.White,
+                    color = AppColors.TextPrimary,
                     fontSize = 15.sp,
                     letterSpacing = 1.sp
                 )
@@ -273,7 +274,7 @@ fun AdminManageMatchesScreen(
                     Text(
                         "REGISTERED PLAYERS & TEAMS",
                         fontWeight = FontWeight.Black,
-                        color = Color.White,
+                        color = AppColors.TextPrimary,
                         fontSize = 14.sp,
                         letterSpacing = 0.5.sp
                     )
@@ -348,7 +349,7 @@ fun AdminManageMatchesScreen(
                                         Column {
                                             Text(
                                                 registeredName,
-                                                color = Color.White,
+                                                color = AppColors.TextPrimary,
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 14.sp
                                             )
@@ -366,7 +367,7 @@ fun AdminManageMatchesScreen(
             },
             confirmButton = {
                 TextButton(onClick = { showBookingsDialog = false }) {
-                    Text("Close", color = Color.White, fontWeight = FontWeight.Bold)
+                    Text("Close", color = AppColors.TextPrimary, fontWeight = FontWeight.Bold)
                 }
             }
         )
@@ -380,7 +381,7 @@ fun AdminManageMatchesScreen(
                     Text(
                         "MANAGE MATCHES & ROOMS",
                         fontWeight = FontWeight.Black,
-                        color = Color.White,
+                        color = AppColors.TextPrimary,
                         fontSize = 15.sp,
                         letterSpacing = 1.sp
                     )
@@ -440,7 +441,7 @@ fun AdminManageMatchesScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(match.title, fontWeight = FontWeight.Black, fontSize = 16.sp, color = Color.White)
+                                Text(match.title, fontWeight = FontWeight.Black, fontSize = 16.sp, color = AppColors.TextPrimary)
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
                                     "Map: ${match.map} • ${match.time} • ${match.prize}",
@@ -567,7 +568,7 @@ fun AdminManageMatchesScreen(
                             ) {
                                 Icon(Icons.Default.PeopleOutline, contentDescription = null, tint = Color.White, modifier = Modifier.size(15.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
-                                Text("Players List", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                Text("Players List", color = AppColors.TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                             }
 
                             Spacer(modifier = Modifier.width(8.dp))
@@ -599,7 +600,7 @@ fun AdminManageMatchesScreen(
                             ) {
                                 Icon(Icons.Default.Edit, contentDescription = null, tint = Color.White, modifier = Modifier.size(15.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
-                                Text("Edit / IDP", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                Text("Edit / IDP", color = AppColors.TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                             }
 
                             Spacer(modifier = Modifier.width(8.dp))

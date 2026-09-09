@@ -1,20 +1,10 @@
+import re
+
 with open("app/src/main/java/com/example/ui/theme/AppColors.kt", "r") as f:
     content = f.read()
 
-content = content.replace("@Composable @ReadOnlyComposable", "@Composable")
+# Remove glassCard and glassBackground from AppColors
+content = re.sub(r'// 3D Glassmorphism Modifier.*?fun Modifier\.glassCard[\s\S]*?fun Modifier\.glassBackground.*$', '', content, flags=re.MULTILINE)
 
 with open("app/src/main/java/com/example/ui/theme/AppColors.kt", "w") as f:
     f.write(content)
-
-with open("app/src/main/java/com/example/ui/screens/HomeScreen.kt", "r") as f:
-    home_content = f.read()
-
-home_content = home_content.replace(
-    'val InfiniteTransition = rememberInfiniteTransition()',
-    '@Composable\nval InfiniteTransition = rememberInfiniteTransition()'
-)
-
-with open("app/src/main/java/com/example/ui/screens/HomeScreen.kt", "w") as f:
-    f.write(home_content)
-
-print("AppColors and HomeScreen fixed.")

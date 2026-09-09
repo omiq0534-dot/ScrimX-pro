@@ -1,4 +1,5 @@
 package com.example.ui.screens
+import com.example.ui.theme.AppColors
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -77,7 +78,7 @@ fun AdminCreateMatchScreen(navController: NavController) {
                     Text(
                         "CREATE TOURNAMENT MATCH",
                         fontWeight = FontWeight.Black,
-                        color = Color.White,
+                        color = AppColors.TextPrimary,
                         fontSize = 15.sp,
                         letterSpacing = 1.sp
                     )
@@ -371,7 +372,7 @@ fun AdminCreateMatchScreen(navController: NavController) {
                                         .clickable { requiredAdsInput = num }
                                         .padding(horizontal = 10.dp, vertical = 6.dp)
                                 ) {
-                                    Text(adPreset, color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                    Text(adPreset, color = AppColors.TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
@@ -397,7 +398,7 @@ fun AdminCreateMatchScreen(navController: NavController) {
                                         .clickable { paidEntryFee = num }
                                         .padding(horizontal = 10.dp, vertical = 6.dp)
                                 ) {
-                                    Text(feePreset, color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                    Text(feePreset, color = AppColors.TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
                         }

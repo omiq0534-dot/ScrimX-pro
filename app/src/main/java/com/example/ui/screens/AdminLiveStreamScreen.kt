@@ -1,4 +1,5 @@
 package com.example.ui.screens
+import com.example.ui.theme.AppColors
 
 import android.content.Intent
 import android.net.Uri
@@ -74,7 +75,7 @@ fun AdminLiveStreamScreen(
                 Text(
                     "ATTACH LIVE STREAM TO MATCH",
                     fontWeight = FontWeight.Black,
-                    color = Color.White,
+                    color = AppColors.TextPrimary,
                     fontSize = 15.sp,
                     letterSpacing = 0.5.sp
                 )
@@ -110,7 +111,7 @@ fun AdminLiveStreamScreen(
                         ) {
                             Icon(Icons.Default.PlayArrow, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Test Live Link in Browser/YT", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            Text("Test Live Link in Browser/YT", color = AppColors.TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -163,7 +164,7 @@ fun AdminLiveStreamScreen(
                     Text(
                         "GLOBAL LIVE STREAM HUB",
                         fontWeight = FontWeight.Black,
-                        color = Color.White,
+                        color = AppColors.TextPrimary,
                         fontSize = 15.sp,
                         letterSpacing = 1.sp
                     )
@@ -226,7 +227,7 @@ fun AdminLiveStreamScreen(
                             }
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
-                                Text("Global Stream Link", fontWeight = FontWeight.Black, fontSize = 15.sp, color = Color.White)
+                                Text("Global Stream Link", fontWeight = FontWeight.Black, fontSize = 15.sp, color = AppColors.TextPrimary)
                                 Text("Shared broadcast shown on Home Screen", fontSize = 11.sp, color = Color(0xFF75798E))
                             }
                         }

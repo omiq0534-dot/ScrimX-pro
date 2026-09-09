@@ -1,4 +1,5 @@
 package com.example.ui.components
+import com.example.ui.theme.AppColors
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
@@ -445,7 +446,7 @@ fun GemstoneBadge(
                 // Razor-thin Table Rim Accent (Light Catching Table Edge)
                 drawPath(
                     path = tablePath,
-                    color = Color.White.copy(alpha = 0.45f),
+                    color = AppColors.TextPrimary.copy(alpha = 0.45f),
                     style = Stroke(width = 1.1f)
                 )
 
@@ -522,7 +523,7 @@ fun GemstoneBadge(
 
                     // 4. Specular Razor Edge Highlight on top-left of main stem
                     drawLine(
-                        color = Color.White.copy(alpha = 0.65f),
+                        color = AppColors.TextPrimary.copy(alpha = 0.65f),
                         start = Offset(left + tHeavy * 0.4f, top + (xH * 0.06f)),
                         end = Offset(cx - (xW * 0.04f), cy - (xH * 0.04f)),
                         strokeWidth = strokeWidth * 0.65f,
@@ -575,7 +576,7 @@ fun GemstoneBadge(
                 }
                 drawPath(
                     path = bottomGlassArc,
-                    color = Color.White.copy(alpha = 0.14f),
+                    color = AppColors.TextPrimary.copy(alpha = 0.14f),
                     style = Fill
                 )
 
@@ -610,7 +611,7 @@ fun GemstoneBadge(
 
                     // Horizontal Ray
                     drawLine(
-                        color = Color.White.copy(alpha = 0.95f * sparkleIntensity),
+                        color = AppColors.TextPrimary.copy(alpha = 0.95f * sparkleIntensity),
                         start = Offset(starCenterX - starRadius, starCenterY),
                         end = Offset(starCenterX + starRadius, starCenterY),
                         strokeWidth = 1.3f,
@@ -618,7 +619,7 @@ fun GemstoneBadge(
                     )
                     // Vertical Ray
                     drawLine(
-                        color = Color.White.copy(alpha = 0.95f * sparkleIntensity),
+                        color = AppColors.TextPrimary.copy(alpha = 0.95f * sparkleIntensity),
                         start = Offset(starCenterX, starCenterY - starRadius),
                         end = Offset(starCenterX, starCenterY + starRadius),
                         strokeWidth = 1.3f,
@@ -642,7 +643,7 @@ fun GemstoneBadge(
                     )
                     // Diamond point flare
                     drawCircle(
-                        color = Color.White.copy(alpha = 0.90f * sparkleIntensity),
+                        color = AppColors.TextPrimary.copy(alpha = 0.90f * sparkleIntensity),
                         radius = starRadius * 0.35f,
                         center = Offset(starCenterX, starCenterY)
                     )
@@ -696,7 +697,7 @@ fun GemstoneBadge(
                 GemstoneBadge(style = style, size = XBadgeSize.LARGE, isAnimated = true, showClickInfo = false)
             },
             title = {
-                Text(title, fontWeight = FontWeight.Black, color = Color.White, fontSize = 17.sp)
+                Text(title, fontWeight = FontWeight.Black, color = AppColors.TextPrimary, fontSize = 17.sp)
             },
             text = {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {

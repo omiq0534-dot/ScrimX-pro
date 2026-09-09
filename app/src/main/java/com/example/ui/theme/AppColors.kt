@@ -1,63 +1,39 @@
 package com.example.ui.theme
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 
 object AppColors {
-    val isDark: Boolean
-        @Composable
-        get() = ThemeManager.isDarkTheme.collectAsState().value
+    // FORCING LIGHT/GLASS MODE FOR TESTING
+    val isDark: Boolean = false
 
-    // Backgrounds
-    val ScreenBackground: Color
-        @Composable
-        get() = if (isDark) Color(0xFF000000) else Color(0xFFF2F4F8)
+    val ScreenBackground: Color = Color(0xFFF0F4F8)
 
-    val CardBackground: Color
-        @Composable
-        get() = if (isDark) Color(0xFF131316) else Color(0xCCFFFFFF)
+    // FORCE ALL TEXT TO BLACK FOR GLASS EFFECT
+    val TextPrimary: Color = Color(0xFF1E293B)
+    val TextSecondary: Color = Color(0xFF64748B)
+    val TextHighlight: Color = Color(0xFFD97706)
 
-    val SubCardBackground: Color
-        @Composable
-        get() = if (isDark) Color(0xFF1B1B1F) else Color(0xFFF3F4F6)
+    val PrimaryAccent: Color = Color(0xFFF59E0B)
+    val PrimaryAccentText: Color = Color(0xFF1E293B)
+    val Positive: Color = Color(0xFF10B981)
+    val Negative: Color = Color(0xFFEF4444)
+    val Info: Color = Color(0xFF06B6D4)
 
-    // Borders
-    val BorderColor: Color
-        @Composable
-        get() = if (isDark) Color(0xFF26262D) else Color(0xFFE5E7EB)
+    val Divider: Color = Color(0x33000000)
+    val ButtonContainer: Color = Color(0x99FFFFFF)
+    val ButtonContent: Color = Color(0xFF1E293B)
 
-    // Text
-    val TextPrimary: Color
-        @Composable
-        get() = if (isDark) Color.White else Color(0xFF111827)
-
-    val TextSecondary: Color
-        @Composable
-        get() = if (isDark) Color(0xFFAAAAAA) else Color(0xFF6B7280)
-
-    val TextHighlight: Color
-        @Composable
-        get() = if (isDark) Color(0xFFFFD700) else Color(0xFFD97706)
-
-    // Accents
-    val PrimaryAccent: Color = Color(0xFFFFD700)
-    val PrimaryAccentText: Color = Color.Black
-    
-    val Positive: Color = Color(0xFF00E676)
-    val Negative: Color = Color(0xFFFF3366)
-    val Info: Color = Color(0xFF00E5FF)
-    
-    val Divider: Color
-        @Composable
-        get() = if (isDark) Color(0xFF1D1D23) else Color(0xFFE5E7EB)
-
-    val ButtonContainer: Color
-        @Composable
-        get() = if (isDark) Color.White else Color.Black
-
-    val ButtonContent: Color
-        @Composable
-        get() = if (isDark) Color.Black else Color.White
+    val CardBackground: Color = Color(0x99FFFFFF)
+    val SubCardBackground: Color = Color(0x66FFFFFF)
+    val BorderColor: Color = Color(0x80FFFFFF)
 }

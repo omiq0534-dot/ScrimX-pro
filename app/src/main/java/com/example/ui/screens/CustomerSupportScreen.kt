@@ -803,7 +803,7 @@ fun SupportActionCard(
             Button(
                 onClick = onAction,
                 shape = RoundedCornerShape(10.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = AppColors.ScreenBackground),
+                colors = ButtonDefaults.buttonColors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
             ) {
                 Text(actionLabel, color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 11.sp)

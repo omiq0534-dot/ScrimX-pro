@@ -418,7 +418,7 @@ fun MyJoinedMatchCard(
 
                 Button(
                     onClick = onCardClick,
-                    colors = ButtonDefaults.buttonColors(containerColor = AppColors.ScreenBackground),
+                    colors = ButtonDefaults.buttonColors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
                     shape = RoundedCornerShape(10.dp),
                     modifier = Modifier.weight(1f).height(42.dp)
                 ) {

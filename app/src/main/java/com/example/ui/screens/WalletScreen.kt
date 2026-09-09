@@ -415,7 +415,7 @@ fun WalletScreen(
                                     .padding(vertical = 6.dp),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text("₹$amt", color = if (isSelected) Color(0xFFFFD700) else Color.White, fontWeight = FontWeight.Black, fontSize = 12.sp)
+                                Text("₹$amt", color = if (isSelected) Color(0xFFFFD700) else AppColors.TextPrimary, fontWeight = FontWeight.Black, fontSize = 12.sp)
                             }
                         }
                     }
@@ -432,7 +432,7 @@ fun WalletScreen(
                         modifier = Modifier
                             .size(125.dp)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(Color.White)
+                            .background(AppColors.TextPrimary)
                             .border(1.5.dp, Color(0xFFFFD700), RoundedCornerShape(12.dp))
                             .padding(6.dp),
                         contentAlignment = Alignment.Center
@@ -498,7 +498,7 @@ fun WalletScreen(
                                 },
                                 modifier = Modifier.size(30.dp).background(Color(0xFF1E212D), RoundedCornerShape(6.dp))
                             ) {
-                                Icon(Icons.Default.ContentCopy, contentDescription = "Copy", tint = Color.White, modifier = Modifier.size(14.dp))
+                                Icon(Icons.Default.ContentCopy, contentDescription = "Copy", tint = AppColors.TextPrimary, modifier = Modifier.size(14.dp))
                             }
                         }
                     }
@@ -1007,7 +1007,7 @@ fun RealMoneyCardV2(balance: Int, onAddCash: () -> Unit, onWithdraw: () -> Unit)
                 Brush.linearGradient(
                     colors = listOf(
                         Color(0xFFFFD700).copy(alpha = 0.7f),
-                        Color.White.copy(alpha = 0.15f),
+                        AppColors.TextPrimary.copy(alpha = 0.15f),
                         Color(0xFFFFD700).copy(alpha = 0.35f)
                     )
                 ),
@@ -1047,7 +1047,7 @@ fun RealMoneyCardV2(balance: Int, onAddCash: () -> Unit, onWithdraw: () -> Unit)
                     )
                     Text(
                         "REAL CASH BALANCE",
-                        color = Color.White.copy(alpha = 0.75f),
+                        color = AppColors.TextPrimary.copy(alpha = 0.75f),
                         fontWeight = FontWeight.Bold,
                         fontSize = 11.sp,
                         letterSpacing = 0.5.sp
@@ -1057,8 +1057,8 @@ fun RealMoneyCardV2(balance: Int, onAddCash: () -> Unit, onWithdraw: () -> Unit)
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
-                    .background(Color.White.copy(alpha = 0.12f))
-                    .border(1.dp, Color.White.copy(alpha = 0.2f), RoundedCornerShape(8.dp))
+                    .background(AppColors.TextPrimary.copy(alpha = 0.12f))
+                    .border(1.dp, AppColors.TextPrimary.copy(alpha = 0.2f), RoundedCornerShape(8.dp))
                     .padding(horizontal = 10.dp, vertical = 4.dp)
             ) {
                 Text("INR (₹)", fontWeight = FontWeight.Black, fontSize = 11.sp, color = AppColors.TextPrimary)
@@ -1079,7 +1079,7 @@ fun RealMoneyCardV2(balance: Int, onAddCash: () -> Unit, onWithdraw: () -> Unit)
                     .height(50.dp)
                     .shadow(4.dp, CircleShape),
                 shape = CircleShape,
-                colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color(0xFF111827))
+                colors = ButtonDefaults.buttonColors(containerColor = AppColors.ButtonContainer, contentColor = AppColors.ButtonContent)
             ) {
                 Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(modifier = Modifier.width(6.dp))
@@ -1093,7 +1093,7 @@ fun RealMoneyCardV2(balance: Int, onAddCash: () -> Unit, onWithdraw: () -> Unit)
                     .height(50.dp)
                     .shadow(4.dp, CircleShape),
                 shape = CircleShape,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF272A3B), contentColor = Color.White)
+                colors = ButtonDefaults.buttonColors(containerColor = AppColors.CardBackground, contentColor = AppColors.TextPrimary)
             ) {
                 Icon(Icons.Default.ArrowUpward, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(18.dp))
                 Spacer(modifier = Modifier.width(6.dp))
@@ -1164,7 +1164,7 @@ fun AppMoneyCardV2(balance: Int, onOpenStore: () -> Unit = {}, onConvert: () -> 
             onClick = onConvert,
             modifier = Modifier.fillMaxWidth().height(44.dp),
             shape = CircleShape,
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = AppColors.TextPrimary),
             border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF2E3348))
         ) {
             Icon(Icons.Default.Info, contentDescription = null, tint = Color(0xFF8E92A4), modifier = Modifier.size(16.dp))
@@ -1261,7 +1261,7 @@ fun TransactionHistoryV2(transactions: List<TransactionRecord>) {
                                     },
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 14.sp,
-                                    color = Color.White
+                                    color = AppColors.TextPrimary
                                 )
                                 Text(dateStr, fontSize = 11.sp, color = Color(0xFF9CA3AF))
                                 if (tx.utrOrUpi.isNotBlank()) {

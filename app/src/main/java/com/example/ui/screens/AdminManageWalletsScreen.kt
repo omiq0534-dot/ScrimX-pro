@@ -1,4 +1,5 @@
 package com.example.ui.screens
+import com.example.ui.theme.AppColors
 
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -144,7 +145,7 @@ fun AdminManageWalletsScreen(navController: NavController) {
                     Text(
                         "WALLET & CASHOUT COMMAND",
                         fontWeight = FontWeight.Black,
-                        color = Color.White,
+                        color = AppColors.TextPrimary,
                         fontSize = 15.sp,
                         letterSpacing = 1.sp
                     )
@@ -380,7 +381,7 @@ fun AdminManageWalletsScreen(navController: NavController) {
                                         "Search Player / Manage Wallet",
                                         fontWeight = FontWeight.Black,
                                         fontSize = 14.sp,
-                                        color = Color.White
+                                        color = AppColors.TextPrimary
                                     )
 
                                     ClassyDarkInput(
@@ -480,7 +481,7 @@ fun AdminManageWalletsScreen(navController: NavController) {
                                                     verticalAlignment = Alignment.CenterVertically
                                                 ) {
                                                     Column(modifier = Modifier.weight(1f)) {
-                                                        Text(u.name.ifBlank { "Player" }, fontWeight = FontWeight.Bold, color = Color.White, fontSize = 12.sp)
+                                                        Text(u.name.ifBlank { "Player" }, fontWeight = FontWeight.Bold, color = AppColors.TextPrimary, fontSize = 12.sp)
                                                         Text(u.email, color = Color(0xFF6B7280), fontSize = 10.sp)
                                                     }
                                                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -516,7 +517,7 @@ fun AdminManageWalletsScreen(navController: NavController) {
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             Column {
-                                                Text(user.name.ifBlank { "Player" }, fontWeight = FontWeight.Black, color = Color.White, fontSize = 16.sp)
+                                                Text(user.name.ifBlank { "Player" }, fontWeight = FontWeight.Black, color = AppColors.TextPrimary, fontSize = 16.sp)
                                                 Text(user.email, color = Color(0xFF8E92A4), fontSize = 12.sp)
                                             }
                                             IconButton(
@@ -547,7 +548,7 @@ fun AdminManageWalletsScreen(navController: NavController) {
                                                 Column {
                                                     Text("🪙 COIN BALANCE", color = Color(0xFFFFD700), fontSize = 10.sp, fontWeight = FontWeight.Black)
                                                     Spacer(modifier = Modifier.height(2.dp))
-                                                    Text("${user.appMoney}", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Black)
+                                                    Text("${user.appMoney}", color = AppColors.TextPrimary, fontSize = 18.sp, fontWeight = FontWeight.Black)
                                                 }
                                             }
 
@@ -563,7 +564,7 @@ fun AdminManageWalletsScreen(navController: NavController) {
                                                 Column {
                                                     Text("💵 REAL CASH", color = Color(0xFF00E676), fontSize = 10.sp, fontWeight = FontWeight.Black)
                                                     Spacer(modifier = Modifier.height(2.dp))
-                                                    Text("₹${user.realMoney}", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Black)
+                                                    Text("₹${user.realMoney}", color = AppColors.TextPrimary, fontSize = 18.sp, fontWeight = FontWeight.Black)
                                                 }
                                             }
                                         }
@@ -588,7 +589,7 @@ fun AdminManageWalletsScreen(navController: NavController) {
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             Text("🪙 Manage Coins (App Currency)", fontWeight = FontWeight.Black, color = Color(0xFFFFD700), fontSize = 13.sp)
-                                            Text("Current: ${user.appMoney}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                            Text("Current: ${user.appMoney}", color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                                         }
 
                                         // Preset Quick Chips
@@ -776,7 +777,7 @@ fun AdminManageWalletsScreen(navController: NavController) {
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             Text("💵 Manage Real Cash (₹)", fontWeight = FontWeight.Black, color = Color(0xFF00E676), fontSize = 13.sp)
-                                            Text("Current: ₹${user.realMoney}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                            Text("Current: ₹${user.realMoney}", color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                                         }
 
                                         // Preset Quick Chips
@@ -963,7 +964,7 @@ fun AdminManageWalletsScreen(navController: NavController) {
                                     .padding(18.dp)
                             ) {
                                 Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                                    Text("Official Payment UPI Settings", fontWeight = FontWeight.Black, color = Color.White, fontSize = 15.sp)
+                                    Text("Official Payment UPI Settings", fontWeight = FontWeight.Black, color = AppColors.TextPrimary, fontSize = 15.sp)
 
                                     ClassyDarkInput(
                                         value = upiIdInput,
@@ -1071,7 +1072,7 @@ fun DepositRequestCard(tx: TransactionRecord, onApprove: () -> Unit, onReject: (
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Payment Proof Screenshot", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text("Payment Proof Screenshot", color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         IconButton(onClick = { showFullScreenshot = false }, modifier = Modifier.size(28.dp)) {
                             Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.White)
                         }
@@ -1101,7 +1102,7 @@ fun DepositRequestCard(tx: TransactionRecord, onApprove: () -> Unit, onReject: (
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text(tx.userEmail, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                Text(tx.userEmail, color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                 Text("+₹${tx.amount}", color = Color(0xFFFFD700), fontWeight = FontWeight.Black, fontSize = 18.sp)
             }
 
@@ -1196,7 +1197,7 @@ fun DepositRequestCard(tx: TransactionRecord, onApprove: () -> Unit, onReject: (
                 ) {
                     Icon(Icons.Default.Cancel, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("REJECT DEPOSIT", color = Color.White, fontWeight = FontWeight.Black, fontSize = 12.sp)
+                    Text("REJECT DEPOSIT", color = AppColors.TextPrimary, fontWeight = FontWeight.Black, fontSize = 12.sp)
                 }
             }
         }
@@ -1218,7 +1219,7 @@ fun WithdrawRequestCard(tx: TransactionRecord, onComplete: () -> Unit, onReject:
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text(tx.userEmail, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                Text(tx.userEmail, color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                 Text("₹${tx.amount}", color = Color(0xFF00E676), fontWeight = FontWeight.Black, fontSize = 18.sp)
             }
 
@@ -1267,7 +1268,7 @@ fun WithdrawRequestCard(tx: TransactionRecord, onComplete: () -> Unit, onReject:
                 ) {
                     Icon(Icons.Default.Cancel, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("REJECT & REFUND", color = Color.White, fontWeight = FontWeight.Black, fontSize = 12.sp)
+                    Text("REJECT & REFUND", color = AppColors.TextPrimary, fontWeight = FontWeight.Black, fontSize = 12.sp)
                 }
             }
         }
@@ -1287,7 +1288,7 @@ fun EmptyAdminPlaceholder(title: String, subtitle: String) {
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF00E676), modifier = Modifier.size(36.dp))
-            Text(title, color = Color.White, fontWeight = FontWeight.Black, fontSize = 15.sp)
+            Text(title, color = AppColors.TextPrimary, fontWeight = FontWeight.Black, fontSize = 15.sp)
             Text(subtitle, color = Color(0xFF8E92A4), fontSize = 12.sp, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
         }
     }
@@ -1350,7 +1351,7 @@ fun RechargeRequestCard(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Confirm Recharge & Add Proof", color = Color.White, fontWeight = FontWeight.Black, fontSize = 15.sp)
+                        Text("Confirm Recharge & Add Proof", color = AppColors.TextPrimary, fontWeight = FontWeight.Black, fontSize = 15.sp)
                         IconButton(onClick = { showConfirmDialog = false }, modifier = Modifier.size(24.dp)) {
                             Icon(Icons.Default.Close, contentDescription = "Close", tint = Color(0xFF8E92A4))
                         }
@@ -1485,14 +1486,14 @@ fun RechargeRequestCard(
                     ) {
                         Text(
                             text = if (isJio) "JIO 4G/5G" else "AIRTEL 5G",
-                            color = Color.White,
+                            color = AppColors.TextPrimary,
                             fontWeight = FontWeight.Black,
                             fontSize = 11.sp
                         )
                     }
                     Text(
                         text = if (tx.userEmail.isNotEmpty()) tx.userEmail else "Player",
-                        color = Color.White,
+                        color = AppColors.TextPrimary,
                         fontWeight = FontWeight.Bold,
                         fontSize = 12.sp,
                         maxLines = 1
@@ -1538,7 +1539,7 @@ fun RechargeRequestCard(
                     Text("Recharge Mobile Number:", color = Color(0xFFB0BEC5), fontSize = 10.sp)
                     Text(
                         "+91 ${tx.mobileNumber}",
-                        color = Color.White,
+                        color = AppColors.TextPrimary,
                         fontWeight = FontWeight.Black,
                         fontSize = 15.sp,
                         letterSpacing = 1.sp
@@ -1584,7 +1585,7 @@ fun RechargeRequestCard(
                 ) {
                     Icon(Icons.Default.Close, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("REJECT & REFUND", color = Color.White, fontWeight = FontWeight.Black, fontSize = 11.sp)
+                    Text("REJECT & REFUND", color = AppColors.TextPrimary, fontWeight = FontWeight.Black, fontSize = 11.sp)
                 }
             }
         }

@@ -1,4 +1,5 @@
 package com.example.ui.screens
+import com.example.ui.theme.AppColors
 
 import android.widget.Toast
 import androidx.compose.animation.*
@@ -114,7 +115,7 @@ fun AdminBroadcastNotificationScreen(navController: NavController) {
                             "PUSH NOTIFICATION HUB",
                             fontWeight = FontWeight.Black,
                             fontSize = 17.sp,
-                            color = Color.White
+                            color = AppColors.TextPrimary
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Box(
@@ -159,7 +160,7 @@ fun AdminBroadcastNotificationScreen(navController: NavController) {
                         Icon(Icons.Default.NotificationsActive, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(26.dp))
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
-                            Text("Instant Push & In-App Broadcast", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text("Instant Push & In-App Broadcast", color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                             Text("Sends high-priority notification to phones & writes to live alerts", color = Color(0xFF8E92A4), fontSize = 11.sp)
                         }
                     }
@@ -232,7 +233,7 @@ fun AdminBroadcastNotificationScreen(navController: NavController) {
                                 }
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column {
-                                    Text("GLOBAL ANNOUNCEMENT", color = Color.White, fontWeight = FontWeight.Black, fontSize = 15.sp)
+                                    Text("GLOBAL ANNOUNCEMENT", color = AppColors.TextPrimary, fontWeight = FontWeight.Black, fontSize = 15.sp)
                                     Text("Delivered to every player with system push notification", color = Color(0xFF8E92A4), fontSize = 11.sp)
                                 }
                             }
@@ -368,7 +369,7 @@ fun AdminBroadcastNotificationScreen(navController: NavController) {
                                 }
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column {
-                                    Text("ROOM JOINED USERS ONLY", color = Color.White, fontWeight = FontWeight.Black, fontSize = 15.sp)
+                                    Text("ROOM JOINED USERS ONLY", color = AppColors.TextPrimary, fontWeight = FontWeight.Black, fontSize = 15.sp)
                                     Text("Send Room ID, Password & Alerts only to registered players", color = Color(0xFF8E92A4), fontSize = 11.sp)
                                 }
                             }
@@ -424,7 +425,7 @@ fun AdminBroadcastNotificationScreen(navController: NavController) {
                                             )
                                             Spacer(modifier = Modifier.width(6.dp))
                                             Column(modifier = Modifier.weight(1f)) {
-                                                Text(match.title, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                                Text(match.title, color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                                                 Text(
                                                     "${match.mode} (${match.map}) • $bookedCount/${match.totalSlots} Slots Booked",
                                                     color = Color(0xFF00E676),
@@ -541,7 +542,7 @@ fun AdminBroadcastNotificationScreen(navController: NavController) {
                             ) {
                                 Icon(Icons.Default.Send, contentDescription = null, tint = Color.White)
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("SEND TO ROOM JOINED PLAYERS ONLY", color = Color.White, fontWeight = FontWeight.Black)
+                                Text("SEND TO ROOM JOINED PLAYERS ONLY", color = AppColors.TextPrimary, fontWeight = FontWeight.Black)
                             }
                         }
                     }
@@ -584,7 +585,7 @@ fun AdminBroadcastNotificationScreen(navController: NavController) {
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(log.title, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                Text(log.title, color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                                 Surface(
                                     shape = RoundedCornerShape(6.dp),
                                     color = if (log.type == "ROOM_ONLY") Color(0xFFFF0055).copy(alpha = 0.2f) else Color(0xFFFFD700).copy(alpha = 0.2f)

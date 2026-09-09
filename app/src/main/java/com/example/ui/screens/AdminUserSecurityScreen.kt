@@ -1,4 +1,5 @@
 package com.example.ui.screens
+import com.example.ui.theme.AppColors
 
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -311,7 +312,7 @@ fun AdminUserSecurityScreen(navController: NavController) {
                         Text(
                             "SECURITY & USER BAN CONTROL",
                             fontWeight = FontWeight.Black,
-                            color = Color.White,
+                            color = AppColors.TextPrimary,
                             fontSize = 15.sp,
                             letterSpacing = 0.5.sp
                         )
@@ -473,7 +474,7 @@ fun AdminUserSecurityScreen(navController: NavController) {
                                         // Primary Identifier: GMAIL
                                         Text(
                                             user.email.ifBlank { "User UID: ${user.uid.take(10)}..." },
-                                            color = Color.White,
+                                            color = AppColors.TextPrimary,
                                             fontWeight = FontWeight.Black,
                                             fontSize = 14.sp
                                         )
@@ -487,7 +488,7 @@ fun AdminUserSecurityScreen(navController: NavController) {
                                             ) {
                                                 Text(
                                                     if (user.banType == "temporary") "TEMP BAN" else "PERMANENT BAN",
-                                                    color = Color.White,
+                                                    color = AppColors.TextPrimary,
                                                     fontWeight = FontWeight.Black,
                                                     fontSize = 9.sp
                                                 )
@@ -528,7 +529,7 @@ fun AdminUserSecurityScreen(navController: NavController) {
                                                 .background(Color(0xFF202638))
                                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                                         ) {
-                                            Text("⚔️ M: ${user.totalMatches}", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                            Text("⚔️ M: ${user.totalMatches}", color = AppColors.TextPrimary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                                         }
                                         Box(
                                             modifier = Modifier
@@ -624,7 +625,7 @@ fun AdminUserSecurityScreen(navController: NavController) {
                                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF3366)),
                                             contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
                                         ) {
-                                            Text("BAN", color = Color.White, fontWeight = FontWeight.Black, fontSize = 10.sp)
+                                            Text("BAN", color = AppColors.TextPrimary, fontWeight = FontWeight.Black, fontSize = 10.sp)
                                         }
                                     }
 
@@ -659,7 +660,7 @@ fun AdminUserSecurityScreen(navController: NavController) {
                 ) {
                     Text(
                         "LIVE INTRUSION SENSORS",
-                        color = Color.White,
+                        color = AppColors.TextPrimary,
                         fontWeight = FontWeight.Black,
                         fontSize = 13.sp,
                         letterSpacing = 0.5.sp
@@ -673,7 +674,7 @@ fun AdminUserSecurityScreen(navController: NavController) {
                     ) {
                         Icon(Icons.Default.Science, contentDescription = null, tint = Color.White, modifier = Modifier.size(14.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("🧪 Test Simulator", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Black)
+                        Text("🧪 Test Simulator", color = AppColors.TextPrimary, fontSize = 10.sp, fontWeight = FontWeight.Black)
                     }
                 }
 
@@ -689,7 +690,7 @@ fun AdminUserSecurityScreen(navController: NavController) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(Icons.Default.Shield, contentDescription = null, tint = Color(0xFF00E676), modifier = Modifier.size(56.dp))
                             Spacer(modifier = Modifier.height(12.dp))
-                            Text("SYSTEM CLEAN & SECURE", color = Color.White, fontWeight = FontWeight.Black, fontSize = 16.sp)
+                            Text("SYSTEM CLEAN & SECURE", color = AppColors.TextPrimary, fontWeight = FontWeight.Black, fontSize = 16.sp)
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 "No unauthorized tamper attempts detected. Press 'Test Simulator' above to simulate a live hacker detection!",
@@ -774,7 +775,7 @@ fun AdminUserSecurityScreen(navController: NavController) {
 
                                             Text(
                                                 "📧 Email: ${alert.email.ifBlank { "Not Logged In / Fake DEX" }}",
-                                                color = Color.White,
+                                                color = AppColors.TextPrimary,
                                                 fontSize = 11.sp,
                                                 fontWeight = FontWeight.SemiBold
                                             )
@@ -815,7 +816,7 @@ fun AdminUserSecurityScreen(navController: NavController) {
                                         ) {
                                             Icon(Icons.Default.Gavel, contentDescription = null, tint = Color.White, modifier = Modifier.size(14.dp))
                                             Spacer(modifier = Modifier.width(6.dp))
-                                            Text("🔨 1-Click Ban Hacker", color = Color.White, fontWeight = FontWeight.Black, fontSize = 11.sp)
+                                            Text("🔨 1-Click Ban Hacker", color = AppColors.TextPrimary, fontWeight = FontWeight.Black, fontSize = 11.sp)
                                         }
                                     }
                                 }
@@ -840,7 +841,7 @@ fun AdminUserSecurityScreen(navController: NavController) {
                     Column {
                         Text(
                             "BAN GMAIL: ${target.email.ifBlank { target.uid.take(10) }}",
-                            color = Color.White,
+                            color = AppColors.TextPrimary,
                             fontWeight = FontWeight.Black,
                             fontSize = 14.sp
                         )
@@ -937,7 +938,7 @@ fun AdminUserSecurityScreen(navController: NavController) {
                     colors = ButtonDefaults.buttonColors(containerColor = if (selectedBanType == "permanent") Color(0xFFFF0055) else Color(0xFFFF9800)),
                     enabled = !isProcessingBan
                 ) {
-                    Text("CONFIRM BAN", color = Color.White, fontWeight = FontWeight.Black)
+                    Text("CONFIRM BAN", color = AppColors.TextPrimary, fontWeight = FontWeight.Black)
                 }
             },
             dismissButton = {
@@ -961,7 +962,7 @@ fun AdminUserSecurityScreen(navController: NavController) {
                     Column {
                         Text(
                             "MANAGE STATS & WALLET",
-                            color = Color.White,
+                            color = AppColors.TextPrimary,
                             fontWeight = FontWeight.Black,
                             fontSize = 14.sp
                         )
@@ -1104,7 +1105,7 @@ fun AdminUserSecurityScreen(navController: NavController) {
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         "Delete User Account?",
-                        color = Color.White,
+                        color = AppColors.TextPrimary,
                         fontWeight = FontWeight.Black,
                         fontSize = 18.sp
                     )
@@ -1126,7 +1127,7 @@ fun AdminUserSecurityScreen(navController: NavController) {
                     ) {
                         Column(modifier = Modifier.padding(12.dp)) {
                             Text("Player Name: ${target.name}", color = Color(0xFFFFD700), fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                            Text("Email: ${target.email.ifBlank { "No Email" }}", color = Color.White, fontSize = 12.sp)
+                            Text("Email: ${target.email.ifBlank { "No Email" }}", color = AppColors.TextPrimary, fontSize = 12.sp)
                             Text("UID: ${target.uid}", color = Color(0xFF94A3B8), fontSize = 10.sp)
                             Text("Role: ${target.role}", color = Color(0xFF94A3B8), fontSize = 11.sp)
                         }
@@ -1147,9 +1148,9 @@ fun AdminUserSecurityScreen(navController: NavController) {
                     enabled = !isDeletingUser
                 ) {
                     if (isDeletingUser) {
-                        CircularProgressIndicator(modifier = Modifier.size(16.dp), color = Color.White, strokeWidth = 2.dp)
+                        CircularProgressIndicator(modifier = Modifier.size(16.dp), color = AppColors.TextPrimary, strokeWidth = 2.dp)
                     } else {
-                        Text("DELETE PERMANENTLY", color = Color.White, fontWeight = FontWeight.Black, fontSize = 12.sp)
+                        Text("DELETE PERMANENTLY", color = AppColors.TextPrimary, fontWeight = FontWeight.Black, fontSize = 12.sp)
                     }
                 }
             },

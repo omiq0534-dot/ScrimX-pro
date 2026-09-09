@@ -1,4 +1,5 @@
 package com.example.ui.screens
+import com.example.ui.theme.AppColors
 
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -149,7 +150,7 @@ fun AdminStaffManagementScreen(navController: NavController) {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(
                         "Are you sure you want to promote ${u.name} (${u.email}) as a Tournament Moderator?",
-                        color = Color.White,
+                        color = AppColors.TextPrimary,
                         fontSize = 13.sp
                     )
                     Box(
@@ -174,7 +175,7 @@ fun AdminStaffManagementScreen(navController: NavController) {
                     onClick = { makeModerator(u) },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8B5CF6))
                 ) {
-                    Text("GRANT ROLE", color = Color.White, fontWeight = FontWeight.Black)
+                    Text("GRANT ROLE", color = AppColors.TextPrimary, fontWeight = FontWeight.Black)
                 }
             },
             dismissButton = {
@@ -197,7 +198,7 @@ fun AdminStaffManagementScreen(navController: NavController) {
             text = {
                 Text(
                     "Remove moderator privileges for ${u.name} (${u.email})? They will become a standard player immediately.",
-                    color = Color.White,
+                    color = AppColors.TextPrimary,
                     fontSize = 13.sp
                 )
             },
@@ -206,7 +207,7 @@ fun AdminStaffManagementScreen(navController: NavController) {
                     onClick = { revokeModerator(u) },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF3366))
                 ) {
-                    Text("REVOKE ACCESS", color = Color.White, fontWeight = FontWeight.Black)
+                    Text("REVOKE ACCESS", color = AppColors.TextPrimary, fontWeight = FontWeight.Black)
                 }
             },
             dismissButton = {
@@ -292,7 +293,7 @@ fun AdminStaffManagementScreen(navController: NavController) {
             TopAppBar(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("🛡️ STAFF & MODERATORS", fontWeight = FontWeight.Black, color = Color.White, fontSize = 16.sp)
+                        Text("🛡️ STAFF & MODERATORS", fontWeight = FontWeight.Black, color = AppColors.TextPrimary, fontSize = 16.sp)
                     }
                 },
                 navigationIcon = {
@@ -346,7 +347,7 @@ fun AdminStaffManagementScreen(navController: NavController) {
                         Spacer(modifier = Modifier.width(12.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("Supreme App Owner", color = Color.White, fontWeight = FontWeight.Black, fontSize = 15.sp)
+                                Text("Supreme App Owner", color = AppColors.TextPrimary, fontWeight = FontWeight.Black, fontSize = 15.sp)
                                 Spacer(modifier = Modifier.width(6.dp))
                                 AdminMasterBadge(isOwner = true, showClickInfo = false)
                             }
@@ -439,7 +440,7 @@ fun AdminStaffManagementScreen(navController: NavController) {
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Text(user.name, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                        Text(user.name, color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                                         if (isAlreadyMod) {
                                             Spacer(modifier = Modifier.width(6.dp))
                                             AdminMasterBadge(isOwner = false, showClickInfo = false)
@@ -464,7 +465,7 @@ fun AdminStaffManagementScreen(navController: NavController) {
                                         shape = RoundedCornerShape(8.dp),
                                         contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
                                     ) {
-                                        Text("+ Make Mod", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Black)
+                                        Text("+ Make Mod", color = AppColors.TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.Black)
                                     }
                                 }
                             }
@@ -509,7 +510,7 @@ fun AdminStaffManagementScreen(navController: NavController) {
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             Icon(Icons.Default.GroupAdd, contentDescription = null, tint = Color(0xFF64748B), modifier = Modifier.size(36.dp))
-                            Text("No Active Moderators Yet", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text("No Active Moderators Yet", color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                             Text("Search above or tap '+' to add your trusted helpers!", color = Color(0xFF8E92A4), fontSize = 11.sp)
                         }
                     }
@@ -544,7 +545,7 @@ fun AdminStaffManagementScreen(navController: NavController) {
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Column {
                                         Row(verticalAlignment = Alignment.CenterVertically) {
-                                            Text(mod.name, color = Color.White, fontWeight = FontWeight.Black, fontSize = 14.sp)
+                                            Text(mod.name, color = AppColors.TextPrimary, fontWeight = FontWeight.Black, fontSize = 14.sp)
                                             Spacer(modifier = Modifier.width(6.dp))
                                             AdminMasterBadge(isOwner = false, showClickInfo = true)
                                         }

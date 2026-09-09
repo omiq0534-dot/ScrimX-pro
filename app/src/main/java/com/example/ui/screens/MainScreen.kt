@@ -1,4 +1,5 @@
 package com.example.ui.screens
+import com.example.ui.theme.GlassScaffold
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.*
@@ -23,6 +24,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
 import com.example.ui.theme.AppColors
+import com.example.ui.theme.glassCard
+import com.example.ui.theme.glassBackground
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.platform.LocalContext
@@ -162,7 +165,8 @@ fun MainScreen(
         return
     }
 
-    Scaffold(
+    GlassScaffold { hazeState ->
+    Scaffold(containerColor = androidx.compose.ui.graphics.Color.Transparent,
         topBar = {
             // Admin VIP Status Indicator Bar when Maintenance or Updates are Active
             if (isAdmin && (appConfig.isMaintenanceMode || isAppOutdated)) {
@@ -177,8 +181,7 @@ fun MainScreen(
                 )
             }
         },
-        bottomBar = { AppBottomNav(bottomNavController) },
-        containerColor = Color(0xFFFAFAFA)
+        bottomBar = { AppBottomNav(bottomNavController) }
     ) { innerPadding ->
         Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
             NavHost(
@@ -246,6 +249,7 @@ fun MainScreen(
             }
         }
     }
+    } // End GlassScaffold
 }
 
 @Composable
@@ -291,7 +295,7 @@ fun AppBottomNav(navController: NavController) {
             }
             .padding(1.dp) // border thickness
             .clip(RoundedCornerShape(26.dp))
-            .background(AppColors.CardBackground)
+            .glassCard()
     ) {
         NavigationBar(
             containerColor = Color.Transparent,

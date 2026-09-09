@@ -1,4 +1,5 @@
 package com.example.ui.components
+import com.example.ui.theme.AppColors
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -52,7 +53,7 @@ fun LegalDisclaimerDialog(
                 Column {
                     Text(
                         "Legal & Fair Play Policy",
-                        color = Color.White,
+                        color = AppColors.TextPrimary,
                         fontWeight = FontWeight.Black,
                         fontSize = 17.sp
                     )
@@ -160,7 +161,7 @@ private fun LegalSectionCard(
                 )
                 Text(
                     title,
-                    color = Color.White,
+                    color = AppColors.TextPrimary,
                     fontWeight = FontWeight.Bold,
                     fontSize = 13.sp
                 )

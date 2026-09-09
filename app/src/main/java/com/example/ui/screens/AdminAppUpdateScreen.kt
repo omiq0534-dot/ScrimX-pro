@@ -1,4 +1,5 @@
 package com.example.ui.screens
+import com.example.ui.theme.AppColors
 
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
@@ -220,7 +221,7 @@ fun AdminAppUpdateScreen(navController: NavController) {
                         Text(
                             "APP UPDATE & LIVE PATCH",
                             fontWeight = FontWeight.Black,
-                            color = Color.White,
+                            color = AppColors.TextPrimary,
                             fontSize = 16.sp,
                             letterSpacing = 0.5.sp
                         )
@@ -343,7 +344,7 @@ fun AdminAppUpdateScreen(navController: NavController) {
                                     "$currentAppName (Build $currentAppCode)",
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color.White
+                                    color = AppColors.TextPrimary
                                 )
                             }
                             Column(horizontalAlignment = Alignment.End) {
@@ -361,7 +362,7 @@ fun AdminAppUpdateScreen(navController: NavController) {
                             }
                         }
 
-                        HorizontalDivider(color = Color.White.copy(alpha = 0.1f))
+                        HorizontalDivider(color = AppColors.TextPrimary.copy(alpha = 0.1f))
 
                         Text(
                             text = when {
@@ -395,7 +396,7 @@ fun AdminAppUpdateScreen(navController: NavController) {
                                     "⚡ Push Update: Build $currentAppCode",
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color.White
+                                    color = AppColors.TextPrimary
                                 )
                             }
 
@@ -835,7 +836,7 @@ fun AdminAppUpdateScreen(navController: NavController) {
                             "🎰 IN-GAME EARNING & JACKPOT",
                             fontWeight = FontWeight.Black,
                             fontSize = 12.sp,
-                            color = Color.White,
+                            color = AppColors.TextPrimary,
                             letterSpacing = 0.5.sp
                         )
 
@@ -1025,7 +1026,7 @@ private fun AdminCardHeader(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 title,
-                color = Color.White,
+                color = AppColors.TextPrimary,
                 fontWeight = FontWeight.Bold,
                 fontSize = 13.sp,
                 letterSpacing = 0.5.sp

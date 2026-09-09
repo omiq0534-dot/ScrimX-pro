@@ -1,4 +1,5 @@
 package com.example.ui.screens
+import com.example.ui.theme.AppColors
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -129,7 +130,7 @@ fun AdminScreen(navController: NavController) {
                         Text(
                             if (isOwner) "👑 OWNER HQ" else "🛡️ MODERATOR HQ",
                             fontWeight = FontWeight.Black,
-                            color = Color.White,
+                            color = AppColors.TextPrimary,
                             fontSize = 17.sp,
                             letterSpacing = 1.sp
                         )
@@ -180,7 +181,7 @@ fun AdminScreen(navController: NavController) {
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
                                 if (isOwner) "Tournament & System Engine" else "Tournament Match Host Engine",
-                                color = Color.White,
+                                color = AppColors.TextPrimary,
                                 fontWeight = FontWeight.Black,
                                 fontSize = 17.sp
                             )
@@ -420,7 +421,7 @@ fun ClassyAdminActionCard(
                 }
                 Spacer(modifier = Modifier.width(14.dp))
                 Column {
-                    Text(title, fontWeight = FontWeight.Black, color = Color.White, fontSize = 15.sp)
+                    Text(title, fontWeight = FontWeight.Black, color = AppColors.TextPrimary, fontSize = 15.sp)
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(subtitle, color = Color(0xFF8E92A4), fontSize = 12.sp, lineHeight = 16.sp)
                 }

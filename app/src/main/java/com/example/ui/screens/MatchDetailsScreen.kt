@@ -27,6 +27,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import com.example.ui.theme.AppColors
+import com.example.ui.theme.glassCard
+import com.example.ui.theme.glassBackground
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -78,8 +80,8 @@ fun MatchDetailsScreen(
     val match = matchState
     
     if (match == null) {
-        Box(modifier = Modifier.fillMaxSize().background(Color.White), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator(color = Color.White)
+        Box(modifier = Modifier.fillMaxSize().glassBackground(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(color = AppColors.TextPrimary)
         }
         return
     }
@@ -154,7 +156,7 @@ fun MatchDetailsScreen(
                     Text(
                         "CONFIRM SLOT $selectedSlot",
                         fontWeight = FontWeight.Black,
-                        color = Color.White,
+                        color = AppColors.TextPrimary,
                         fontSize = 17.sp,
                         letterSpacing = 0.5.sp
                     )
@@ -198,8 +200,8 @@ fun MatchDetailsScreen(
                             unfocusedBorderColor = Color(0xFF2E313D),
                             focusedContainerColor = Color(0xFF0C0D11),
                             unfocusedContainerColor = Color(0xFF0C0D11),
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White
+                            focusedTextColor = AppColors.TextPrimary,
+                            unfocusedTextColor = AppColors.TextPrimary
                         ),
                         singleLine = true
                     )
@@ -216,8 +218,8 @@ fun MatchDetailsScreen(
                             unfocusedBorderColor = Color(0xFF2E313D),
                             focusedContainerColor = Color(0xFF0C0D11),
                             unfocusedContainerColor = Color(0xFF0C0D11),
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White
+                            focusedTextColor = AppColors.TextPrimary,
+                            unfocusedTextColor = AppColors.TextPrimary
                         ),
                         singleLine = true
                     )
@@ -286,7 +288,7 @@ fun MatchDetailsScreen(
                                         Column {
                                             Text(
                                                 "Apply Coin Discount (-₹$maxDiscountRupees)",
-                                                color = Color.White,
+                                                color = AppColors.TextPrimary,
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 12.sp
                                             )
@@ -342,7 +344,7 @@ fun MatchDetailsScreen(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text("Ads Progress:", fontSize = 11.sp, color = Color(0xFF8E92A4))
-                                    Text("$adsWatchedForSlot / $requiredAdsCount Completed", fontSize = 11.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                                    Text("$adsWatchedForSlot / $requiredAdsCount Completed", fontSize = 11.sp, color = AppColors.TextPrimary, fontWeight = FontWeight.Bold)
                                 }
                                 LinearProgressIndicator(
                                     progress = { if (requiredAdsCount > 0) adsWatchedForSlot.toFloat() / requiredAdsCount.toFloat() else 1f },
@@ -431,13 +433,13 @@ fun MatchDetailsScreen(
                         enabled = !isBooking && !isAdLoading && isFormValid
                     ) {
                         if (isAdLoading || isBooking) {
-                            CircularProgressIndicator(color = Color.White, modifier = Modifier.size(18.dp))
+                            CircularProgressIndicator(color = AppColors.TextPrimary, modifier = Modifier.size(18.dp))
                         } else {
                             Icon(Icons.Default.PlayCircle, contentDescription = null, tint = Color.Black, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 "WATCH AD (${adsWatchedForSlot + 1}/$requiredAdsCount)",
-                                color = Color.White,
+                                color = AppColors.TextPrimary,
                                 fontWeight = FontWeight.Black
                             )
                         }
@@ -481,7 +483,7 @@ fun MatchDetailsScreen(
                         enabled = !isBooking && isFormValid
                     ) {
                         if (isBooking) {
-                            CircularProgressIndicator(color = Color.White, modifier = Modifier.size(18.dp))
+                            CircularProgressIndicator(color = AppColors.TextPrimary, modifier = Modifier.size(18.dp))
                         } else {
                             Text(
                                 when {
@@ -490,7 +492,7 @@ fun MatchDetailsScreen(
                                     discountRupees > 0 -> "PAY ₹$finalPayable & JOIN (-₹$discountRupees OFF)"
                                     else -> "CONFIRM & PAY ₹$finalPayable"
                                 },
-                                color = if (isFreeMatch) Color.White else Color.Black,
+                                color = if (isFreeMatch) AppColors.TextPrimary else Color.Black,
                                 fontWeight = FontWeight.Black
                             )
                         }
@@ -506,7 +508,7 @@ fun MatchDetailsScreen(
     }
 
     Scaffold(
-        containerColor = AppColors.ScreenBackground,
+        containerColor = androidx.compose.ui.graphics.Color.Transparent,
         topBar = {
             TopAppBar(
                 title = { Text("Match Details", fontWeight = FontWeight.Black, color = AppColors.TextPrimary) },
@@ -515,7 +517,7 @@ fun MatchDetailsScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = AppColors.TextPrimary)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = AppColors.ScreenBackground)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = androidx.compose.ui.graphics.Color.Transparent)
             )
         },
         bottomBar = {
@@ -569,7 +571,7 @@ fun MatchDetailsScreen(
                                 )
                                 Text(
                                     "You are registered for Slot $userAlreadyBookedSlot",
-                                    color = Color.White,
+                                    color = AppColors.TextPrimary,
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -601,7 +603,7 @@ fun MatchDetailsScreen(
                         .height(56.dp)
                 ) {
                     if (isBooking) {
-                        CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                        CircularProgressIndicator(color = AppColors.TextPrimary, modifier = Modifier.size(24.dp))
                     } else if (userAlreadyBookedSlot != null) {
                         Text("ALREADY REGISTERED (SLOT $userAlreadyBookedSlot)", fontWeight = FontWeight.Black, fontSize = 14.sp)
                     } else if (selectedSlot != null) {
@@ -617,7 +619,7 @@ fun MatchDetailsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .background(AppColors.ScreenBackground)
+                .glassBackground()
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp)
         ) {
@@ -647,8 +649,7 @@ fun MatchDetailsScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(18.dp))
-                    .background(AppColors.CardBackground)
-                    .border(1.dp, AppColors.BorderColor, RoundedCornerShape(18.dp))
+                    .glassCard()
                     .padding(18.dp)
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -671,7 +672,7 @@ fun MatchDetailsScreen(
                             Column {
                                 Text("ROOM CREDENTIALS UNLOCKED", color = Color(0xFFFFD700), fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
                                 Spacer(modifier = Modifier.height(4.dp))
-                                Text("Room ID: ${match.roomId}", fontWeight = FontWeight.Black, color = Color.White, fontSize = 16.sp)
+                                Text("Room ID: ${match.roomId}", fontWeight = FontWeight.Black, color = AppColors.TextPrimary, fontSize = 16.sp)
                                 if (match.roomPass.isNotEmpty()) {
                                     Text("Password: ${match.roomPass}", fontWeight = FontWeight.Black, color = Color(0xFF00E5FF), fontSize = 15.sp)
                                 }
@@ -713,7 +714,7 @@ fun MatchDetailsScreen(
                         }
                     },
                     modifier = Modifier.fillMaxWidth().height(54.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF003C), contentColor = Color.White),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF003C), contentColor = AppColors.TextPrimary),
                     shape = RoundedCornerShape(16.dp)
                 ) {
                     Icon(Icons.Default.PlayArrow, contentDescription = "Watch Live", modifier = Modifier.size(22.dp))
@@ -734,7 +735,7 @@ fun MatchDetailsScreen(
                     if (isHeadToHead) "HEAD-TO-HEAD SLOTS" else "SELECT YOUR SLOT", 
                     fontSize = 16.sp, 
                     fontWeight = FontWeight.Black, 
-                    color = Color.White, 
+                    color = AppColors.TextPrimary, 
                     letterSpacing = 0.5.sp
                 )
                 Text("${bookedSlots.size}/$totalSlotsCount Booked", fontSize = 12.sp, color = Color(0xFF666677), fontWeight = FontWeight.Bold)
@@ -806,7 +807,7 @@ fun MatchDetailsScreen(
             Spacer(modifier = Modifier.height(28.dp))
             
             // Custom Match Rules Section
-            Text("MATCH SPECIFIC RULES", fontSize = 14.sp, fontWeight = FontWeight.Black, color = Color.White, letterSpacing = 1.sp)
+            Text("MATCH SPECIFIC RULES", fontSize = 14.sp, fontWeight = FontWeight.Black, color = AppColors.TextPrimary, letterSpacing = 1.sp)
             Spacer(modifier = Modifier.height(8.dp))
             Box(
                 modifier = Modifier
@@ -1035,7 +1036,7 @@ fun HeadToHeadSlotItem(
                         playerName ?: "Booked",
                         fontWeight = FontWeight.Black,
                         fontSize = 13.sp,
-                        color = Color.White,
+                        color = AppColors.TextPrimary,
                         maxLines = 1
                     )
                 }
@@ -1061,7 +1062,7 @@ fun HeadToHeadSlotItem(
                     if (isSelected) "SELECTED" else "BOOK SLOT",
                     fontSize = 9.5.sp,
                     fontWeight = FontWeight.Black,
-                    color = if (isSelected) Color(0xFFFFD700) else Color.White
+                    color = if (isSelected) Color(0xFFFFD700) else AppColors.TextPrimary
                 )
             }
         }
@@ -1141,7 +1142,7 @@ fun SlotCard(
                     "${slot.number}",
                     fontWeight = FontWeight.Black,
                     fontSize = 15.sp,
-                    color = if (isSelected || isMySlot) Color.Black else if (slot.isBooked) Color(0xFF666677) else Color.White
+                    color = if (isSelected || isMySlot) Color.Black else if (slot.isBooked) Color(0xFF666677) else AppColors.TextPrimary
                 )
             }
             Spacer(modifier = Modifier.width(16.dp))
@@ -1157,7 +1158,7 @@ fun SlotCard(
                             slot.teamName ?: "Reserved",
                             fontWeight = FontWeight.Black,
                             fontSize = 15.sp,
-                            color = if (isMySlot) Color.White else Color(0xFFE0E0E0)
+                            color = if (isMySlot) AppColors.TextPrimary else Color(0xFFE0E0E0)
                         )
                     }
                     if (!slot.inGameUid.isNullOrBlank() && slot.inGameUid != "N/A") {
@@ -1173,7 +1174,7 @@ fun SlotCard(
                         "Slot ${slot.number}",
                         fontWeight = FontWeight.Bold,
                         fontSize = 15.sp,
-                        color = if (isSelected) Color(0xFFFACC15) else Color.White
+                        color = if (isSelected) Color(0xFFFACC15) else AppColors.TextPrimary
                     )
                     Text(
                         "Available",
@@ -1207,7 +1208,7 @@ fun SlotCard(
                         .background(Color(0xFFFACC15))
                         .padding(horizontal = 10.dp, vertical = 4.dp)
                 ) {
-                    Text("SELECTED", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Black)
+                    Text("SELECTED", color = AppColors.TextPrimary, fontSize = 10.sp, fontWeight = FontWeight.Black)
                 }
             } else {
                 Text("TAP TO BOOK", color = Color(0xFF8E8E93), fontSize = 10.sp, fontWeight = FontWeight.Bold)
@@ -1224,7 +1225,7 @@ fun InfoChip(text: String) {
             .background(Color(0xFF1C1C1E))
             .padding(horizontal = 12.dp, vertical = 6.dp)
     ) {
-        Text(text.uppercase(), color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Black, letterSpacing = 0.5.sp)
+        Text(text.uppercase(), color = AppColors.TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.Black, letterSpacing = 0.5.sp)
     }
 }
 
@@ -1233,8 +1234,7 @@ fun DetailBox(title: String, value: String, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(18.dp))
-            .background(AppColors.CardBackground)
-            .border(1.2.dp, AppColors.BorderColor, RoundedCornerShape(18.dp))
+            .glassCard()
             .padding(18.dp)
     ) {
         Text(

@@ -1,11 +1,29 @@
-with open('app/src/main/java/com/example/ui/screens/StoreScreen.kt', 'r') as f:
-    content = f.read()
+import glob
+import re
 
-bad_str = ".background(Color.Transparent) Color(0xFF22C55E).copy(alpha = 0.5f) else Color(0xFF1E2338), RoundedCornerShape(22.dp))\n            .padding(12.dp)"
+files_to_process = glob.glob("app/src/main/java/com/example/ui/screens/*.kt") + glob.glob("app/src/main/java/com/example/ui/components/*.kt") + ["app/src/main/java/com/example/MainActivity.kt"]
 
-good_str = ".background(Color.Transparent)\n            .padding(12.dp)"
+for file_path in files_to_process:
+    with open(file_path, "r") as f:
+        content = f.read()
+    
+    original = content
+    
+    # Fix MainActivity
+    content = content.replace("modifier = Modifier.fillMaxSize().com.example.ui.theme.glassBackground(),", "modifier = Modifier.fillMaxSize().glassBackground(),")
+    if "glassBackground" in content and "import com.example.ui.theme.glassBackground" not in content:
+        content = content.replace("import com.example.ui.theme.MyApplicationTheme", "import com.example.ui.theme.MyApplicationTheme\nimport com.example.ui.theme.glassBackground")
 
-content = content.replace(bad_str, good_str)
+    # Remove rogue parenthesis after glassCard()
+    # It looks like:
+    # .glassCard()
+    # )
+    # .padding
+    
+    content = re.sub(r'\.glassCard\([^)]*\)\s*\)', r'.glassCard()', content)
+    # the above might match correctly if there are no arguments. If there are arguments like alpha = 0.5f:
+    content = re.sub(r'(\.glassCard\([^)]*\))\s*\)', r'\1', content)
 
-with open('app/src/main/java/com/example/ui/screens/StoreScreen.kt', 'w') as f:
-    f.write(content)
+    if content != original:
+        with open(file_path, "w") as f:
+            f.write(content)
