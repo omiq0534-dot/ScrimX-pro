@@ -24,6 +24,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import com.example.ui.theme.AppColors
+import com.example.ui.theme.ThemeManager
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -41,6 +45,7 @@ import com.example.ui.components.LegalDisclaimerDialog
 @Composable
 fun ProfileScreen(navController: NavController, userViewModel: UserViewModel = viewModel()) {
     val context = LocalContext.current
+    val isDarkTheme by ThemeManager.isDarkTheme.collectAsState()
     val profile by userViewModel.profile.collectAsState()
     var showEditDialog by remember { mutableStateOf(false) }
     var showLogoutDialog by remember { mutableStateOf(false) }
@@ -172,6 +177,8 @@ fun ProfileScreen(navController: NavController, userViewModel: UserViewModel = v
             SettingsList(
                 isOwner = isOwner,
                 isModerator = isModerator,
+                isDarkTheme = isDarkTheme,
+                onThemeToggleClick = { ThemeManager.toggleTheme(context) },
                 onAdminClick = {
                     navController.navigate("admin_dashboard")
                 },
@@ -228,9 +235,10 @@ fun ReferBannerCard(referralCode: String, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() },
+            .clickable { onClick() }
+            .border(1.dp, AppColors.BorderColor, RoundedCornerShape(20.dp)),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF0F172A))
+        colors = CardDefaults.cardColors(containerColor = AppColors.CardBackground)
     ) {
         Row(
             modifier = Modifier
@@ -250,7 +258,7 @@ fun ReferBannerCard(referralCode: String, onClick: () -> Unit) {
             Spacer(modifier = Modifier.width(14.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("REFER & EARN", color = Color.White, fontWeight = FontWeight.Black, fontSize = 15.sp)
+                    Text("REFER & EARN", color = AppColors.TextPrimary, fontWeight = FontWeight.Black, fontSize = 15.sp)
                     Spacer(modifier = Modifier.width(6.dp))
                     Box(
                         modifier = Modifier
@@ -722,13 +730,13 @@ fun StatsCard(profile: UserProfile?) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 StatItem(title = "Matches Played", value = "$totalMatches")
-                HorizontalDivider(color = Color(0xFF334155), modifier = Modifier.height(35.dp).width(1.dp))
+                HorizontalDivider(color = AppColors.Divider, modifier = Modifier.height(35.dp).width(1.dp))
                 StatItem(title = "Total Wins 🏆", value = "$totalWins")
-                HorizontalDivider(color = Color(0xFF334155), modifier = Modifier.height(35.dp).width(1.dp))
+                HorizontalDivider(color = AppColors.Divider, modifier = Modifier.height(35.dp).width(1.dp))
                 StatItem(title = "Total Kills 🎯", value = "$totalKills")
             }
 
-            HorizontalDivider(color = Color(0xFF1E293B))
+            HorizontalDivider(color = AppColors.Divider)
 
             // Efficiency Row: Win Rate & K/D Ratio
             Row(
@@ -745,7 +753,7 @@ fun StatsCard(profile: UserProfile?) {
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text("Win Rate: ", color = Color(0xFF94A3B8), fontSize = 12.sp, fontWeight = FontWeight.Medium)
-                    Text(winRate, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Black)
+                    Text(winRate, color = AppColors.TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.Black)
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -757,7 +765,7 @@ fun StatsCard(profile: UserProfile?) {
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text("Avg K/D: ", color = Color(0xFF94A3B8), fontSize = 12.sp, fontWeight = FontWeight.Medium)
-                    Text(kdRatio, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Black)
+                    Text(kdRatio, color = AppColors.TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.Black)
                 }
             }
         }
@@ -767,9 +775,9 @@ fun StatsCard(profile: UserProfile?) {
 @Composable
 fun StatItem(title: String, value: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(value, fontWeight = FontWeight.Black, fontSize = 22.sp, color = Color.White)
+        Text(value, fontWeight = FontWeight.Black, fontSize = 22.sp, color = AppColors.TextPrimary)
         Spacer(modifier = Modifier.height(2.dp))
-        Text(title, color = Color(0xFFB0B0B0), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        Text(title, color = AppColors.TextSecondary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
     }
 }
 
@@ -777,6 +785,8 @@ fun StatItem(title: String, value: String) {
 fun SettingsList(
     isOwner: Boolean,
     isModerator: Boolean,
+    isDarkTheme: Boolean,
+    onThemeToggleClick: () -> Unit,
     onAdminClick: () -> Unit,
     onStoreClick: () -> Unit,
     onReferClick: () -> Unit,
@@ -803,6 +813,13 @@ fun SettingsList(
             HorizontalDivider(color = Color(0xFFF3F4F6), modifier = Modifier.padding(horizontal = 12.dp))
         }
         SettingsRow(icon = Icons.Default.CardGiftcard, title = "Refer & Earn", badge = "+50 🪙", onClick = onReferClick)
+        HorizontalDivider(color = Color(0xFFF3F4F6), modifier = Modifier.padding(horizontal = 12.dp))
+        SettingsRow(
+            icon = if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
+            title = if (isDarkTheme) "Switch to Light Theme" else "Switch to Dark Theme",
+            badge = "New ✨",
+            onClick = onThemeToggleClick
+        )
         HorizontalDivider(color = Color(0xFFF3F4F6), modifier = Modifier.padding(horizontal = 12.dp))
         SettingsRow(icon = Icons.Default.Edit, title = "Edit Profile Name", onClick = onEditProfileClick)
         HorizontalDivider(color = Color(0xFFF3F4F6), modifier = Modifier.padding(horizontal = 12.dp))
@@ -835,13 +852,13 @@ fun SettingsRow(
                 modifier = Modifier
                     .size(38.dp)
                     .clip(CircleShape)
-                    .background(if (isDestructive) Color(0xFFFFEBEE) else Color(0xFFF3F4F6)),
+                    .background(if (isDestructive) Color(0xFFFFEBEE) else AppColors.SubCardBackground),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     icon, 
                     contentDescription = null, 
-                    tint = if (isDestructive) Color(0xFFF44336) else Color.Black, 
+                    tint = if (isDestructive) Color(0xFFF44336) else AppColors.TextPrimary, 
                     modifier = Modifier.size(18.dp)
                 )
             }
@@ -850,26 +867,26 @@ fun SettingsRow(
                 title, 
                 fontWeight = FontWeight.Bold, 
                 fontSize = 15.sp, 
-                color = if (isDestructive) Color(0xFFF44336) else Color.Black
+                color = if (isDestructive) Color(0xFFF44336) else AppColors.TextPrimary
             )
             if (badge != null) {
                 Spacer(modifier = Modifier.width(8.dp))
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(6.dp))
-                        .background(if (badge == "Owner") Color(0xFFFF3366) else Color(0xFFFFD700))
+                        .background(if (badge == "Owner") Color(0xFFFF3366) else AppColors.PrimaryAccent)
                         .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
                     Text(
                         badge,
-                        color = if (badge == "Owner") Color.White else Color.Black,
+                        color = if (badge == "Owner") Color.White else AppColors.PrimaryAccentText,
                         fontWeight = FontWeight.Black,
                         fontSize = 10.sp
                     )
                 }
             }
         }
-        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = Color.DarkGray)
+        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = AppColors.TextSecondary)
     }
 }
 

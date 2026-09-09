@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import com.example.ui.theme.AppColors
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -48,8 +49,8 @@ fun PremiumMatchCard(
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
             .clickable { onClick() }
-            .background(Color(0xFF0D0D0F)) // Deep Obsidian Black
-            .border(1.2.dp, Color(0xFF2A2A2E), RoundedCornerShape(20.dp))
+            .background(AppColors.CardBackground) // Deep Obsidian Black
+            .border(1.2.dp, AppColors.BorderColor, RoundedCornerShape(20.dp))
     ) {
         // Enhanced 3D Glassmorphic Depth (Pure White/Silver Accents)
         Canvas(modifier = Modifier.matchParentSize()) {
@@ -112,7 +113,7 @@ fun PremiumMatchCard(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = title,
-                        color = Color.White,
+                        color = AppColors.TextPrimary,
                         fontWeight = FontWeight.Black,
                         fontSize = 16.sp,
                         maxLines = 1
@@ -141,13 +142,13 @@ fun PremiumMatchCard(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(6.dp))
-                        .background(Color(0xFF1C1C20))
-                        .border(1.dp, Color(0xFF38383E), RoundedCornerShape(6.dp))
+                        .background(AppColors.SubCardBackground)
+                        .border(1.dp, AppColors.BorderColor, RoundedCornerShape(6.dp))
                         .padding(horizontal = 10.dp, vertical = 6.dp)
                 ) {
                     Text(
                         text = "$map • $badge",
-                        color = Color.White,
+                        color = AppColors.TextPrimary,
                         fontSize = 10.5.sp,
                         fontWeight = FontWeight.Black,
                         letterSpacing = 0.5.sp
@@ -178,11 +179,11 @@ fun PremiumMatchCard(
                         )
                         Spacer(modifier = Modifier.height(3.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.EmojiEvents, contentDescription = null, tint = Color.White, modifier = Modifier.size(15.dp))
+                            Icon(Icons.Default.EmojiEvents, contentDescription = null, tint = AppColors.TextPrimary, modifier = Modifier.size(15.dp))
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 cleanPrize,
-                                color = Color.White,
+                                color = AppColors.TextPrimary,
                                 fontSize = 16.5.sp,
                                 fontWeight = FontWeight.Black
                             )
@@ -200,11 +201,11 @@ fun PremiumMatchCard(
                         )
                         Spacer(modifier = Modifier.height(3.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.Bolt, contentDescription = null, tint = Color.White, modifier = Modifier.size(15.dp))
+                            Icon(Icons.Default.Bolt, contentDescription = null, tint = AppColors.TextPrimary, modifier = Modifier.size(15.dp))
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 cleanEntry,
-                                color = Color.White,
+                                color = AppColors.TextPrimary,
                                 fontSize = 16.5.sp,
                                 fontWeight = FontWeight.Black
                             )
@@ -252,8 +253,8 @@ fun PremiumMatchCard(
                         .weight(1f)
                         .height(4.5.dp)
                         .clip(RoundedCornerShape(3.dp)),
-                    color = Color.White,
-                    trackColor = Color(0xFF26262B),
+                    color = AppColors.PrimaryAccent,
+                    trackColor = AppColors.SubCardBackground,
                 )
                 Text(
                     "$slotsBooked/$totalSlots",

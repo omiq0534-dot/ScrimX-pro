@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import com.example.ui.theme.AppColors
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -67,7 +68,7 @@ fun MatchesScreen(
                     "Tournaments & Scrims",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Black,
-                    color = Color.Black
+                    color = AppColors.ScreenBackground
                 )
                 Spacer(modifier = Modifier.height(14.dp))
 
@@ -94,13 +95,13 @@ fun MatchesScreen(
                             Icon(
                                 Icons.Default.SportsEsports,
                                 contentDescription = null,
-                                tint = if (selectedTab == 0) Color.White else Color(0xFF9CA3AF),
+                                tint = if (selectedTab == 0) AppColors.TextPrimary else Color(0xFF9CA3AF),
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 "All Scrims (${matches.size})",
-                                color = if (selectedTab == 0) Color.White else Color(0xFF9CA3AF),
+                                color = if (selectedTab == 0) AppColors.TextPrimary else Color(0xFF9CA3AF),
                                 fontWeight = FontWeight.Black,
                                 fontSize = 13.sp
                             )
@@ -127,7 +128,7 @@ fun MatchesScreen(
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 "My Matches (${myMatches.size})",
-                                color = if (selectedTab == 1) Color.White else Color(0xFF9CA3AF),
+                                color = if (selectedTab == 1) AppColors.TextPrimary else Color(0xFF9CA3AF),
                                 fontWeight = FontWeight.Black,
                                 fontSize = 13.sp
                             )
@@ -232,7 +233,7 @@ fun MyJoinedMatchCard(
                 ambientColor = Color(0x1A000000)
             )
             .clip(RoundedCornerShape(24.dp))
-            .background(Color.White)
+            .background(AppColors.TextPrimary)
             .border(1.2.dp, Color(0xFFE5E7EB), RoundedCornerShape(24.dp))
             .clickable { onCardClick() }
             .padding(18.dp)
@@ -252,7 +253,7 @@ fun MyJoinedMatchCard(
                                 when {
                                     isLive -> Color(0xFFFF003C)
                                     isCompleted -> Color(0xFF00C853)
-                                    else -> Color.Black
+                                    else -> AppColors.ScreenBackground
                                 }
                             )
                             .padding(horizontal = 8.dp, vertical = 4.dp)
@@ -263,7 +264,7 @@ fun MyJoinedMatchCard(
                                 isCompleted -> "FINISHED"
                                 else -> "CONFIRMED"
                             },
-                            color = Color.White,
+                            color = AppColors.TextPrimary,
                             fontWeight = FontWeight.Black,
                             fontSize = 10.sp
                         )
@@ -299,7 +300,7 @@ fun MyJoinedMatchCard(
                     match.title,
                     fontWeight = FontWeight.Black,
                     fontSize = 17.sp,
-                    color = Color.Black
+                    color = AppColors.ScreenBackground
                 )
                 Spacer(modifier = Modifier.height(3.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -325,12 +326,12 @@ fun MyJoinedMatchCard(
                 ) {
                     Column {
                         Text("REGISTERED AS", fontSize = 9.sp, fontWeight = FontWeight.Black, color = Color(0xFF888899))
-                        Text(playerNameOrTeam, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = Color.Black)
+                        Text(playerNameOrTeam, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = AppColors.ScreenBackground)
                     }
                     if (inGameUid.isNotBlank()) {
                         Column(horizontalAlignment = Alignment.End) {
                             Text("FREE FIRE UID", fontSize = 9.sp, fontWeight = FontWeight.Black, color = Color(0xFF888899))
-                            Text(inGameUid, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = Color.Black)
+                            Text(inGameUid, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = AppColors.ScreenBackground)
                         }
                     }
                 }
@@ -355,7 +356,7 @@ fun MyJoinedMatchCard(
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(Color(0xFF00E676)))
                                 Spacer(modifier = Modifier.width(6.dp))
-                                Text("ROOM ID: ${match.roomId}", color = Color.White, fontWeight = FontWeight.Black, fontSize = 13.sp)
+                                Text("ROOM ID: ${match.roomId}", color = AppColors.TextPrimary, fontWeight = FontWeight.Black, fontSize = 13.sp)
                             }
                             Spacer(modifier = Modifier.height(2.dp))
                             Text("PASSWORD: ${match.roomPass.ifBlank { "None" }}", color = Color(0xFFFFD700), fontWeight = FontWeight.Bold, fontSize = 12.sp)
@@ -372,7 +373,7 @@ fun MyJoinedMatchCard(
                                 .size(34.dp)
                                 .background(Color(0xFF262938), RoundedCornerShape(8.dp))
                         ) {
-                            Icon(Icons.Default.ContentCopy, contentDescription = "Copy Room Details", tint = Color.White, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Default.ContentCopy, contentDescription = "Copy Room Details", tint = AppColors.TextPrimary, modifier = Modifier.size(16.dp))
                         }
                     }
                 }
@@ -409,19 +410,19 @@ fun MyJoinedMatchCard(
                         shape = RoundedCornerShape(10.dp),
                         modifier = Modifier.weight(1f).height(42.dp)
                     ) {
-                        Icon(Icons.Default.PlayArrow, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                        Icon(Icons.Default.PlayArrow, contentDescription = null, tint = AppColors.TextPrimary, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("LIVE STREAM", color = Color.White, fontWeight = FontWeight.Black, fontSize = 11.sp)
+                        Text("LIVE STREAM", color = AppColors.TextPrimary, fontWeight = FontWeight.Black, fontSize = 11.sp)
                     }
                 }
 
                 Button(
                     onClick = onCardClick,
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Black),
+                    colors = ButtonDefaults.buttonColors(containerColor = AppColors.ScreenBackground),
                     shape = RoundedCornerShape(10.dp),
                     modifier = Modifier.weight(1f).height(42.dp)
                 ) {
-                    Text("VIEW SLOTS & DETAILS", color = Color.White, fontWeight = FontWeight.Black, fontSize = 11.sp)
+                    Text("VIEW SLOTS & DETAILS", color = AppColors.TextPrimary, fontWeight = FontWeight.Black, fontSize = 11.sp)
                 }
             }
         }
@@ -438,7 +439,7 @@ fun EmptyMatchesCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
-            .background(Color.White)
+            .background(AppColors.TextPrimary)
             .border(1.2.dp, Color(0xFFE5E5EA), RoundedCornerShape(24.dp))
             .padding(32.dp),
         contentAlignment = Alignment.Center
@@ -454,14 +455,14 @@ fun EmptyMatchesCard(
                     .background(Color(0xFFF2F2F7)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(icon, contentDescription = null, tint = Color.Black, modifier = Modifier.size(26.dp))
+                Icon(icon, contentDescription = null, tint = AppColors.ScreenBackground, modifier = Modifier.size(26.dp))
             }
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 title,
                 fontWeight = FontWeight.Black,
                 fontSize = 16.sp,
-                color = Color.Black,
+                color = AppColors.ScreenBackground,
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
             Text(

@@ -26,6 +26,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import com.example.ui.theme.AppColors
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -505,16 +506,16 @@ fun MatchDetailsScreen(
     }
 
     Scaffold(
-        containerColor = Color(0xFF08080A),
+        containerColor = AppColors.ScreenBackground,
         topBar = {
             TopAppBar(
-                title = { Text("Match Details", fontWeight = FontWeight.Black, color = Color.White) },
+                title = { Text("Match Details", fontWeight = FontWeight.Black, color = AppColors.TextPrimary) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = AppColors.TextPrimary)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF08080A))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = AppColors.ScreenBackground)
             )
         },
         bottomBar = {
@@ -616,13 +617,13 @@ fun MatchDetailsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .background(Color(0xFF08080A))
+                .background(AppColors.ScreenBackground)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp)
         ) {
             // Title and basic info
             Spacer(modifier = Modifier.height(8.dp))
-            Text(match.title, fontSize = 24.sp, fontWeight = FontWeight.Black, color = Color.White, lineHeight = 30.sp)
+            Text(match.title, fontSize = 24.sp, fontWeight = FontWeight.Black, color = AppColors.TextPrimary, lineHeight = 30.sp)
             Spacer(modifier = Modifier.height(12.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 InfoChip(match.map)
@@ -646,15 +647,15 @@ fun MatchDetailsScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(18.dp))
-                    .background(Color(0xFF131316))
-                    .border(1.dp, Color(0xFF262A38), RoundedCornerShape(18.dp))
+                    .background(AppColors.CardBackground)
+                    .border(1.dp, AppColors.BorderColor, RoundedCornerShape(18.dp))
                     .padding(18.dp)
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.AccessTime, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
+                        Icon(Icons.Default.AccessTime, contentDescription = null, tint = AppColors.TextPrimary, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Match Timing: ${match.time}", fontWeight = FontWeight.Bold, color = Color.White, fontSize = 14.sp)
+                        Text("Match Timing: ${match.time}", fontWeight = FontWeight.Bold, color = AppColors.TextPrimary, fontSize = 14.sp)
                     }
                     
                     val hasBooked = userAlreadyBookedSlot != null
@@ -1232,14 +1233,14 @@ fun DetailBox(title: String, value: String, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(18.dp))
-            .background(Color(0xFF131316))
-            .border(1.2.dp, Color(0xFF26262D), RoundedCornerShape(18.dp))
+            .background(AppColors.CardBackground)
+            .border(1.2.dp, AppColors.BorderColor, RoundedCornerShape(18.dp))
             .padding(18.dp)
     ) {
         Text(
             text = title.uppercase(),
             fontSize = 9.5.sp,
-            color = Color(0xFF8E8E98),
+            color = AppColors.TextSecondary,
             fontWeight = FontWeight.Black,
             letterSpacing = 1.2.sp
         )
@@ -1248,7 +1249,7 @@ fun DetailBox(title: String, value: String, modifier: Modifier = Modifier) {
             text = value,
             fontSize = 20.sp,
             fontWeight = FontWeight.Black,
-            color = Color.White
+            color = AppColors.TextPrimary
         )
     }
 }

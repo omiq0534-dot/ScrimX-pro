@@ -12,6 +12,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
+import com.example.ui.theme.AppColors
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -84,7 +85,7 @@ fun SplashScreen(navController: NavController) {
         ) {
             Text(
                 text = "SCRIM ",
-                color = Color.White.copy(alpha = alphaAnimation.value),
+                color = AppColors.TextPrimary.copy(alpha = alphaAnimation.value),
                 fontSize = 44.sp,
                 fontWeight = FontWeight.Black,
                 letterSpacing = 2.sp
@@ -92,7 +93,7 @@ fun SplashScreen(navController: NavController) {
             
             val currentColor = androidx.compose.ui.graphics.lerp(
                 Color(0xFFFF003C), 
-                Color.White, 
+                AppColors.TextPrimary, 
                 flashAmount.value
             )
             

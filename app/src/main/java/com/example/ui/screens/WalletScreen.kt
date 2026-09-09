@@ -35,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
+import com.example.ui.theme.AppColors
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
@@ -380,7 +381,7 @@ fun WalletScreen(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(Color(0xFFFFD700)))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("ADD CASH VIA QR / UPI", fontWeight = FontWeight.Black, color = Color.White, fontSize = 15.sp)
+                    Text("ADD CASH VIA QR / UPI", fontWeight = FontWeight.Black, color = AppColors.TextPrimary, fontSize = 15.sp)
                 }
             },
             text = {
@@ -486,7 +487,7 @@ fun WalletScreen(
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text("OFFICIAL TOURNAMENT UPI ID", color = Color(0xFF75798E), fontSize = 8.5.sp, fontWeight = FontWeight.Black)
-                                Text(targetUpi, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                Text(targetUpi, color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                             }
                             IconButton(
                                 onClick = {
@@ -685,7 +686,7 @@ fun WalletScreen(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(Color(0xFF00E676)))
                     Spacer(modifier = Modifier.width(10.dp))
-                    Text("WITHDRAW WINNINGS", fontWeight = FontWeight.Black, color = Color.White, fontSize = 16.sp)
+                    Text("WITHDRAW WINNINGS", fontWeight = FontWeight.Black, color = AppColors.TextPrimary, fontSize = 16.sp)
                 }
             },
             text = {
@@ -844,7 +845,7 @@ fun WalletScreen(
                             Divider(color = Color(0xFF262938))
                             Text(
                                 "🎁 HOW TO USE YOUR COINS:",
-                                color = Color.White,
+                                color = AppColors.TextPrimary,
                                 fontWeight = FontWeight.Black,
                                 fontSize = 12.sp
                             )
@@ -930,7 +931,7 @@ fun WalletScreen(
                             Text("WATCH & EARN", color = Color(0xFFFFD700), fontWeight = FontWeight.Black, fontSize = 11.sp, letterSpacing = 1.sp)
                         }
                         Spacer(modifier = Modifier.height(2.dp))
-                        Text("Get +15 Free Coins per ad!", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                        Text("Get +15 Free Coins per ad!", color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                         Text("Watch sponsor videos to join matches without depositing cash", color = Color(0xFFC0C4D6), fontSize = 11.sp)
                     }
 
@@ -1060,13 +1061,13 @@ fun RealMoneyCardV2(balance: Int, onAddCash: () -> Unit, onWithdraw: () -> Unit)
                     .border(1.dp, Color.White.copy(alpha = 0.2f), RoundedCornerShape(8.dp))
                     .padding(horizontal = 10.dp, vertical = 4.dp)
             ) {
-                Text("INR (₹)", fontWeight = FontWeight.Black, fontSize = 11.sp, color = Color.White)
+                Text("INR (₹)", fontWeight = FontWeight.Black, fontSize = 11.sp, color = AppColors.TextPrimary)
             }
         }
         
         Spacer(modifier = Modifier.height(18.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("₹$balance", fontSize = 40.sp, fontWeight = FontWeight.Black, color = Color.White, letterSpacing = (-0.5).sp)
+            Text("₹$balance", fontSize = 40.sp, fontWeight = FontWeight.Black, color = AppColors.TextPrimary, letterSpacing = (-0.5).sp)
         }
         Spacer(modifier = Modifier.height(22.dp))
         
@@ -1136,11 +1137,11 @@ fun AppMoneyCardV2(balance: Int, onOpenStore: () -> Unit = {}, onConvert: () -> 
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
-                    Text("App Coins", fontWeight = FontWeight.Black, fontSize = 17.sp, color = Color.White)
+                    Text("App Coins", fontWeight = FontWeight.Black, fontSize = 17.sp, color = AppColors.TextPrimary)
                     Text("Earned from Watch Ad & Spin", fontSize = 11.sp, color = Color(0xFF9CA3AF))
                 }
             }
-            Text("$balance 🪙", fontWeight = FontWeight.Black, fontSize = 20.sp, color = Color.White)
+            Text("$balance 🪙", fontWeight = FontWeight.Black, fontSize = 20.sp, color = AppColors.TextPrimary)
         }
         
         Spacer(modifier = Modifier.height(16.dp))

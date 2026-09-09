@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import com.example.ui.theme.AppColors
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -150,7 +151,7 @@ fun CustomerSupportScreen(navController: NavController) {
                         "Help & Support",
                         fontWeight = FontWeight.Black,
                         fontSize = 20.sp,
-                        color = Color.Black
+                        color = AppColors.ScreenBackground
                     )
                 },
                 navigationIcon = {
@@ -158,7 +159,7 @@ fun CustomerSupportScreen(navController: NavController) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
-                            tint = Color.Black
+                            tint = AppColors.ScreenBackground
                         )
                     }
                 },
@@ -176,8 +177,8 @@ fun CustomerSupportScreen(navController: NavController) {
             // Tabs: Contact & FAQs vs Ask Question / My Tickets
             TabRow(
                 selectedTabIndex = activeTab,
-                containerColor = Color.White,
-                contentColor = Color.Black,
+                containerColor = AppColors.TextPrimary,
+                contentColor = AppColors.ScreenBackground,
                 divider = { HorizontalDivider(color = Color(0xFFE2E8F0)) }
             ) {
                 Tab(
@@ -201,7 +202,7 @@ fun CustomerSupportScreen(navController: NavController) {
                                 ) {
                                     Text(
                                         "${myTickets.size}",
-                                        color = if (myAnsweredCount > 0) Color.Black else Color.White,
+                                        color = if (myAnsweredCount > 0) AppColors.ScreenBackground else AppColors.TextPrimary,
                                         fontSize = 10.sp,
                                         fontWeight = FontWeight.Black
                                     )
@@ -229,7 +230,7 @@ fun CustomerSupportScreen(navController: NavController) {
                                 .clip(RoundedCornerShape(22.dp))
                                 .background(
                                     Brush.linearGradient(
-                                        listOf(Color(0xFF0F172A), Color(0xFF1E293B))
+                                        listOf(Color(0xFF0F172A), AppColors.BorderColor)
                                     )
                                 )
                                 .border(1.dp, Color(0xFF334155), RoundedCornerShape(22.dp))
@@ -265,7 +266,7 @@ fun CustomerSupportScreen(navController: NavController) {
                                         )
                                         Text(
                                             "How can we help you?",
-                                            color = Color.White,
+                                            color = AppColors.TextPrimary,
                                             fontWeight = FontWeight.Black,
                                             fontSize = 17.sp
                                         )
@@ -314,7 +315,7 @@ fun CustomerSupportScreen(navController: NavController) {
                         ) {
                             Icon(Icons.Default.HelpOutline, contentDescription = null, tint = Color(0xFFFFD700))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("ASK A QUESTION / RAISE TICKET", fontWeight = FontWeight.Black, fontSize = 13.sp, color = Color.White)
+                            Text("ASK A QUESTION / RAISE TICKET", fontWeight = FontWeight.Black, fontSize = 13.sp, color = AppColors.TextPrimary)
                         }
 
                         Text(
@@ -454,7 +455,7 @@ fun CustomerSupportScreen(navController: NavController) {
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(20.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            colors = CardDefaults.cardColors(containerColor = AppColors.TextPrimary),
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                         ) {
                             Column(
@@ -490,7 +491,7 @@ fun CustomerSupportScreen(navController: NavController) {
                                             label = { Text(cat, fontSize = 11.sp) },
                                             colors = FilterChipDefaults.filterChipColors(
                                                 selectedContainerColor = Color(0xFF0F172A),
-                                                selectedLabelColor = Color.White
+                                                selectedLabelColor = AppColors.TextPrimary
                                             )
                                         )
                                     }
@@ -506,7 +507,7 @@ fun CustomerSupportScreen(navController: NavController) {
                                             label = { Text(cat, fontSize = 11.sp) },
                                             colors = FilterChipDefaults.filterChipColors(
                                                 selectedContainerColor = Color(0xFF0F172A),
-                                                selectedLabelColor = Color.White
+                                                selectedLabelColor = AppColors.TextPrimary
                                             )
                                         )
                                     }
@@ -581,12 +582,12 @@ fun CustomerSupportScreen(navController: NavController) {
                                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0F172A))
                                 ) {
                                     if (isSubmitting) {
-                                        CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))
+                                        CircularProgressIndicator(color = AppColors.TextPrimary, modifier = Modifier.size(20.dp))
                                     } else {
                                         Row(verticalAlignment = Alignment.CenterVertically) {
                                             Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(18.dp))
                                             Spacer(modifier = Modifier.width(8.dp))
-                                            Text("SUBMIT QUERY TO ADMIN", fontWeight = FontWeight.Black, fontSize = 13.sp, color = Color.White)
+                                            Text("SUBMIT QUERY TO ADMIN", fontWeight = FontWeight.Black, fontSize = 13.sp, color = AppColors.TextPrimary)
                                         }
                                     }
                                 }
@@ -607,7 +608,7 @@ fun CustomerSupportScreen(navController: NavController) {
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(16.dp))
-                                    .background(Color.White)
+                                    .background(AppColors.TextPrimary)
                                     .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(16.dp))
                                     .padding(24.dp),
                                 contentAlignment = Alignment.Center
@@ -651,7 +652,7 @@ fun UserTicketCard(ticket: UserSupportTicket) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = AppColors.TextPrimary),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(
@@ -703,7 +704,7 @@ fun UserTicketCard(ticket: UserSupportTicket) {
                 ticket.subject,
                 fontWeight = FontWeight.Black,
                 fontSize = 14.sp,
-                color = Color.Black
+                color = AppColors.ScreenBackground
             )
 
             Text(
@@ -774,7 +775,7 @@ fun SupportActionCard(
             .fillMaxWidth()
             .clickable { onAction() },
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = AppColors.TextPrimary),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Row(
@@ -795,17 +796,17 @@ fun SupportActionCard(
             }
             Spacer(modifier = Modifier.width(14.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(title, fontWeight = FontWeight.Black, fontSize = 14.sp, color = Color.Black)
+                Text(title, fontWeight = FontWeight.Black, fontSize = 14.sp, color = AppColors.ScreenBackground)
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(value, color = Color(0xFF64748B), fontSize = 12.sp)
             }
             Button(
                 onClick = onAction,
                 shape = RoundedCornerShape(10.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Black),
+                colors = ButtonDefaults.buttonColors(containerColor = AppColors.ScreenBackground),
                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
             ) {
-                Text(actionLabel, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                Text(actionLabel, color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 11.sp)
             }
         }
     }
@@ -820,7 +821,7 @@ fun FaqCard(question: String, answer: String) {
             .fillMaxWidth()
             .clickable { expanded = !expanded },
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = AppColors.TextPrimary),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(
@@ -838,7 +839,7 @@ fun FaqCard(question: String, answer: String) {
                     question,
                     fontWeight = FontWeight.Bold,
                     fontSize = 13.sp,
-                    color = Color.Black,
+                    color = AppColors.ScreenBackground,
                     modifier = Modifier.weight(1f)
                 )
                 Icon(

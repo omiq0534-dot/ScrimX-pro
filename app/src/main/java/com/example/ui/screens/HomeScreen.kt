@@ -32,6 +32,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import com.example.ui.theme.AppColors
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -71,6 +72,7 @@ data class WheelPrize(
 
 @Composable
 fun SpinWheelIcon(modifier: Modifier = Modifier) {
+    val canvasColor = AppColors.TextPrimary
     Canvas(modifier = modifier) {
         val radius = size.minDimension / 2f
         val center = Offset(size.width / 2f, size.height / 2f)
@@ -99,7 +101,7 @@ fun SpinWheelIcon(modifier: Modifier = Modifier) {
             radius = radius * 0.38f
         )
         drawCircle(
-            color = Color.White,
+            color = canvasColor,
             radius = radius * 0.16f
         )
         // Pointer needle at top
@@ -109,7 +111,7 @@ fun SpinWheelIcon(modifier: Modifier = Modifier) {
             lineTo(center.x + 3.dp.toPx(), 8.dp.toPx())
             close()
         }
-        drawPath(needlePath, color = Color.White)
+        drawPath(needlePath, color = canvasColor)
     }
 }
 
@@ -201,7 +203,7 @@ fun HomeScreen(
                     Text(
                         "WATCH & EARN / LIVE",
                         fontWeight = FontWeight.Black,
-                        color = Color.White,
+                        color = AppColors.TextPrimary,
                         fontSize = 16.sp,
                         letterSpacing = 0.5.sp
                     )
@@ -308,7 +310,7 @@ fun HomeScreen(
                         ) {
                             Icon(Icons.Default.LiveTv, contentDescription = null, tint = Color(0xFFFF5252), modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("WATCH TOURNAMENT LIVE (YT)", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                            Text("WATCH TOURNAMENT LIVE (YT)", color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                         }
                 }
             },
@@ -329,7 +331,7 @@ fun HomeScreen(
             onDismissRequest = { showDailyDialog = false },
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("DAILY REWARD 🎁", fontWeight = FontWeight.Black, color = Color.White, fontSize = 16.sp)
+                    Text("DAILY REWARD 🎁", fontWeight = FontWeight.Black, color = AppColors.TextPrimary, fontSize = 16.sp)
                     Spacer(modifier = Modifier.weight(1f))
                     Box(
                         modifier = Modifier
@@ -466,7 +468,7 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("LUCKY SPIN WHEEL 🎰", fontWeight = FontWeight.Black, color = Color.White, fontSize = 16.sp)
+                    Text("LUCKY SPIN WHEEL 🎰", fontWeight = FontWeight.Black, color = AppColors.TextPrimary, fontSize = 16.sp)
                     Surface(
                         color = if (spinsRemaining > 0) Color(0xFF10B981).copy(alpha = 0.2f) else Color(0xFFEF4444).copy(alpha = 0.2f),
                         shape = RoundedCornerShape(12.dp)
@@ -809,7 +811,7 @@ fun TopWalletBar(
                 val initial = userName.trim().firstOrNull()?.toString()?.uppercase() ?: "P"
                 Text(
                     text = initial, 
-                    color = Color.White, 
+                    color = AppColors.TextPrimary, 
                     fontWeight = FontWeight.Black, 
                     fontSize = 17.sp
                 )
@@ -872,7 +874,7 @@ fun TopWalletBar(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.Campaign, contentDescription = "HQ", tint = Color(0xFFFF0055), modifier = Modifier.size(15.dp))
                         Spacer(modifier = Modifier.width(3.dp))
-                        Text("HQ", fontWeight = FontWeight.Black, fontSize = 10.sp, color = Color.White, maxLines = 1, softWrap = false)
+                        Text("HQ", fontWeight = FontWeight.Black, fontSize = 10.sp, color = AppColors.TextPrimary, maxLines = 1, softWrap = false)
                     }
                 }
             }
@@ -882,7 +884,7 @@ fun TopWalletBar(
                 modifier = Modifier
                     .clip(RoundedCornerShape(24.dp))
                     .background(Color(0xFF111319))
-                    .border(1.dp, Color(0xFF262A38), RoundedCornerShape(24.dp))
+                    .border(1.dp, AppColors.BorderColor, RoundedCornerShape(24.dp))
                     .clickable { onWalletClick() }
                     .padding(2.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -901,7 +903,7 @@ fun TopWalletBar(
                         "$appMoney",
                         fontWeight = FontWeight.Black,
                         fontSize = 12.sp,
-                        color = Color.White,
+                        color = AppColors.TextPrimary,
                         maxLines = 1,
                         softWrap = false
                     )
@@ -921,7 +923,7 @@ fun TopWalletBar(
                         "₹$realMoney",
                         fontWeight = FontWeight.Black,
                         fontSize = 12.sp,
-                        color = Color.White,
+                        color = AppColors.TextPrimary,
                         maxLines = 1,
                         softWrap = false
                     )
@@ -982,7 +984,8 @@ fun EarnCard(
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(if (isPressed) 0.92f else 1f, label = "ScaleAnim")
     
-    val baseGlowColor = Color.White
+    val baseGlowColor = AppColors.TextPrimary
+    val canvasColor = AppColors.TextPrimary
 
     Box(
         modifier = modifier
@@ -993,8 +996,8 @@ fun EarnCard(
                 indication = androidx.compose.foundation.LocalIndication.current,
                 onClick = onClick
             )
-            .background(Color(0xFF14161F))
-            .border(1.dp, Color(0xFF262A38), RoundedCornerShape(24.dp))
+            .background(AppColors.CardBackground)
+            .border(1.dp, AppColors.BorderColor, RoundedCornerShape(24.dp))
     ) {
         // Bottom Inner Glow and 3D effects (Static and Softer)
         Canvas(modifier = Modifier.matchParentSize()) {
@@ -1024,7 +1027,7 @@ fun EarnCard(
 
             // Top highlight
             drawLine(
-                color = Color.White.copy(alpha = 0.04f),
+                color = canvasColor.copy(alpha = 0.04f),
                 start = Offset(0f, 0f),
                 end = Offset(w, 0f),
                 strokeWidth = 4f
@@ -1041,14 +1044,14 @@ fun EarnCard(
                 modifier = Modifier
                     .size(56.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFF1B1E2B))
+                    .background(AppColors.SubCardBackground)
                     .border(1.dp, baseGlowColor.copy(alpha = 0.15f), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 iconContent()
             }
             Spacer(modifier = Modifier.height(12.dp))
-            Text(title, fontWeight = FontWeight.Black, fontSize = 14.sp, color = Color.White, letterSpacing = 0.5.sp)
+            Text(title, fontWeight = FontWeight.Black, fontSize = 14.sp, color = AppColors.TextPrimary, letterSpacing = 0.5.sp)
         }
     }
 }
@@ -1080,7 +1083,7 @@ fun UpcomingMatches(navController: NavController, viewModel: MatchesViewModel = 
             ) {
                 Text(
                     "No upcoming scrims right now.\nCheck back shortly or create one from Admin!",
-                    color = Color.White,
+                    color = AppColors.TextPrimary,
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -1159,7 +1162,7 @@ fun HomeRewardsStoreBanner(onClick: () -> Unit) {
                     ) {
                         Text(
                             "REWARDS STORE",
-                            color = Color.White,
+                            color = AppColors.TextPrimary,
                             fontWeight = FontWeight.Black,
                             fontSize = 13.5.sp,
                             letterSpacing = 0.5.sp

@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
+import com.example.ui.theme.AppColors
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -81,8 +82,8 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
         colors = listOf(
             Color.Transparent,
             Color.Transparent,
-            Color.White,
-            Color.White,
+            AppColors.TextPrimary,
+            AppColors.TextPrimary,
             Color.Transparent,
             Color.Transparent
         )
@@ -91,9 +92,9 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
     val buttonSweepBrush = Brush.sweepGradient(
         colors = listOf(
             Color.Transparent,
-            Color.White,
+            AppColors.TextPrimary,
             Color.Transparent,
-            Color.White,
+            AppColors.TextPrimary,
             Color.Transparent
         )
     )
@@ -102,7 +103,7 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White),
+            .background(AppColors.TextPrimary),
         contentAlignment = Alignment.Center
     ) {
         // High-Contrast Deep Black Floating Card
@@ -144,7 +145,7 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
                     modifier = Modifier
                         .weight(1f)
                         .clip(CircleShape)
-                        .background(if (isLogin) Color.White else Color.Transparent)
+                        .background(if (isLogin) AppColors.TextPrimary else Color.Transparent)
                         .clickable {
                             isLogin = true
                             authViewModel.clearError()
@@ -154,7 +155,7 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
                 ) {
                     Text(
                         "Login",
-                        color = if (isLogin) Color.Black else Color(0xFF9CA3AF),
+                        color = if (isLogin) AppColors.ScreenBackground else Color(0xFF9CA3AF),
                         fontWeight = FontWeight.Black,
                         fontSize = 14.sp
                     )
@@ -163,7 +164,7 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
                     modifier = Modifier
                         .weight(1f)
                         .clip(CircleShape)
-                        .background(if (!isLogin) Color.White else Color.Transparent)
+                        .background(if (!isLogin) AppColors.TextPrimary else Color.Transparent)
                         .clickable {
                             isLogin = false
                             authViewModel.clearError()
@@ -173,7 +174,7 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
                 ) {
                     Text(
                         "Register",
-                        color = if (!isLogin) Color.Black else Color(0xFF9CA3AF),
+                        color = if (!isLogin) AppColors.ScreenBackground else Color(0xFF9CA3AF),
                         fontWeight = FontWeight.Black,
                         fontSize = 14.sp
                     )
@@ -186,7 +187,7 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
                 text = if (isLogin) "Welcome Back" else "Create Account",
                 fontSize = 26.sp,
                 fontWeight = FontWeight.Black,
-                color = Color.White,
+                color = AppColors.TextPrimary,
                 letterSpacing = (-0.5).sp
             )
             Spacer(modifier = Modifier.height(6.dp))
@@ -205,15 +206,15 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
                     onValueChange = { name = it },
                     singleLine = true,
                     placeholder = { Text("Full Name / Gamer Tag", color = Color(0xFF6B7280)) },
-                    leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = Color.White) },
+                    leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = AppColors.TextPrimary) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Next),
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = Color(0xFF1A1D27),
                         unfocusedContainerColor = Color(0xFF1A1D27),
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent,
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White
+                        focusedTextColor = AppColors.TextPrimary,
+                        unfocusedTextColor = AppColors.TextPrimary
                     ),
                     shape = CircleShape,
                     modifier = Modifier
@@ -232,15 +233,15 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
                 },
                 singleLine = true,
                 placeholder = { Text("Email Address", color = Color(0xFF6B7280)) },
-                leadingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = Color.White) },
+                leadingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = AppColors.TextPrimary) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color(0xFF1A1D27),
                     unfocusedContainerColor = Color(0xFF1A1D27),
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White
+                    focusedTextColor = AppColors.TextPrimary,
+                    unfocusedTextColor = AppColors.TextPrimary
                 ),
                 shape = CircleShape,
                 modifier = Modifier
@@ -259,7 +260,7 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
                 },
                 singleLine = true,
                 placeholder = { Text("Password", color = Color(0xFF6B7280)) },
-                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = Color.White) },
+                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = AppColors.TextPrimary) },
                 trailingIcon = {
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
                         Icon(
@@ -276,8 +277,8 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
                     unfocusedContainerColor = Color(0xFF1A1D27),
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White
+                    focusedTextColor = AppColors.TextPrimary,
+                    unfocusedTextColor = AppColors.TextPrimary
                 ),
                 shape = CircleShape,
                 modifier = Modifier
@@ -333,7 +334,7 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
                     }
                     .padding(2.5.dp)
                     .clip(CircleShape)
-                    .background(Color.White)
+                    .background(AppColors.TextPrimary)
             ) {
                 Button(
                     onClick = {
@@ -347,20 +348,20 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
                     },
                     modifier = Modifier.fillMaxSize(),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = Color.Black
+                        containerColor = AppColors.TextPrimary,
+                        contentColor = AppColors.ScreenBackground
                     ),
                     shape = CircleShape
                 ) {
                     if (authState is AuthState.Loading) {
-                        CircularProgressIndicator(color = Color.Black, modifier = Modifier.size(24.dp))
+                        CircularProgressIndicator(color = AppColors.ScreenBackground, modifier = Modifier.size(24.dp))
                     } else {
                         Text(
                             text = if (isLogin) "LOGIN" else "REGISTER", 
                             fontWeight = FontWeight.Black, 
                             fontSize = 15.sp, 
                             letterSpacing = 1.sp,
-                            color = Color.Black
+                            color = AppColors.ScreenBackground
                         )
                     }
                 }
@@ -408,7 +409,7 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
                     modifier = Modifier.fillMaxSize(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF151822),
-                        contentColor = Color.White
+                        contentColor = AppColors.TextPrimary
                     ),
                     shape = CircleShape,
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp)
@@ -428,7 +429,7 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
                             "Continue with Google",
                             fontWeight = FontWeight.Black,
                             fontSize = 14.sp,
-                            color = Color.White,
+                            color = AppColors.TextPrimary,
                             letterSpacing = 0.5.sp
                         )
                     }
@@ -473,7 +474,7 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
             title = {
                 Text(
                     "Reset Password",
-                    color = Color.White,
+                    color = AppColors.TextPrimary,
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp
                 )
@@ -496,8 +497,8 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
                             unfocusedContainerColor = Color(0xFF1A1D27),
                             focusedIndicatorColor = Color.Transparent,
                             unfocusedIndicatorColor = Color.Transparent,
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White
+                            focusedTextColor = AppColors.TextPrimary,
+                            unfocusedTextColor = AppColors.TextPrimary
                         ),
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.fillMaxWidth()
@@ -526,11 +527,11 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
                             resetStatusMessage = msg
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.Black),
+                    colors = ButtonDefaults.buttonColors(containerColor = AppColors.TextPrimary, contentColor = AppColors.ScreenBackground),
                     shape = RoundedCornerShape(10.dp)
                 ) {
                     if (isResetLoading) {
-                        CircularProgressIndicator(color = Color.Black, modifier = Modifier.size(16.dp))
+                        CircularProgressIndicator(color = AppColors.ScreenBackground, modifier = Modifier.size(16.dp))
                     } else {
                         Text("Send Link", fontWeight = FontWeight.Bold)
                     }

@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
+import com.example.ui.theme.AppColors
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.platform.LocalContext
@@ -267,9 +268,9 @@ fun AppBottomNav(navController: NavController) {
         colors = listOf(
             Color.Transparent,
             Color.Transparent,
-            Color.Black.copy(alpha = 0.1f),
-            Color.Black.copy(alpha = 0.8f),
-            Color.Black.copy(alpha = 0.1f),
+            AppColors.TextPrimary.copy(alpha = 0.1f),
+            AppColors.PrimaryAccent,
+            AppColors.TextPrimary.copy(alpha = 0.1f),
             Color.Transparent,
             Color.Transparent
         )
@@ -288,9 +289,9 @@ fun AppBottomNav(navController: NavController) {
                     )
                 }
             }
-            .padding(2.dp) // border thickness
+            .padding(1.dp) // border thickness
             .clip(RoundedCornerShape(26.dp))
-            .background(Color.White)
+            .background(AppColors.CardBackground)
     ) {
         NavigationBar(
             containerColor = Color.Transparent,
@@ -310,11 +311,11 @@ fun AppBottomNav(navController: NavController) {
                 icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
                 label = { Text("Home", fontWeight = FontWeight.Bold) },
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = Color.Black,
-                    selectedTextColor = Color.Black,
-                    indicatorColor = Color(0xFFF5F5F5),
-                    unselectedIconColor = Color.Gray,
-                    unselectedTextColor = Color.Gray
+                    selectedIconColor = AppColors.ButtonContent,
+                    selectedTextColor = AppColors.TextPrimary,
+                    indicatorColor = AppColors.ButtonContainer,
+                    unselectedIconColor = AppColors.TextSecondary,
+                    unselectedTextColor = AppColors.TextSecondary
                 )
             )
             // Matches
@@ -330,11 +331,11 @@ fun AppBottomNav(navController: NavController) {
                 icon = { Icon(Icons.Default.SportsEsports, contentDescription = "Matches") },
                 label = { Text("Matches", fontWeight = FontWeight.Medium) },
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = Color.Black,
-                    selectedTextColor = Color.Black,
-                    indicatorColor = Color(0xFFF5F5F5),
-                    unselectedIconColor = Color.Gray,
-                    unselectedTextColor = Color.Gray
+                    selectedIconColor = AppColors.ButtonContent,
+                    selectedTextColor = AppColors.TextPrimary,
+                    indicatorColor = AppColors.ButtonContainer,
+                    unselectedIconColor = AppColors.TextSecondary,
+                    unselectedTextColor = AppColors.TextSecondary
                 )
             )
             // Wallet
@@ -350,11 +351,11 @@ fun AppBottomNav(navController: NavController) {
                 icon = { Icon(Icons.Default.AccountBalanceWallet, contentDescription = "Wallet") },
                 label = { Text("Wallet", fontWeight = FontWeight.Medium) },
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = Color.Black,
-                    selectedTextColor = Color.Black,
-                    indicatorColor = Color(0xFFF5F5F5),
-                    unselectedIconColor = Color.Gray,
-                    unselectedTextColor = Color.Gray
+                    selectedIconColor = AppColors.ButtonContent,
+                    selectedTextColor = AppColors.TextPrimary,
+                    indicatorColor = AppColors.ButtonContainer,
+                    unselectedIconColor = AppColors.TextSecondary,
+                    unselectedTextColor = AppColors.TextSecondary
                 )
             )
             // Profile
@@ -370,11 +371,11 @@ fun AppBottomNav(navController: NavController) {
                 icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
                 label = { Text("Profile", fontWeight = FontWeight.Medium) },
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = Color.Black,
-                    selectedTextColor = Color.Black,
-                    indicatorColor = Color(0xFFF5F5F5),
-                    unselectedIconColor = Color.Gray,
-                    unselectedTextColor = Color.Gray
+                    selectedIconColor = AppColors.ButtonContent,
+                    selectedTextColor = AppColors.TextPrimary,
+                    indicatorColor = AppColors.ButtonContainer,
+                    unselectedIconColor = AppColors.TextSecondary,
+                    unselectedTextColor = AppColors.TextSecondary
                 )
             )
         }

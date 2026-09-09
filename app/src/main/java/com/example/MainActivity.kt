@@ -17,6 +17,7 @@ import com.example.ui.screens.MatchDetailsScreen
 import com.example.ui.screens.LoginScreen
 import com.example.ui.screens.SplashScreen
 import com.example.ui.theme.MyApplicationTheme
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.CompositionLocalProvider
 
 class MainActivity : ComponentActivity() {
@@ -26,9 +27,13 @@ class MainActivity : ComponentActivity() {
     FirebaseHelper.init(this)
     com.example.ads.UnityAdsManager.syncFromFirestore(this)
     com.example.utils.NotificationHelper.initNotificationChannels(this)
+    com.example.ui.theme.ThemeManager.init(this)
     enableEdgeToEdge()
+    
     setContent {
-      MyApplicationTheme {
+      val isDarkTheme = com.example.ui.theme.ThemeManager.isDarkTheme.collectAsState().value
+      MyApplicationTheme(darkTheme = isDarkTheme, dynamicColor = false) {
+
         com.example.ui.components.RequestNotificationPermissionOnLaunch()
         Surface(
           modifier = Modifier.fillMaxSize(),
