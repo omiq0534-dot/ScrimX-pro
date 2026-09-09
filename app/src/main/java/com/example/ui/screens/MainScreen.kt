@@ -1,5 +1,5 @@
 package com.example.ui.screens
-import com.example.ui.theme.GlassScaffold
+
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.*
@@ -165,8 +165,7 @@ fun MainScreen(
         return
     }
 
-    GlassScaffold { hazeState ->
-    Scaffold(containerColor = androidx.compose.ui.graphics.Color.Transparent,
+    Scaffold(containerColor = AppColors.ScreenBackground,
         topBar = {
             // Admin VIP Status Indicator Bar when Maintenance or Updates are Active
             if (isAdmin && (appConfig.isMaintenanceMode || isAppOutdated)) {
@@ -249,34 +248,30 @@ fun MainScreen(
             }
         }
     }
-    } // End GlassScaffold
 }
+
 
 @Composable
 fun AppBottomNav(navController: NavController) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    val infiniteTransition = rememberInfiniteTransition(label = "glow_transition")
+    val infiniteTransition = androidx.compose.animation.core.rememberInfiniteTransition(label = "glow_transition")
     val angle by infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(4000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
+        animationSpec = androidx.compose.animation.core.infiniteRepeatable(
+            animation = androidx.compose.animation.core.tween(4000, easing = androidx.compose.animation.core.LinearEasing),
+            repeatMode = androidx.compose.animation.core.RepeatMode.Restart
         ),
         label = "glow_angle"
     )
 
-    val sweepBrush = Brush.sweepGradient(
+    val sweepBrush = androidx.compose.ui.graphics.Brush.sweepGradient(
         colors = listOf(
-            Color.Transparent,
-            Color.Transparent,
-            AppColors.TextPrimary.copy(alpha = 0.1f),
-            AppColors.PrimaryAccent,
-            AppColors.TextPrimary.copy(alpha = 0.1f),
-            Color.Transparent,
-            Color.Transparent
+            androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.1f),
+            androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.8f),
+            androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.1f)
         )
     )
 
@@ -293,14 +288,15 @@ fun AppBottomNav(navController: NavController) {
                     )
                 }
             }
-            .padding(1.dp) // border thickness
+            .padding(2.dp) // border thickness
             .clip(RoundedCornerShape(26.dp))
-            .glassCard()
+            .background(androidx.compose.ui.graphics.Color.White)
     ) {
         NavigationBar(
-            containerColor = Color.Transparent,
-            tonalElevation = 0.dp,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            containerColor = androidx.compose.ui.graphics.Color.Transparent,
+            contentColor = androidx.compose.ui.graphics.Color.Black,
+            tonalElevation = 0.dp
         ) {
             // Home
             NavigationBarItem(
@@ -313,15 +309,16 @@ fun AppBottomNav(navController: NavController) {
                     }
                 },
                 icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
-                label = { Text("Home", fontWeight = FontWeight.Bold) },
+                label = { Text("Home", fontWeight = FontWeight.Medium) },
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = AppColors.ButtonContent,
-                    selectedTextColor = AppColors.TextPrimary,
-                    indicatorColor = AppColors.ButtonContainer,
-                    unselectedIconColor = AppColors.TextSecondary,
-                    unselectedTextColor = AppColors.TextSecondary
+                    selectedIconColor = androidx.compose.ui.graphics.Color.Black,
+                    selectedTextColor = androidx.compose.ui.graphics.Color.Black,
+                    indicatorColor = androidx.compose.ui.graphics.Color(0xFFF5F5F5),
+                    unselectedIconColor = androidx.compose.ui.graphics.Color.Gray,
+                    unselectedTextColor = androidx.compose.ui.graphics.Color.Gray
                 )
             )
+
             // Matches
             NavigationBarItem(
                 selected = currentDestination?.hierarchy?.any { it.route == "matches_tab" } == true,
@@ -335,13 +332,14 @@ fun AppBottomNav(navController: NavController) {
                 icon = { Icon(Icons.Default.SportsEsports, contentDescription = "Matches") },
                 label = { Text("Matches", fontWeight = FontWeight.Medium) },
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = AppColors.ButtonContent,
-                    selectedTextColor = AppColors.TextPrimary,
-                    indicatorColor = AppColors.ButtonContainer,
-                    unselectedIconColor = AppColors.TextSecondary,
-                    unselectedTextColor = AppColors.TextSecondary
+                    selectedIconColor = androidx.compose.ui.graphics.Color.Black,
+                    selectedTextColor = androidx.compose.ui.graphics.Color.Black,
+                    indicatorColor = androidx.compose.ui.graphics.Color(0xFFF5F5F5),
+                    unselectedIconColor = androidx.compose.ui.graphics.Color.Gray,
+                    unselectedTextColor = androidx.compose.ui.graphics.Color.Gray
                 )
             )
+
             // Wallet
             NavigationBarItem(
                 selected = currentDestination?.hierarchy?.any { it.route == "wallet_tab" } == true,
@@ -355,13 +353,14 @@ fun AppBottomNav(navController: NavController) {
                 icon = { Icon(Icons.Default.AccountBalanceWallet, contentDescription = "Wallet") },
                 label = { Text("Wallet", fontWeight = FontWeight.Medium) },
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = AppColors.ButtonContent,
-                    selectedTextColor = AppColors.TextPrimary,
-                    indicatorColor = AppColors.ButtonContainer,
-                    unselectedIconColor = AppColors.TextSecondary,
-                    unselectedTextColor = AppColors.TextSecondary
+                    selectedIconColor = androidx.compose.ui.graphics.Color.Black,
+                    selectedTextColor = androidx.compose.ui.graphics.Color.Black,
+                    indicatorColor = androidx.compose.ui.graphics.Color(0xFFF5F5F5),
+                    unselectedIconColor = androidx.compose.ui.graphics.Color.Gray,
+                    unselectedTextColor = androidx.compose.ui.graphics.Color.Gray
                 )
             )
+
             // Profile
             NavigationBarItem(
                 selected = currentDestination?.hierarchy?.any { it.route == "profile_tab" } == true,
@@ -375,11 +374,11 @@ fun AppBottomNav(navController: NavController) {
                 icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
                 label = { Text("Profile", fontWeight = FontWeight.Medium) },
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = AppColors.ButtonContent,
-                    selectedTextColor = AppColors.TextPrimary,
-                    indicatorColor = AppColors.ButtonContainer,
-                    unselectedIconColor = AppColors.TextSecondary,
-                    unselectedTextColor = AppColors.TextSecondary
+                    selectedIconColor = androidx.compose.ui.graphics.Color.Black,
+                    selectedTextColor = androidx.compose.ui.graphics.Color.Black,
+                    indicatorColor = androidx.compose.ui.graphics.Color(0xFFF5F5F5),
+                    unselectedIconColor = androidx.compose.ui.graphics.Color.Gray,
+                    unselectedTextColor = androidx.compose.ui.graphics.Color.Gray
                 )
             )
         }

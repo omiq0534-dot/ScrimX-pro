@@ -17,7 +17,8 @@ import com.example.ui.screens.MatchDetailsScreen
 import com.example.ui.screens.LoginScreen
 import com.example.ui.screens.SplashScreen
 import com.example.ui.theme.MyApplicationTheme
-import com.example.ui.theme.glassBackground
+
+
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.CompositionLocalProvider
 
@@ -36,10 +37,7 @@ class MainActivity : ComponentActivity() {
       MyApplicationTheme(darkTheme = isDarkTheme, dynamicColor = false) {
 
         com.example.ui.components.RequestNotificationPermissionOnLaunch()
-        Surface(
-          modifier = Modifier.fillMaxSize().glassBackground(),
-          color = androidx.compose.ui.graphics.Color.Transparent
-        ) {
+        Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
           CompositionLocalProvider(androidx.compose.material3.LocalContentColor provides androidx.compose.ui.graphics.Color.Black) {
             val navController = rememberNavController()
             NavHost(navController = navController, startDestination = "splash") {

@@ -43,9 +43,6 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
-import com.example.ui.theme.AppColors
-import com.example.ui.theme.glassCard
-import com.example.ui.theme.glassBackground
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.animation.*
@@ -54,8 +51,6 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -91,7 +86,7 @@ fun StoreScreen(
         val effectivePrice = storeViewModel.getEffectivePrice(item)
         val isItemActive = storeViewModel.isItemEnabled(item)
         AlertDialog(
-            containerColor = AppColors.TextPrimary,
+            containerColor = Color.White,
             onDismissRequest = { if (!isLoading) selectedItemForPurchase = null },
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -102,14 +97,14 @@ fun StoreScreen(
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(10.dp))
-                    Text("Confirm Redemption", color = AppColors.TextPrimary, fontWeight = FontWeight.Black, fontSize = 17.sp)
+                    Text("Confirm Redemption", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 17.sp)
                 }
             },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(
                         "Are you sure you want to unlock ${item.title}?",
-                        color = AppColors.TextSecondary,
+                        color = Color.DarkGray,
                         fontSize = 13.sp
                     )
                     // Price Breakdown Box
@@ -126,9 +121,9 @@ fun StoreScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text("Item Price:", color = AppColors.TextSecondary, fontSize = 12.sp)
+                                Text("Item Price:", color = Color(0xFF8E93A6), fontSize = 12.sp)
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Default.Star, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(14.dp))
+                                    Icon(Icons.Default.MonetizationOn, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(14.dp))
                                     Spacer(modifier = Modifier.width(3.dp))
                                     Text("$effectivePrice Coins", color = Color(0xFFFFD700), fontWeight = FontWeight.Bold, fontSize = 12.sp)
                                 }
@@ -137,11 +132,11 @@ fun StoreScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text("Your Balance:", color = AppColors.TextSecondary, fontSize = 12.sp)
+                                Text("Your Balance:", color = Color(0xFF8E93A6), fontSize = 12.sp)
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Default.Star, contentDescription = null, tint = Color.Black, modifier = Modifier.size(14.dp))
+                                    Icon(Icons.Default.MonetizationOn, contentDescription = null, tint = Color.Black, modifier = Modifier.size(14.dp))
                                     Spacer(modifier = Modifier.width(3.dp))
-                                    Text("$userCoins Coins", color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                    Text("$userCoins Coins", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                                 }
                             }
                             Divider(color = Color(0xFF262938), modifier = Modifier.padding(vertical = 2.dp))
@@ -149,7 +144,7 @@ fun StoreScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text("Remaining After:", color = AppColors.TextSecondary, fontSize = 12.sp)
+                                Text("Remaining After:", color = Color(0xFF8E93A6), fontSize = 12.sp)
                                 val remaining = userCoins - effectivePrice
                                 Text(
                                     "$remaining Coins",
@@ -194,13 +189,13 @@ fun StoreScreen(
                         )
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isItemActive) Color(0xFFFFD700) else AppColors.BorderColor
+                        containerColor = if (isItemActive) Color(0xFFFFD700) else Color(0xFF333333)
                     ),
                     enabled = isItemActive && userCoins >= effectivePrice && !isLoading,
                     shape = RoundedCornerShape(10.dp)
                 ) {
                     if (isLoading) {
-                        CircularProgressIndicator(color = AppColors.TextPrimary, modifier = Modifier.size(18.dp))
+                        CircularProgressIndicator(color = Color.Black, modifier = Modifier.size(18.dp))
                     } else {
                         Text(
                             if (!isItemActive) "OUT OF STOCK / BLOCKED" else "UNLOCK WITH $effectivePrice COINS",
@@ -213,7 +208,7 @@ fun StoreScreen(
             dismissButton = {
                 if (!isLoading) {
                     TextButton(onClick = { selectedItemForPurchase = null }) {
-                        Text("Cancel", color = AppColors.TextSecondary)
+                        Text("Cancel", color = Color(0xFF8E93A6))
                     }
                 }
             }
@@ -265,13 +260,13 @@ fun StoreScreen(
                             "GAMING REWARDS STORE",
                             fontWeight = FontWeight.Black,
                             fontSize = 17.sp,
-                            color = AppColors.TextPrimary,
+                            color = Color.Black,
                             letterSpacing = 0.8.sp
                         )
                         Text(
                             "Jio & Airtel Data Packs, Google Play & VIP Cards",
                             fontSize = 10.sp,
-                            color = AppColors.TextSecondary
+                            color = Color(0xFF8E93A6)
                         )
                     }
                 },
@@ -286,7 +281,7 @@ fun StoreScreen(
                         modifier = Modifier
                             .padding(end = 14.dp)
                             .clip(RoundedCornerShape(20.dp))
-                            .background(AppColors.TextPrimary)
+                            .background(Color.White)
                             .border(1.dp, Color(0xFFFFD700).copy(alpha = 0.5f), RoundedCornerShape(20.dp))
                             .clickable {
                                 Toast.makeText(context, "Coins Balance: $userCoins\nEarn coins via Spin Wheel & Daily Check-in!", Toast.LENGTH_SHORT).show()
@@ -294,18 +289,18 @@ fun StoreScreen(
                             .padding(horizontal = 10.dp, vertical = 6.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Default.Star, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(15.dp))
+                        Icon(Icons.Default.MonetizationOn, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(15.dp))
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             "$userCoins",
-                            color = AppColors.TextPrimary,
+                            color = Color.Black,
                             fontWeight = FontWeight.Black,
                             fontSize = 13.sp
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = AppColors.TextPrimary
+                    containerColor = Color.White
                 )
             )
         }
@@ -337,7 +332,7 @@ fun StoreScreen(
                         modifier = Modifier
                             .weight(1f)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(if (isSelected) AppColors.SubCardBackground else Color.Transparent)
+                            .background(if (isSelected) Color(0xFF262626) else Color.Transparent)
                             .clickable { selectedTab = index }
                             .padding(vertical = 10.dp),
                         contentAlignment = Alignment.Center
@@ -346,13 +341,13 @@ fun StoreScreen(
                             Icon(
                                 tabItem.second,
                                 contentDescription = null,
-                                tint = if (isSelected) AppColors.TextPrimary else AppColors.TextSecondary,
+                                tint = if (isSelected) Color.White else Color(0xFF8E93A6),
                                 modifier = Modifier.size(13.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 text = tabItem.first,
-                                color = if (isSelected) AppColors.TextPrimary else AppColors.TextSecondary,
+                                color = if (isSelected) Color.White else Color(0xFF8E93A6),
                                 fontWeight = if (isSelected) FontWeight.Black else FontWeight.SemiBold,
                                 fontSize = 10.sp,
                                 maxLines = 1
@@ -401,11 +396,11 @@ fun StoreScreen(
                                             modifier = Modifier
                                                 .clip(RoundedCornerShape(12.dp))
                                                 .background(
-                                                    if (isSelected) Color(0xFF141414) else AppColors.TextPrimary
+                                                    if (isSelected) Color(0xFF141414) else Color.White
                                                 )
                                                 .border(
                                                     1.dp,
-                                                    if (isSelected) Color.Transparent else AppColors.BorderColor,
+                                                    if (isSelected) Color.Transparent else Color(0xFFE5E7EB),
                                                     RoundedCornerShape(12.dp)
                                                 )
                                                 .padding(horizontal = 16.dp, vertical = 10.dp),
@@ -413,7 +408,7 @@ fun StoreScreen(
                                         ) {
                                             Text(
                                                 text = title as String,
-                                                color = if (isSelected) AppColors.TextPrimary else AppColors.TextSecondary,
+                                                color = if (isSelected) Color.White else Color(0xFF8E93A6),
                                                 fontWeight = FontWeight.Black,
                                                 fontSize = 11.sp
                                             )
@@ -493,51 +488,7 @@ fun StoreScreen(
                 }
                 3 -> {
                     // My Vault / Purchased Cards
-                    var selectedVaultCat by remember { mutableIntStateOf(0) }
-                    
-                    val filteredVault = purchasedCards.filter {
-                        when (selectedVaultCat) {
-                            1 -> it.category.equals("DATA_RECHARGE", ignoreCase = true)
-                            2 -> it.category.equals("GOOGLE_PLAY", ignoreCase = true)
-                            3 -> !it.category.equals("DATA_RECHARGE", ignoreCase = true) && !it.category.equals("GOOGLE_PLAY", ignoreCase = true)
-                            else -> true
-                        }
-                    }
-
-                    Column(modifier = Modifier.fillMaxSize()) {
-                        ScrollableTabRow(
-                            selectedTabIndex = selectedVaultCat,
-                            containerColor = Color.Transparent,
-                            divider = {},
-                            edgePadding = 16.dp,
-                            indicator = {}
-                        ) {
-                            listOf("ALL", "RECHARGE", "GOOGLE PLAY", "TICKET").forEachIndexed { idx, title ->
-                                val isCatSelected = selectedVaultCat == idx
-                                Tab(
-                                    selected = isCatSelected,
-                                    onClick = { selectedVaultCat = idx },
-                                    modifier = Modifier.padding(end = 8.dp, bottom = 12.dp)
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .clip(RoundedCornerShape(8.dp))
-                                            .background(if (isCatSelected) Color.Black else AppColors.CardBackground)
-                                            .padding(horizontal = 16.dp, vertical = 8.dp)
-                                    ) {
-                                        Text(
-                                            title,
-                                            color = if (isCatSelected) AppColors.TextPrimary else AppColors.TextSecondary,
-                                            fontWeight = FontWeight.Black,
-                                            fontSize = 11.sp,
-                                            letterSpacing = 1.sp
-                                        )
-                                    }
-                                }
-                            }
-                        }
-
-                    if (filteredVault.isEmpty()) {
+                    if (purchasedCards.isEmpty()) {
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -557,10 +508,10 @@ fun StoreScreen(
                                 ) {
                                     Icon(Icons.Default.Inventory2, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(36.dp))
                                 }
-                                Text("Your Vault is Empty", color = AppColors.TextPrimary, fontWeight = FontWeight.Black, fontSize = 18.sp)
+                                Text("Your Vault is Empty", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 18.sp)
                                 Text(
                                     "You haven't unlocked any Google Play cards or VIP Discount Passes yet. Earn coins and redeem your first card!",
-                                    color = AppColors.TextSecondary,
+                                    color = Color(0xFF8E93A6),
                                     fontSize = 12.sp,
                                     textAlign = TextAlign.Center
                                 )
@@ -569,7 +520,7 @@ fun StoreScreen(
                                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700)),
                                     shape = RoundedCornerShape(12.dp)
                                 ) {
-                                    Text("EXPLORE STORE", color = AppColors.TextPrimary, fontWeight = FontWeight.Black)
+                                    Text("EXPLORE STORE", color = Color.Black, fontWeight = FontWeight.Black)
                                 }
                             }
                         }
@@ -585,11 +536,11 @@ fun StoreScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text("My Unlocked Cards & Codes", color = AppColors.TextPrimary, fontWeight = FontWeight.Black, fontSize = 15.sp)
-                                    Text("${filteredVault.size} Items", color = Color(0xFFFFD700), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                    Text("My Unlocked Cards & Codes", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 15.sp)
+                                    Text("${purchasedCards.size} Items", color = Color(0xFFFFD700), fontWeight = FontWeight.Bold, fontSize = 12.sp)
                                 }
                             }
-                            items(filteredVault) { card ->
+                            items(purchasedCards) { card ->
                                 PurchasedCardVaultItem(
                                     card = card,
                                     userName = userName,
@@ -600,7 +551,6 @@ fun StoreScreen(
                             }
                             item { Spacer(modifier = Modifier.height(40.dp)) }
                         }
-                    }
                     }
                 }
             }
@@ -622,7 +572,6 @@ fun FamPayGooglePlayCard(
     onBuyClick: () -> Unit,
     onRequestRestock: () -> Unit
 ) {
-    val textPrimaryColor = AppColors.TextPrimary
     val canAfford = userCoins >= effectivePrice && isEnabled
     val isOutOfStock = customCodesCount <= 0
 
@@ -642,14 +591,13 @@ fun FamPayGooglePlayCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 12.dp, horizontal = 16.dp)
-            .shadow(16.dp, RoundedCornerShape(16.dp), spotColor = AppColors.TextPrimary.copy(alpha = 0.2f))
+            .shadow(16.dp, RoundedCornerShape(16.dp), spotColor = Color(0xFFE2E8F0).copy(alpha = 0.2f))
             .clip(RoundedCornerShape(16.dp))
             .background(Color(0xFF141414)) // Base Dark
             .clickable(enabled = canAfford && !isOutOfStock) { onBuyClick() }
     ) {
         // Metallic Canvas Area
         Box(modifier = Modifier.fillMaxWidth().height(160.dp)) {
-            val borderColor = AppColors.BorderColor
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val w = size.width
                 val h = size.height
@@ -672,7 +620,7 @@ fun FamPayGooglePlayCard(
                 for (i in 0..100) {
                     val lineY = (h / 100) * i
                     drawLine(
-                        color = textPrimaryColor.copy(alpha = 0.02f),
+                        color = Color.White.copy(alpha = 0.02f),
                         start = Offset(0f, lineY),
                         end = Offset(w, lineY),
                         strokeWidth = 1f
@@ -681,7 +629,7 @@ fun FamPayGooglePlayCard(
 
                 // Cyber/Icy Blue subtle accent lines
                 drawLine(
-                    color = textPrimaryColor.copy(alpha = 0.5f),
+                    color = Color(0xFFE2E8F0).copy(alpha = 0.5f),
                     start = Offset(w * 0.1f, 0f),
                     end = Offset(w * 0.9f, h),
                     strokeWidth = 2f
@@ -691,9 +639,9 @@ fun FamPayGooglePlayCard(
                 val sheenBrush = Brush.linearGradient(
                     colors = listOf(
                         Color.Transparent,
-                        textPrimaryColor.copy(alpha = 0.15f),
-                        textPrimaryColor.copy(alpha = 0.4f),
-                        textPrimaryColor.copy(alpha = 0.15f),
+                        Color.White.copy(alpha = 0.15f),
+                        Color.White.copy(alpha = 0.4f),
+                        Color.White.copy(alpha = 0.15f),
                         Color.Transparent
                     ),
                     start = Offset(sheenX - 200f, -200f),
@@ -716,7 +664,7 @@ fun FamPayGooglePlayCard(
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             "GOOGLE PLAY",
-                            color = AppColors.TextPrimary, // Silver
+                            color = Color(0xFFE2E8F0), // Silver
                             fontWeight = FontWeight.Black,
                             fontSize = 16.sp,
                             letterSpacing = 2.sp
@@ -724,7 +672,7 @@ fun FamPayGooglePlayCard(
                     }
                     Text(
                         "₹${item.title.replace("Google Play ", "").replace(" Gift Card", "")}",
-                        color = AppColors.TextPrimary,
+                        color = Color.White,
                         fontWeight = FontWeight.Black,
                         fontSize = 20.sp,
                         letterSpacing = 1.sp
@@ -734,7 +682,7 @@ fun FamPayGooglePlayCard(
                 // Middle: Clean vector aesthetic
                 Text(
                     "DIGITAL GIFT VOUCHER",
-                    color = AppColors.TextSecondary, // Metallic Gray
+                    color = Color(0xFFA0AAB2), // Metallic Gray
                     fontWeight = FontWeight.Bold,
                     fontSize = 10.sp,
                     letterSpacing = 4.sp
@@ -749,14 +697,14 @@ fun FamPayGooglePlayCard(
                     Column {
                         Text(
                             "REQUIRED",
-                            color = AppColors.TextSecondary,
+                            color = Color(0xFF555555),
                             fontWeight = FontWeight.Bold,
                             fontSize = 8.sp,
                             letterSpacing = 1.5.sp
                         )
                         Text(
                             "$effectivePrice COINS",
-                            color = AppColors.TextPrimary, // Icy Cyan
+                            color = Color(0xFFE2E8F0), // Icy Cyan
                             fontWeight = FontWeight.Black,
                             fontSize = 14.sp,
                             letterSpacing = 1.sp
@@ -767,13 +715,13 @@ fun FamPayGooglePlayCard(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
-                                .glassCard(alpha = 0.5f)
+                                .background(Color(0xFF262626))
                                 .padding(horizontal = 12.dp, vertical = 8.dp)
                                 .clickable { onRequestRestock() }
                         ) {
                             Text(
                                 "OUT OF STOCK",
-                                color = AppColors.TextSecondary,
+                                color = Color(0xFFA0AAB2),
                                 fontWeight = FontWeight.Black,
                                 fontSize = 10.sp,
                                 letterSpacing = 1.sp
@@ -783,12 +731,12 @@ fun FamPayGooglePlayCard(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(if (canAfford) AppColors.TextPrimary else AppColors.BorderColor)
+                                .background(if (canAfford) Color(0xFFE2E8F0) else Color(0xFF333333))
                                 .padding(horizontal = 24.dp, vertical = 10.dp)
                         ) {
                             Text(
                                 "REDEEM",
-                                color = if (canAfford) Color.Black else AppColors.TextSecondary,
+                                color = if (canAfford) Color.Black else Color(0xFFA0AAB2),
                                 fontWeight = FontWeight.Black,
                                 fontSize = 12.sp,
                                 letterSpacing = 2.sp
@@ -808,7 +756,6 @@ fun PurchasedCardVaultItem(
     onMarkUsed: () -> Unit
 ) {
     val context = LocalContext.current
-    val haptic = LocalHapticFeedback.current
     val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     var isCodeCopied by remember { mutableStateOf(false) }
     var isRevealed by remember { mutableStateOf(false) }
@@ -840,7 +787,7 @@ fun PurchasedCardVaultItem(
                     .fillMaxWidth()
                     .wrapContentHeight()
                     .clip(RoundedCornerShape(20.dp))
-                    .background(AppColors.TextPrimary)
+                    .background(Color.White)
                     .border(1.dp, Color.LightGray, RoundedCornerShape(20.dp))
                     .padding(18.dp)
             ) {
@@ -854,7 +801,7 @@ fun PurchasedCardVaultItem(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text("Recharge Confirmation", color = AppColors.TextPrimary, fontWeight = FontWeight.Black, fontSize = 14.sp)
+                            Text("Recharge Confirmation", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 14.sp)
                             Text("Official receipt from admin", color = Color(0xFF16A34A), fontSize = 10.sp, fontWeight = FontWeight.Bold)
                         }
                         IconButton(onClick = { showProofDialog = false }, modifier = Modifier.size(28.dp)) {
@@ -877,22 +824,22 @@ fun PurchasedCardVaultItem(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(AppColors.BorderColor)
+                                .background(Color(0xFFE5E7EB))
                                 .padding(horizontal = 10.dp, vertical = 6.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Ref ID / UTR: $effectiveRechargeTxnId", color = AppColors.TextSecondary, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                            Text("Ref ID / UTR: $effectiveRechargeTxnId", color = Color.DarkGray, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                         }
                     }
 
                     Button(
                         onClick = { showProofDialog = false },
-                        colors = ButtonDefaults.buttonColors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Black),
                         shape = RoundedCornerShape(10.dp),
                         modifier = Modifier.fillMaxWidth().height(42.dp)
                     ) {
-                        Text("CLOSE PROOF", color = AppColors.TextPrimary, fontWeight = FontWeight.Black, fontSize = 12.sp)
+                        Text("CLOSE PROOF", color = Color.White, fontWeight = FontWeight.Black, fontSize = 12.sp)
                     }
                 }
             }
@@ -907,7 +854,7 @@ fun PurchasedCardVaultItem(
             .shadow(12.dp, RoundedCornerShape(16.dp))
             .clip(RoundedCornerShape(16.dp))
             .background(Color(0xFF141414)) // Hardcore Black Base
-            .border(1.dp, AppColors.BorderColor, RoundedCornerShape(16.dp))
+            .border(1.dp, Color(0xFF333333), RoundedCornerShape(16.dp))
     ) {
         // Header
         Row(
@@ -921,14 +868,14 @@ fun PurchasedCardVaultItem(
             Column {
                 Text(
                     card.category.replace("_", " ").uppercase(),
-                    color = AppColors.TextSecondary,
+                    color = Color(0xFFA0AAB2),
                     fontWeight = FontWeight.Bold,
                     fontSize = 9.sp,
                     letterSpacing = 2.sp
                 )
                 Text(
                     card.title.uppercase(),
-                    color = AppColors.TextPrimary,
+                    color = Color.White,
                     fontWeight = FontWeight.Black,
                     fontSize = 15.sp,
                     letterSpacing = 1.sp
@@ -938,12 +885,12 @@ fun PurchasedCardVaultItem(
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(4.dp))
-                    .border(1.dp, if (isUsed) AppColors.TextSecondary else AppColors.TextPrimary, RoundedCornerShape(4.dp))
+                    .border(1.dp, if (isUsed) Color(0xFF444444) else Color(0xFFE2E8F0), RoundedCornerShape(4.dp))
                     .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
                 Text(
                     if (isUsed) "USED" else "ACTIVE",
-                    color = if (isUsed) AppColors.TextSecondary else AppColors.TextPrimary,
+                    color = if (isUsed) Color(0xFF444444) else Color(0xFFE2E8F0),
                     fontWeight = FontWeight.Black,
                     fontSize = 10.sp,
                     letterSpacing = 2.sp
@@ -967,14 +914,14 @@ fun PurchasedCardVaultItem(
                 ) {
                     Text(
                         "STATUS",
-                        color = AppColors.TextSecondary,
+                        color = Color(0xFF555555),
                         fontWeight = FontWeight.Black,
                         fontSize = 10.sp,
                         letterSpacing = 2.sp
                     )
                     Text(
                         if (proofBitmap != null) "SUCCESSFUL" else "PENDING",
-                        color = if (proofBitmap != null) AppColors.TextPrimary else AppColors.TextSecondary,
+                        color = if (proofBitmap != null) Color(0xFFE2E8F0) else Color(0xFF8E93A6),
                         fontWeight = FontWeight.Bold,
                         fontSize = 12.sp,
                         letterSpacing = 1.sp
@@ -985,7 +932,7 @@ fun PurchasedCardVaultItem(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp))
-                        .glassCard(alpha = 0.5f)
+                        .background(Color(0xFF262626))
                         .clickable(enabled = proofBitmap != null) {
                             if (proofBitmap != null) showProofDialog = true
                         }
@@ -994,7 +941,7 @@ fun PurchasedCardVaultItem(
                 ) {
                     Text(
                         if (proofBitmap != null) "VIEW RECEIPT" else "PROCESSING...",
-                        color = AppColors.TextPrimary,
+                        color = Color.White,
                         fontWeight = FontWeight.Black,
                         fontSize = 14.sp,
                         letterSpacing = 2.sp
@@ -1009,7 +956,7 @@ fun PurchasedCardVaultItem(
                 ) {
                     Text(
                         "REDEEM CODE",
-                        color = AppColors.TextSecondary,
+                        color = Color(0xFF555555),
                         fontWeight = FontWeight.Black,
                         fontSize = 10.sp,
                         letterSpacing = 2.sp
@@ -1021,7 +968,7 @@ fun PurchasedCardVaultItem(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp))
-                        .glassCard(alpha = 0.5f)
+                        .background(Color(0xFF262626))
                         .clickable(enabled = card.code.isNotBlank()) {
                             if (!isRevealed && card.code.isNotBlank()) {
                                 isRevealed = true
@@ -1039,7 +986,7 @@ fun PurchasedCardVaultItem(
                     
                     Text(
                         text = codeToDisplay,
-                        color = AppColors.TextPrimary,
+                        color = Color.White,
                         fontWeight = FontWeight.Black,
                         fontSize = 18.sp,
                         letterSpacing = 4.sp,
@@ -1052,7 +999,7 @@ fun PurchasedCardVaultItem(
                     if (!isRevealed && card.code.isNotBlank()) {
                         Text(
                             "TAP TO CLAIM",
-                            color = AppColors.TextPrimary,
+                            color = Color.White,
                             fontWeight = FontWeight.Black,
                             fontSize = 14.sp,
                             letterSpacing = 2.sp,
@@ -1066,7 +1013,7 @@ fun PurchasedCardVaultItem(
                 if (isRevealed) {
                     Text(
                         text = if (isCodeCopied) "COPIED TO CLIPBOARD" else "TAP TO COPY CODE",
-                        color = AppColors.TextSecondary,
+                        color = Color(0xFFA0AAB2),
                         fontWeight = FontWeight.Bold,
                         fontSize = 10.sp,
                         letterSpacing = 1.sp,
@@ -1081,14 +1028,14 @@ fun PurchasedCardVaultItem(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(AppColors.TextPrimary)
+                    .background(Color.White)
                     .clickable { onMarkUsed() }
                     .padding(vertical = 14.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     "MARK AS CLAIMED",
-                    color = AppColors.TextPrimary,
+                    color = Color.Black,
                     fontWeight = FontWeight.Black,
                     fontSize = 12.sp,
                     letterSpacing = 2.sp
@@ -1109,17 +1056,17 @@ fun CelebrationCardDialog(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(20.dp))
-                .glassCard()
+                .background(Color(0xFF14161F))
                 .padding(24.dp),
             contentAlignment = Alignment.Center
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("🎉 SUCCESS!", color = Color(0xFF00E676), fontWeight = FontWeight.Black, fontSize = 24.sp)
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("You bought ${card.title}", color = AppColors.TextPrimary, fontSize = 14.sp)
+                Text("You bought ${card.title}", color = Color.White, fontSize = 14.sp)
                 Spacer(modifier = Modifier.height(16.dp))
-                Button(onClick = onDismiss, colors = ButtonDefaults.buttonColors(containerColor = AppColors.TextPrimary)) {
-                    Text("AWESOME", color = AppColors.TextPrimary, fontWeight = FontWeight.Black)
+                Button(onClick = onDismiss, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE2E8F0))) {
+                    Text("AWESOME", color = Color.Black, fontWeight = FontWeight.Black)
                 }
             }
         }
@@ -1137,7 +1084,6 @@ fun TournamentDiscountCard(
     userCoins: Int,
     onBuyClick: () -> Unit
 ) {
-    val textPrimaryColor = AppColors.TextPrimary
     val canAfford = userCoins >= effectivePrice && isEnabled
     val isOutOfStock = customCodesCount <= 0
 
@@ -1158,11 +1104,10 @@ fun TournamentDiscountCard(
             .padding(vertical = 12.dp, horizontal = 16.dp)
             .shadow(16.dp, RoundedCornerShape(16.dp), spotColor = Color.Black)
             .clip(RoundedCornerShape(16.dp))
-            .glassCard() // Titanium Dark
+            .background(Color(0xFF0D0D0D)) // Titanium Dark
             .clickable(enabled = canAfford && !isOutOfStock) { onBuyClick() }
     ) {
         Box(modifier = Modifier.fillMaxWidth().height(160.dp)) {
-            val borderColor = AppColors.BorderColor
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val w = size.width
                 val h = size.height
@@ -1172,7 +1117,7 @@ fun TournamentDiscountCard(
                     brush = Brush.linearGradient(
                         colors = listOf(
                             Color(0xFF1F1F1F),
-                            borderColor,
+                            Color(0xFF333333),
                             Color(0xFF141414)
                         ),
                         start = Offset(0f, 0f),
@@ -1184,7 +1129,7 @@ fun TournamentDiscountCard(
                 for (i in -50..150) {
                     val startX = (w / 100) * i
                     drawLine(
-                        color = textPrimaryColor.copy(alpha = 0.04f),
+                        color = Color.White.copy(alpha = 0.04f),
                         start = Offset(startX, 0f),
                         end = Offset(startX + h, h),
                         strokeWidth = 2f
@@ -1195,7 +1140,7 @@ fun TournamentDiscountCard(
                 val sheenBrush = Brush.linearGradient(
                     colors = listOf(
                         Color.Transparent,
-                        textPrimaryColor.copy(alpha = 0.3f),
+                        Color.White.copy(alpha = 0.3f),
                         Color.Transparent
                     ),
                     start = Offset(sheenX - 100f, 0f),
@@ -1213,11 +1158,11 @@ fun TournamentDiscountCard(
                 // Top Row
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.VerifiedUser, contentDescription = null, tint = AppColors.TextPrimary, modifier = Modifier.size(24.dp))
+                        Icon(Icons.Default.VerifiedUser, contentDescription = null, tint = Color(0xFFE2E8F0), modifier = Modifier.size(24.dp))
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             "VIP PASS",
-                            color = AppColors.TextPrimary,
+                            color = Color(0xFFE2E8F0),
                             fontWeight = FontWeight.Black,
                             fontSize = 16.sp,
                             letterSpacing = 3.sp
@@ -1225,12 +1170,12 @@ fun TournamentDiscountCard(
                     }
                     Box(
                         modifier = Modifier
-                            .border(1.dp, AppColors.TextPrimary, RoundedCornerShape(4.dp))
+                            .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(4.dp))
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(
                             "EXCLUSIVE",
-                            color = AppColors.TextPrimary,
+                            color = Color(0xFFE2E8F0),
                             fontWeight = FontWeight.Bold,
                             fontSize = 8.sp,
                             letterSpacing = 2.sp
@@ -1240,7 +1185,7 @@ fun TournamentDiscountCard(
 
                 Text(
                     item.title.uppercase(),
-                    color = AppColors.TextPrimary,
+                    color = Color.White,
                     fontWeight = FontWeight.Black,
                     fontSize = 18.sp,
                     letterSpacing = 1.sp
@@ -1254,7 +1199,7 @@ fun TournamentDiscountCard(
                 ) {
                     Text(
                         "$effectivePrice COINS",
-                        color = AppColors.TextSecondary,
+                        color = Color(0xFFA0AAB2),
                         fontWeight = FontWeight.Black,
                         fontSize = 14.sp,
                         letterSpacing = 1.sp
@@ -1263,7 +1208,7 @@ fun TournamentDiscountCard(
                     if (isOutOfStock) {
                         Text(
                             "OUT OF STOCK",
-                            color = AppColors.TextSecondary,
+                            color = Color(0xFF444444),
                             fontWeight = FontWeight.Black,
                             fontSize = 12.sp,
                             letterSpacing = 2.sp
@@ -1272,12 +1217,12 @@ fun TournamentDiscountCard(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(if (canAfford) AppColors.TextPrimary else AppColors.BorderColor)
+                                .background(if (canAfford) Color(0xFFE2E8F0) else Color(0xFF333333))
                                 .padding(horizontal = 24.dp, vertical = 10.dp)
                         ) {
                             Text(
                                 "ACQUIRE",
-                                color = if (canAfford) Color.Black else AppColors.TextSecondary,
+                                color = if (canAfford) Color.Black else Color(0xFFA0AAB2),
                                 fontWeight = FontWeight.Black,
                                 fontSize = 12.sp,
                                 letterSpacing = 2.sp
@@ -1366,9 +1311,9 @@ fun StoreHeroBanner(
             }
             Spacer(modifier = Modifier.width(14.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(title, color = AppColors.TextPrimary, fontWeight = FontWeight.Black, fontSize = 14.sp)
+                Text(title, color = Color.Black, fontWeight = FontWeight.Black, fontSize = 14.sp)
                 Spacer(modifier = Modifier.height(2.dp))
-                Text(subtitle, color = AppColors.TextSecondary, fontSize = 11.sp, lineHeight = 15.sp)
+                Text(subtitle, color = Color(0xFF8E93A6), fontSize = 11.sp, lineHeight = 15.sp)
             }
         }
     }
@@ -1378,7 +1323,6 @@ fun StoreHeroBanner(
 // ----------------------------------------------------
 @Composable
 fun JioBrandLogo(modifier: Modifier = Modifier, size: Int = 36) {
-    val textPrimaryColor = AppColors.TextPrimary
     Box(
         modifier = modifier
             .size(size.dp)
@@ -1388,12 +1332,12 @@ fun JioBrandLogo(modifier: Modifier = Modifier, size: Int = 36) {
                     colors = listOf(Color(0xFF0F3EBD), Color(0xFF0A2885))
                 )
             )
-            .border(1.2.dp, textPrimaryColor.copy(alpha = 0.85f), CircleShape),
+            .border(1.2.dp, Color.White.copy(alpha = 0.85f), CircleShape),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = "Jio",
-            color = AppColors.TextPrimary,
+            color = Color.White,
             fontWeight = FontWeight.Black,
             fontSize = (size * 0.44f).sp,
             fontFamily = FontFamily.SansSerif,
@@ -1403,7 +1347,6 @@ fun JioBrandLogo(modifier: Modifier = Modifier, size: Int = 36) {
 }
 @Composable
 fun AirtelBrandLogo(modifier: Modifier = Modifier, size: Int = 36) {
-    val textPrimaryColor = AppColors.TextPrimary
     Box(
         modifier = modifier
             .height(size.dp)
@@ -1413,13 +1356,13 @@ fun AirtelBrandLogo(modifier: Modifier = Modifier, size: Int = 36) {
                     colors = listOf(Color(0xFFEE0000), Color(0xFFB30000))
                 )
             )
-            .border(1.2.dp, textPrimaryColor.copy(alpha = 0.85f), RoundedCornerShape(8.dp))
+            .border(1.2.dp, Color.White.copy(alpha = 0.85f), RoundedCornerShape(8.dp))
             .padding(horizontal = (size * 0.22f).dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = "airtel",
-            color = AppColors.TextPrimary,
+            color = Color.White,
             fontWeight = FontWeight.Black,
             fontSize = (size * 0.38f).sp,
             fontFamily = FontFamily.SansSerif,
@@ -1438,7 +1381,6 @@ fun DataRechargeCard(
     isLoading: Boolean = false,
     onRedeemClick: (DataRechargePlan) -> Unit
 ) {
-    val textPrimaryColor = AppColors.TextPrimary
     val canAfford = userCoins >= plan.coinPrice && !isLoading
     val isJio = plan.operator.equals("JIO", ignoreCase = true)
 
@@ -1459,11 +1401,10 @@ fun DataRechargeCard(
             .padding(vertical = 12.dp, horizontal = 16.dp)
             .shadow(12.dp, RoundedCornerShape(16.dp))
             .clip(RoundedCornerShape(16.dp))
-            .glassCard() // Deep Obsidian Black
+            .background(Color(0xFF111111)) // Deep Obsidian Black
             .clickable(enabled = canAfford && !isLoading) { onRedeemClick(plan) }
     ) {
         Box(modifier = Modifier.fillMaxWidth().height(140.dp)) {
-            val borderColor = AppColors.BorderColor
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val w = size.width
                 val h = size.height
@@ -1472,7 +1413,7 @@ fun DataRechargeCard(
                 val gridSize = 30f
                 for (x in 0..(w / gridSize).toInt()) {
                     drawLine(
-                        color = textPrimaryColor.copy(alpha = 0.03f),
+                        color = Color.White.copy(alpha = 0.03f),
                         start = Offset(x * gridSize, 0f),
                         end = Offset(x * gridSize, h),
                         strokeWidth = 1f
@@ -1480,7 +1421,7 @@ fun DataRechargeCard(
                 }
                 for (y in 0..(h / gridSize).toInt()) {
                     drawLine(
-                        color = textPrimaryColor.copy(alpha = 0.03f),
+                        color = Color.White.copy(alpha = 0.03f),
                         start = Offset(0f, y * gridSize),
                         end = Offset(w, y * gridSize),
                         strokeWidth = 1f
@@ -1491,7 +1432,7 @@ fun DataRechargeCard(
                 val sheenBrush = Brush.linearGradient(
                     colors = listOf(
                         Color.Transparent,
-                        textPrimaryColor.copy(alpha = 0.08f),
+                        Color.White.copy(alpha = 0.08f),
                         Color.Transparent
                     ),
                     start = Offset(sheenX - 300f, -300f),
@@ -1513,7 +1454,7 @@ fun DataRechargeCard(
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
                             "${plan.operator} DATA",
-                            color = AppColors.TextPrimary,
+                            color = Color(0xFFE2E8F0),
                             fontWeight = FontWeight.Black,
                             fontSize = 16.sp,
                             letterSpacing = 2.sp
@@ -1521,7 +1462,7 @@ fun DataRechargeCard(
                     }
                     Text(
                         plan.dataAmount,
-                        color = AppColors.TextPrimary,
+                        color = Color(0xFFE2E8F0),
                         fontWeight = FontWeight.Black,
                         fontSize = 16.sp,
                         letterSpacing = 1.sp
@@ -1531,7 +1472,7 @@ fun DataRechargeCard(
                 // Middle Details
                 Text(
                     ("${plan.operator} PACK - ${plan.validity}").uppercase(),
-                    color = AppColors.TextSecondary,
+                    color = Color(0xFFA0AAB2),
                     fontWeight = FontWeight.Bold,
                     fontSize = 10.sp,
                     letterSpacing = 2.sp
@@ -1545,7 +1486,7 @@ fun DataRechargeCard(
                 ) {
                     Text(
                         "${plan.coinPrice} COINS",
-                        color = AppColors.TextPrimary,
+                        color = Color.White,
                         fontWeight = FontWeight.Black,
                         fontSize = 14.sp,
                         letterSpacing = 1.sp
@@ -1554,12 +1495,12 @@ fun DataRechargeCard(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
-                            .background(if (canAfford) AppColors.TextPrimary else AppColors.BorderColor)
+                            .background(if (canAfford) Color(0xFFE2E8F0) else Color(0xFF333333))
                             .padding(horizontal = 20.dp, vertical = 8.dp)
                     ) {
                         Text(
                             "TOP UP",
-                            color = if (canAfford) Color.Black else AppColors.TextSecondary,
+                            color = if (canAfford) Color.Black else Color(0xFFA0AAB2),
                             fontWeight = FontWeight.Black,
                             fontSize = 12.sp,
                             letterSpacing = 2.sp
@@ -1591,7 +1532,7 @@ fun DataRechargeDialog(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(20.dp))
-                .background(AppColors.TextPrimary)
+                .background(Color.White)
                 .padding(16.dp)
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -1606,13 +1547,13 @@ fun DataRechargeDialog(
                         Column {
                             Text(
                                 text = "${plan.operator} Data Recharge",
-                                color = AppColors.TextPrimary,
+                                color = Color.Black,
                                 fontWeight = FontWeight.Black,
                                 fontSize = 15.sp
                             )
                             Text(
                                 text = "₹${plan.priceRupees} Pack • ${plan.dataAmount}",
-                                color = AppColors.TextSecondary,
+                                color = Color.DarkGray,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 11.sp
                             )
@@ -1628,19 +1569,20 @@ fun DataRechargeDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
-                        .glassCard()
+                        .background(Color(0xFFF3F4F6))
+                        .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(12.dp))
                         .padding(10.dp)
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                         Text(
-                            text = "SELECTED: ${plan.dataAmount} high-speed data",
-                            color = AppColors.TextPrimary,
+                            text = "⚡ Selected: ${plan.dataAmount} high-speed data",
+                            color = Color.Black,
                             fontWeight = FontWeight.Black,
                             fontSize = 12.sp
                         )
                         Text(
                             text = "Validity: ${plan.validity} • Official Price: ₹${plan.priceRupees}",
-                            color = AppColors.TextSecondary,
+                            color = Color.DarkGray,
                             fontSize = 10.sp
                         )
                     }
@@ -1649,7 +1591,7 @@ fun DataRechargeDialog(
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
                         text = "ENTER 10-DIGIT ${plan.operator} NUMBER",
-                        color = AppColors.TextPrimary,
+                        color = Color.Black,
                         fontWeight = FontWeight.Black,
                         fontSize = 10.sp,
                         letterSpacing = 0.5.sp
@@ -1662,17 +1604,17 @@ fun DataRechargeDialog(
                         },
                         placeholder = { Text("e.g. 9876543210", color = Color.Gray, fontSize = 13.sp) },
                         prefix = {
-                            Text("+91 ", color = AppColors.TextPrimary, fontWeight = FontWeight.Black, fontSize = 14.sp)
+                            Text("+91 ", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 14.sp)
                         },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                         singleLine = true,
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = AppColors.SubCardBackground,
+                            focusedBorderColor = Color(0xFF262626),
                             unfocusedBorderColor = Color.LightGray,
                             focusedTextColor = Color.Black,
                             unfocusedTextColor = Color.Black,
-                            focusedContainerColor = AppColors.TextPrimary,
-                            unfocusedContainerColor = AppColors.SubCardBackground
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color(0xFFF9FAFB)
                         ),
                         shape = RoundedCornerShape(10.dp),
                         modifier = Modifier.fillMaxWidth().height(52.dp)
@@ -1680,7 +1622,7 @@ fun DataRechargeDialog(
                     if (mobileNumber.isNotEmpty() && !isValid) {
                         Text("Enter a valid 10-digit mobile number", color = Color.Red, fontSize = 10.sp)
                     } else if (isValid) {
-                        Text("VALID INDIAN MOBILE NUMBER", color = Color(0xFF16A34A), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        Text("✅ Valid Indian mobile number", color = Color(0xFF16A34A), fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     }
                 }
                 // Coin Deduction Summary
@@ -1688,17 +1630,17 @@ fun DataRechargeDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(10.dp))
-                        .glassCard(alpha = 0.5f)
+                        .background(Color(0xFFF9FAFB))
                         .padding(10.dp)
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                             Text("Recharge Cost:", color = Color.Gray, fontSize = 11.sp)
-                            Text("${plan.coinPrice} Coins", color = AppColors.TextPrimary, fontWeight = FontWeight.Black, fontSize = 11.sp)
+                            Text("${plan.coinPrice} Coins", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 11.sp)
                         }
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                             Text("Your Coins:", color = Color.Gray, fontSize = 11.sp)
-                            Text("$userCoins Coins", color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                            Text("$userCoins Coins", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                         }
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                             Text("After Recharge:", color = Color.Gray, fontSize = 11.sp)
@@ -1717,7 +1659,7 @@ fun DataRechargeDialog(
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("", fontSize = 10.sp)
+                            Text("⚠️ ", fontSize = 10.sp)
                             Text(
                                 "महत्वपूर्ण सूचना / Notice:",
                                 color = Color.Red,
@@ -1727,7 +1669,7 @@ fun DataRechargeDialog(
                         }
                         Text(
                             text = "अगर मोबाइल नंबर गलत हुआ तो यूजर की खुद की जिम्मेदारी होगी।",
-                            color = AppColors.TextSecondary,
+                            color = Color.DarkGray,
                             fontSize = 9.sp,
                             lineHeight = 12.sp,
                             fontWeight = FontWeight.Medium
@@ -1749,19 +1691,19 @@ fun DataRechargeDialog(
                         onClick = { onConfirm(mobileNumber) },
                         enabled = isValid && canAfford && !isLoading,
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = AppColors.SubCardBackground, // Black/Dark Gray button
+                            containerColor = Color(0xFF262626), // Black/Dark Gray button
                             disabledContainerColor = Color.LightGray
                         ),
                         shape = RoundedCornerShape(10.dp),
                         modifier = Modifier.weight(1.5f).height(42.dp)
                     ) {
                         if (isLoading) {
-                            CircularProgressIndicator(color = AppColors.TextPrimary, modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                            CircularProgressIndicator(color = Color.White, modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
                         } else {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Bolt, contentDescription = null, tint = if (isValid && canAfford) AppColors.TextPrimary else Color.Gray, modifier = Modifier.size(16.dp))
+                                Icon(Icons.Default.Bolt, contentDescription = null, tint = if (isValid && canAfford) Color.White else Color.Gray, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text("RECHARGE NOW", color = if (isValid && canAfford) AppColors.TextPrimary else Color.Gray, fontWeight = FontWeight.Black, fontSize = 11.sp)
+                                Text("RECHARGE NOW", color = if (isValid && canAfford) Color.White else Color.Gray, fontWeight = FontWeight.Black, fontSize = 11.sp)
                             }
                         }
                     }
