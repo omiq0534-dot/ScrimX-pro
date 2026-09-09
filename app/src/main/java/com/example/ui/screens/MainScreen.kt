@@ -165,7 +165,7 @@ fun MainScreen(
         return
     }
 
-    Scaffold(containerColor = AppColors.ScreenBackground,
+    Scaffold(containerColor = Color(0xFFFAFAFA),
         topBar = {
             // Admin VIP Status Indicator Bar when Maintenance or Updates are Active
             if (isAdmin && (appConfig.isMaintenanceMode || isAppOutdated)) {

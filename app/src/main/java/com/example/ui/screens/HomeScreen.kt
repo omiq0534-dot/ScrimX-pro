@@ -714,7 +714,7 @@ fun HomeScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFFAFAFA))
+            .background(AppColors.ScreenBackground)
             .padding(horizontal = 24.dp),
         verticalArrangement = Arrangement.spacedBy(32.dp)
     ) {
