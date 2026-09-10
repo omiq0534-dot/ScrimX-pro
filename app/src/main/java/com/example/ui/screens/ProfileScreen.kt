@@ -799,8 +799,8 @@ fun SettingsList(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
-            .background(AppColors.CardBackground)
-            .border(1.dp, AppColors.BorderColor, RoundedCornerShape(24.dp))
+            .background(Color.White)
+            .border(1.dp, Color(0xFFF3F4F6), RoundedCornerShape(24.dp))
             .padding(12.dp)
     ) {
         SettingsRow(icon = Icons.Default.Storefront, title = "Rewards & Codes Store", badge = "🛍️ Redeem", onClick = onStoreClick)
@@ -852,13 +852,13 @@ fun SettingsRow(
                 modifier = Modifier
                     .size(38.dp)
                     .clip(CircleShape)
-                    .background(if (isDestructive) Color(0xFFFFEBEE) else AppColors.SubCardBackground),
+                    .background(if (isDestructive) Color(0xFFFFEBEE) else Color(0xFFF3F4F6)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     icon, 
                     contentDescription = null, 
-                    tint = if (isDestructive) Color(0xFFF44336) else AppColors.TextPrimary, 
+                    tint = if (isDestructive) Color(0xFFF44336) else Color(0xFF1E293B), 
                     modifier = Modifier.size(18.dp)
                 )
             }
@@ -868,7 +868,7 @@ fun SettingsRow(
                 modifier = Modifier.weight(1f),
                 fontWeight = FontWeight.Bold, 
                 fontSize = 15.sp, 
-                color = if (isDestructive) Color(0xFFF44336) else AppColors.TextPrimary
+                color = if (isDestructive) Color(0xFFF44336) else Color(0xFF1E293B)
             )
             if (badge != null) {
                 Spacer(modifier = Modifier.width(8.dp))
