@@ -101,7 +101,7 @@ fun MatchesScreen(
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 "All Scrims (${matches.size})",
-                                color = if (selectedTab == 0) AppColors.TextPrimary else Color(0xFF9CA3AF),
+                                color = if (selectedTab == 0) Color.White else Color(0xFF9CA3AF),
                                 fontWeight = FontWeight.Black,
                                 fontSize = 13.sp
                             )
@@ -128,7 +128,7 @@ fun MatchesScreen(
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 "My Matches (${myMatches.size})",
-                                color = if (selectedTab == 1) AppColors.TextPrimary else Color(0xFF9CA3AF),
+                                color = if (selectedTab == 1) Color.White else Color(0xFF9CA3AF),
                                 fontWeight = FontWeight.Black,
                                 fontSize = 13.sp
                             )
@@ -233,7 +233,7 @@ fun MyJoinedMatchCard(
                 ambientColor = Color(0x1A000000)
             )
             .clip(RoundedCornerShape(24.dp))
-            .background(AppColors.TextPrimary)
+            .background(AppColors.CardBackground)
             .border(1.2.dp, Color(0xFFE5E7EB), RoundedCornerShape(24.dp))
             .clickable { onCardClick() }
             .padding(18.dp)
@@ -264,7 +264,7 @@ fun MyJoinedMatchCard(
                                 isCompleted -> "FINISHED"
                                 else -> "CONFIRMED"
                             },
-                            color = AppColors.TextPrimary,
+                            color = Color.Black,
                             fontWeight = FontWeight.Black,
                             fontSize = 10.sp
                         )
@@ -315,8 +315,8 @@ fun MyJoinedMatchCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFFF8F9FA))
-                    .border(1.dp, Color(0xFFE0E0E0), RoundedCornerShape(12.dp))
+                    .background(AppColors.SubCardBackground)
+                    .border(1.dp, AppColors.BorderColor, RoundedCornerShape(12.dp))
                     .padding(12.dp)
             ) {
                 Row(
@@ -356,7 +356,7 @@ fun MyJoinedMatchCard(
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(Color(0xFF00E676)))
                                 Spacer(modifier = Modifier.width(6.dp))
-                                Text("ROOM ID: ${match.roomId}", color = AppColors.TextPrimary, fontWeight = FontWeight.Black, fontSize = 13.sp)
+                                Text("ROOM ID: ${match.roomId}", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 13.sp)
                             }
                             Spacer(modifier = Modifier.height(2.dp))
                             Text("PASSWORD: ${match.roomPass.ifBlank { "None" }}", color = Color(0xFFFFD700), fontWeight = FontWeight.Bold, fontSize = 12.sp)
@@ -412,7 +412,7 @@ fun MyJoinedMatchCard(
                     ) {
                         Icon(Icons.Default.PlayArrow, contentDescription = null, tint = AppColors.TextPrimary, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("LIVE STREAM", color = AppColors.TextPrimary, fontWeight = FontWeight.Black, fontSize = 11.sp)
+                        Text("LIVE STREAM", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 11.sp)
                     }
                 }
 
@@ -422,7 +422,7 @@ fun MyJoinedMatchCard(
                     shape = RoundedCornerShape(10.dp),
                     modifier = Modifier.weight(1f).height(42.dp)
                 ) {
-                    Text("VIEW SLOTS & DETAILS", color = AppColors.TextPrimary, fontWeight = FontWeight.Black, fontSize = 11.sp)
+                    Text("VIEW SLOTS & DETAILS", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 11.sp)
                 }
             }
         }
@@ -439,7 +439,7 @@ fun EmptyMatchesCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
-            .background(AppColors.TextPrimary)
+            .background(AppColors.CardBackground)
             .border(1.2.dp, Color(0xFFE5E5EA), RoundedCornerShape(24.dp))
             .padding(32.dp),
         contentAlignment = Alignment.Center

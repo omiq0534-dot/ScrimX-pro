@@ -5,9 +5,9 @@ import androidx.compose.ui.graphics.Color
 object AppColors {
     val isDark: Boolean = true
     val ScreenBackground: Color = Color(0xFFFAFAFA) // Clean White Background
-    val TextPrimary: Color = Color.White // Text inside dark cards
+    val TextPrimary: Color = Color.White // Text inside dark cards (Default)
+    val TextOnLight: Color = Color(0xFF1E293B) // Text on white background
     val TextSecondary: Color = Color(0xFF94A3B8)
-    val TextHighlight: Color = Color.White
     val PrimaryAccent: Color = Color(0xFFFFD700)
     val PrimaryAccentText: Color = Color.Black
     val Positive: Color = Color(0xFF10B981)

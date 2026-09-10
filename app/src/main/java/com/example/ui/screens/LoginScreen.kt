@@ -103,7 +103,7 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppColors.TextPrimary),
+            .background(Color.White),
         contentAlignment = Alignment.Center
     ) {
         // High-Contrast Deep Black Floating Card
@@ -334,7 +334,7 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
                     }
                     .padding(2.5.dp)
                     .clip(CircleShape)
-                    .background(AppColors.TextPrimary)
+                    .background(Color.White)
             ) {
                 Button(
                     onClick = {
@@ -348,8 +348,8 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel = vie
                     },
                     modifier = Modifier.fillMaxSize(),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = AppColors.TextPrimary,
-                        contentColor = AppColors.ScreenBackground
+                        containerColor = Color.White,
+                        contentColor = Color.Black
                     ),
                     shape = CircleShape
                 ) {
