@@ -189,7 +189,7 @@ fun HomeScreen(
     // 1. Watch Video & Live Stream Dialog
     if (showWatchDialog) {
         AlertDialog(
-            containerColor = Color(0xFF14161F),
+            containerColor = Color.White,
             onDismissRequest = { 
                 if (!isAdLoading) showWatchDialog = false 
             },
@@ -219,7 +219,7 @@ fun HomeScreen(
                 ) {
                     Text(
                         "Watch short sponsor videos to earn Coins for entry fees, or tune into live tournament scrims!",
-                        color = Color(0xFFC0C4D6),
+                        color = Color(0xFF4B5563),
                         fontSize = 13.sp,
                         lineHeight = 18.sp
                     )
@@ -329,7 +329,7 @@ fun HomeScreen(
     // 2. Daily Check-in Dialog
     if (showDailyDialog) {
         AlertDialog(
-            containerColor = Color(0xFF14161F),
+            containerColor = Color.White,
             onDismissRequest = { showDailyDialog = false },
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -358,7 +358,7 @@ fun HomeScreen(
                 ) {
                     Text(
                         if (dailyClaimed) "Already claimed today! Come back tomorrow for Day ${if (currentStreak >= 7) 1 else currentStreak + 1}." else "Claim your free +${appConfig.dailyRewardCoins} coins today!",
-                        color = Color(0xFFC0C4D6),
+                        color = Color(0xFF4B5563),
                         fontSize = 13.sp,
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
@@ -392,7 +392,7 @@ fun HomeScreen(
                                             when (status) {
                                                 "claimed" -> Color(0xFF00E676).copy(alpha = 0.2f)
                                                 "today" -> Color(0xFFFFD700)
-                                                else -> Color(0xFF1A1D27)
+                                                else -> Color(0xFFF9FAFB)
                                             }
                                         )
                                         .border(
@@ -400,7 +400,7 @@ fun HomeScreen(
                                             when (status) {
                                                 "claimed" -> Color(0xFF00E676)
                                                 "today" -> Color(0xFFFFD700)
-                                                else -> Color(0xFF2E3346)
+                                                else -> AppColors.BorderColor
                                             },
                                             CircleShape
                                         ),
@@ -441,7 +441,7 @@ fun HomeScreen(
                             showDailyDialog = false
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = if (dailyClaimed) Color(0xFF2E3346) else Color(0xFFFFD700)),
+                    colors = ButtonDefaults.buttonColors(containerColor = if (dailyClaimed) AppColors.BorderColor else Color(0xFFFFD700)),
                     shape = RoundedCornerShape(10.dp)
                 ) {
                     Text(
@@ -462,7 +462,7 @@ fun HomeScreen(
     // 3. Spin Wheel Dialog
     if (showSpinDialog) {
         AlertDialog(
-            containerColor = Color(0xFF14161F),
+            containerColor = Color.White,
             onDismissRequest = { if (!isSpinning) showSpinDialog = false },
             title = {
                 Row(
@@ -524,7 +524,7 @@ fun HomeScreen(
                                         val x = (center.x + radius * cos(angleRad)).toFloat()
                                         val y = (center.y + radius * sin(angleRad)).toFloat()
                                         drawLine(
-                                            color = Color(0xFF14161F),
+                                            color = Color.White,
                                             start = center,
                                             end = Offset(x, y),
                                             strokeWidth = 2.5.dp.toPx()
@@ -685,7 +685,7 @@ fun HomeScreen(
                         },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = if (spinsRemaining > 0) AppColors.ButtonContainer else AppColors.BorderColor,
-                            disabledContainerColor = Color(0xFF262A38)
+                            disabledContainerColor = AppColors.BorderColor
                         ),
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.fillMaxWidth().height(48.dp),
@@ -886,7 +886,7 @@ fun TopWalletBar(
             Row(
                 modifier = Modifier
                     .clip(RoundedCornerShape(24.dp))
-                    .background(Color(0xFF111319))
+                    .background(Color.White)
                     .border(1.dp, AppColors.BorderColor, RoundedCornerShape(24.dp))
                     .clickable { onWalletClick() }
                     .padding(2.dp),
@@ -1078,8 +1078,8 @@ fun UpcomingMatches(navController: NavController, viewModel: MatchesViewModel = 
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(26.dp))
-                    .background(Color(0xFF111319))
-                    .border(1.5.dp, Color(0xFF262A38), RoundedCornerShape(26.dp))
+                    .background(Color.White)
+                    .border(1.5.dp, AppColors.BorderColor, RoundedCornerShape(26.dp))
                     .padding(36.dp),
                 contentAlignment = Alignment.Center
             ) {

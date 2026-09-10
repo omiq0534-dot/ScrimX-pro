@@ -138,7 +138,7 @@ fun AdminManageWalletsScreen(navController: NavController) {
     }
 
     Scaffold(
-        containerColor = Color(0xFF0C0D12),
+        containerColor = Color(0xFFF9FAFB),
         topBar = {
             TopAppBar(
                 title = {
@@ -155,7 +155,7 @@ fun AdminManageWalletsScreen(navController: NavController) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF0C0D12))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF9FAFB))
             )
         }
     ) { padding ->
@@ -171,8 +171,8 @@ fun AdminManageWalletsScreen(navController: NavController) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
-                    .background(Color(0xFF14161F))
-                    .border(1.dp, Color(0xFF262938), RoundedCornerShape(14.dp))
+                    .background(Color.White)
+                    .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(14.dp))
                     .padding(4.dp),
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
@@ -372,8 +372,8 @@ fun AdminManageWalletsScreen(navController: NavController) {
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(18.dp))
-                                    .background(Color(0xFF14161F))
-                                    .border(1.dp, Color(0xFF262938), RoundedCornerShape(18.dp))
+                                    .background(Color.White)
+                                    .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(18.dp))
                                     .padding(16.dp)
                             ) {
                                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -469,7 +469,7 @@ fun AdminManageWalletsScreen(navController: NavController) {
                                                     modifier = Modifier
                                                         .fillMaxWidth()
                                                         .clip(RoundedCornerShape(10.dp))
-                                                        .background(Color(0xFF0C0D12))
+                                                        .background(Color(0xFFF9FAFB))
                                                         .border(1.dp, Color(0xFF1E2230), RoundedCornerShape(10.dp))
                                                         .clickable {
                                                             foundUser = u
@@ -506,7 +506,7 @@ fun AdminManageWalletsScreen(navController: NavController) {
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clip(RoundedCornerShape(18.dp))
-                                        .background(Color(0xFF14161F))
+                                        .background(Color.White)
                                         .border(1.dp, Color(0xFFFFD700).copy(alpha = 0.5f), RoundedCornerShape(18.dp))
                                         .padding(16.dp)
                                 ) {
@@ -578,7 +578,7 @@ fun AdminManageWalletsScreen(navController: NavController) {
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clip(RoundedCornerShape(18.dp))
-                                        .background(Color(0xFF14161F))
+                                        .background(Color.White)
                                         .border(1.dp, Color(0xFFFFD700).copy(alpha = 0.3f), RoundedCornerShape(18.dp))
                                         .padding(16.dp)
                                 ) {
@@ -766,7 +766,7 @@ fun AdminManageWalletsScreen(navController: NavController) {
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clip(RoundedCornerShape(18.dp))
-                                        .background(Color(0xFF14161F))
+                                        .background(Color.White)
                                         .border(1.dp, Color(0xFF00E676).copy(alpha = 0.3f), RoundedCornerShape(18.dp))
                                         .padding(16.dp)
                                 ) {
@@ -959,8 +959,8 @@ fun AdminManageWalletsScreen(navController: NavController) {
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(18.dp))
-                                    .background(Color(0xFF14161F))
-                                    .border(1.dp, Color(0xFF262938), RoundedCornerShape(18.dp))
+                                    .background(Color.White)
+                                    .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(18.dp))
                                     .padding(18.dp)
                             ) {
                                 Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -1060,7 +1060,7 @@ fun DepositRequestCard(tx: TransactionRecord, onApprove: () -> Unit, onReject: (
                     .fillMaxWidth()
                     .wrapContentHeight()
                     .clip(RoundedCornerShape(16.dp))
-                    .background(Color(0xFF14161F))
+                    .background(Color.White)
                     .padding(16.dp)
             ) {
                 Column(
@@ -1096,7 +1096,7 @@ fun DepositRequestCard(tx: TransactionRecord, onApprove: () -> Unit, onReject: (
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(Color(0xFF14161F))
+            .background(Color.White)
             .border(1.dp, Color(0xFFFFD700).copy(alpha = 0.5f), RoundedCornerShape(16.dp))
             .padding(16.dp)
     ) {
@@ -1111,7 +1111,7 @@ fun DepositRequestCard(tx: TransactionRecord, onApprove: () -> Unit, onReject: (
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0xFF0C0D12))
+                    .background(Color(0xFFF9FAFB))
                     .padding(horizontal = 10.dp, vertical = 6.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
@@ -1135,7 +1135,7 @@ fun DepositRequestCard(tx: TransactionRecord, onApprove: () -> Unit, onReject: (
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(10.dp))
-                        .background(Color(0xFF0C0D12))
+                        .background(Color(0xFFF9FAFB))
                         .border(1.dp, Color(0xFF2E3244), RoundedCornerShape(10.dp))
                         .clickable { showFullScreenshot = true }
                         .padding(8.dp),
@@ -1213,7 +1213,7 @@ fun WithdrawRequestCard(tx: TransactionRecord, onComplete: () -> Unit, onReject:
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(Color(0xFF14161F))
+            .background(Color.White)
             .border(1.dp, Color(0xFF00E676).copy(alpha = 0.5f), RoundedCornerShape(16.dp))
             .padding(16.dp)
     ) {
@@ -1228,7 +1228,7 @@ fun WithdrawRequestCard(tx: TransactionRecord, onComplete: () -> Unit, onReject:
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0xFF0C0D12))
+                    .background(Color(0xFFF9FAFB))
                     .padding(horizontal = 10.dp, vertical = 6.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
@@ -1281,8 +1281,8 @@ fun EmptyAdminPlaceholder(title: String, subtitle: String) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(18.dp))
-            .background(Color(0xFF14161F))
-            .border(1.dp, Color(0xFF262938), RoundedCornerShape(18.dp))
+            .background(Color.White)
+            .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(18.dp))
             .padding(32.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -1341,7 +1341,7 @@ fun RechargeRequestCard(
                     .fillMaxWidth()
                     .wrapContentHeight()
                     .clip(RoundedCornerShape(20.dp))
-                    .background(Color(0xFF14161F))
+                    .background(Color.White)
                     .border(1.5.dp, Color(0xFF00E676).copy(alpha = 0.5f), RoundedCornerShape(20.dp))
                     .padding(20.dp)
             ) {
@@ -1377,8 +1377,8 @@ fun RechargeRequestCard(
                             unfocusedBorderColor = Color(0xFF2E3244),
                             focusedTextColor = Color.White,
                             unfocusedTextColor = Color.White,
-                            focusedContainerColor = Color(0xFF0C0D12),
-                            unfocusedContainerColor = Color(0xFF0C0D12)
+                            focusedContainerColor = Color(0xFFF9FAFB),
+                            unfocusedContainerColor = Color(0xFFF9FAFB)
                         ),
                         shape = RoundedCornerShape(10.dp),
                         modifier = Modifier.fillMaxWidth()
@@ -1390,7 +1390,7 @@ fun RechargeRequestCard(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(10.dp))
-                                .background(Color(0xFF0C0D12))
+                                .background(Color(0xFFF9FAFB))
                                 .border(1.dp, Color(0xFF00E676).copy(alpha = 0.5f), RoundedCornerShape(10.dp))
                                 .padding(8.dp),
                             verticalAlignment = Alignment.CenterVertically,

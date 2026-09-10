@@ -206,7 +206,7 @@ fun AdminAppUpdateScreen(navController: NavController) {
     }
 
     Scaffold(
-        containerColor = Color(0xFF0C0D12),
+        containerColor = Color(0xFFF9FAFB),
         topBar = {
             TopAppBar(
                 title = {
@@ -232,7 +232,7 @@ fun AdminAppUpdateScreen(navController: NavController) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF0C0D12))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF9FAFB))
             )
         }
     ) { padding ->
@@ -430,8 +430,8 @@ fun AdminAppUpdateScreen(navController: NavController) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(18.dp))
-                        .background(Color(0xFF14161F))
-                        .border(1.dp, Color(0xFF262938), RoundedCornerShape(18.dp))
+                        .background(Color.White)
+                        .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(18.dp))
                         .padding(16.dp)
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -442,7 +442,7 @@ fun AdminAppUpdateScreen(navController: NavController) {
                             subtitle = "Target version numbers & direct APK download link for players"
                         )
 
-                        HorizontalDivider(color = Color(0xFF262938))
+                        HorizontalDivider(color = Color(0xFFE5E7EB))
 
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -510,8 +510,8 @@ fun AdminAppUpdateScreen(navController: NavController) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(18.dp))
-                        .background(Color(0xFF14161F))
-                        .border(1.dp, Color(0xFF262938), RoundedCornerShape(18.dp))
+                        .background(Color.White)
+                        .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(18.dp))
                         .padding(16.dp)
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -522,7 +522,7 @@ fun AdminAppUpdateScreen(navController: NavController) {
                             subtitle = "Manage mandatory blockers, skip permissions and cheat protection"
                         )
 
-                        HorizontalDivider(color = Color(0xFF262938))
+                        HorizontalDivider(color = Color(0xFFE5E7EB))
 
                         // Force Update Toggle
                         AdminSwitchRow(
@@ -563,8 +563,8 @@ fun AdminAppUpdateScreen(navController: NavController) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(18.dp))
-                        .background(Color(0xFF14161F))
-                        .border(1.dp, Color(0xFF262938), RoundedCornerShape(18.dp))
+                        .background(Color.White)
+                        .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(18.dp))
                         .padding(16.dp)
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -575,7 +575,7 @@ fun AdminAppUpdateScreen(navController: NavController) {
                             subtitle = "Instant over-the-air hotfix deployment with 0 seconds download required"
                         )
 
-                        HorizontalDivider(color = Color(0xFF262938))
+                        HorizontalDivider(color = Color(0xFFE5E7EB))
 
                         OutlinedTextField(
                             value = patchTag,
@@ -630,8 +630,8 @@ fun AdminAppUpdateScreen(navController: NavController) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(18.dp))
-                        .background(Color(0xFF14161F))
-                        .border(1.dp, Color(0xFF262938), RoundedCornerShape(18.dp))
+                        .background(Color.White)
+                        .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(18.dp))
                         .padding(16.dp)
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -642,7 +642,7 @@ fun AdminAppUpdateScreen(navController: NavController) {
                             subtitle = "Instantly enable or disable individual app features without restarting"
                         )
 
-                        HorizontalDivider(color = Color(0xFF262938))
+                        HorizontalDivider(color = Color(0xFFE5E7EB))
 
                         AdminSwitchRow(
                             title = "Tournament Registrations",
@@ -689,8 +689,8 @@ fun AdminAppUpdateScreen(navController: NavController) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(18.dp))
-                        .background(Color(0xFF14161F))
-                        .border(1.dp, Color(0xFF262938), RoundedCornerShape(18.dp))
+                        .background(Color.White)
+                        .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(18.dp))
                         .padding(16.dp)
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -701,7 +701,7 @@ fun AdminAppUpdateScreen(navController: NavController) {
                             subtitle = "Full-screen maintenance screen displayed to all regular players"
                         )
 
-                        HorizontalDivider(color = Color(0xFF262938))
+                        HorizontalDivider(color = Color(0xFFE5E7EB))
 
                         AdminSwitchRow(
                             title = if (isMaintenanceMode) "🚧 Server Maintenance ON" else "Server Live (Normal)",
@@ -732,8 +732,8 @@ fun AdminAppUpdateScreen(navController: NavController) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(18.dp))
-                        .background(Color(0xFF14161F))
-                        .border(1.dp, Color(0xFF262938), RoundedCornerShape(18.dp))
+                        .background(Color.White)
+                        .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(18.dp))
                         .padding(16.dp)
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -744,7 +744,7 @@ fun AdminAppUpdateScreen(navController: NavController) {
                             subtitle = "Broadcast high-priority announcement on top of the Home Screen"
                         )
 
-                        HorizontalDivider(color = Color(0xFF262938))
+                        HorizontalDivider(color = Color(0xFFE5E7EB))
 
                         AdminSwitchRow(
                             title = "Live Announcement Ticker",
@@ -775,8 +775,8 @@ fun AdminAppUpdateScreen(navController: NavController) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(18.dp))
-                        .background(Color(0xFF14161F))
-                        .border(1.dp, Color(0xFF262938), RoundedCornerShape(18.dp))
+                        .background(Color.White)
+                        .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(18.dp))
                         .padding(16.dp)
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -787,7 +787,7 @@ fun AdminAppUpdateScreen(navController: NavController) {
                             subtitle = "New player joining bonus (Real Cash & Coins), spin jackpot, and ad rewards"
                         )
 
-                        HorizontalDivider(color = Color(0xFF262938))
+                        HorizontalDivider(color = Color(0xFFE5E7EB))
 
                         // Section 1: New User Joining Bonus (Real Cash & Coins)
                         Text(
@@ -829,7 +829,7 @@ fun AdminAppUpdateScreen(navController: NavController) {
                             lineHeight = 15.sp
                         )
 
-                        HorizontalDivider(color = Color(0xFF262938))
+                        HorizontalDivider(color = Color(0xFFE5E7EB))
 
                         // Section 2: Daily Rewards & Ad Coins
                         Text(
@@ -897,8 +897,8 @@ fun AdminAppUpdateScreen(navController: NavController) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(18.dp))
-                        .background(Color(0xFF14161F))
-                        .border(1.dp, Color(0xFF262938), RoundedCornerShape(18.dp))
+                        .background(Color.White)
+                        .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(18.dp))
                         .padding(16.dp)
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -909,7 +909,7 @@ fun AdminAppUpdateScreen(navController: NavController) {
                             subtitle = "Official deposit payment receiver and player support links"
                         )
 
-                        HorizontalDivider(color = Color(0xFF262938))
+                        HorizontalDivider(color = Color(0xFFE5E7EB))
 
                         OutlinedTextField(
                             value = adminUpiId,

@@ -145,8 +145,8 @@ fun AppUpdateDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(14.dp))
-                        .background(Color(0xFF0C0D12))
-                        .border(1.dp, Color(0xFF262938), RoundedCornerShape(14.dp))
+                        .background(Color(0xFFF9FAFB))
+                        .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(14.dp))
                         .padding(14.dp)
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -309,7 +309,7 @@ fun UserBannedLockScreen(
                     .fillMaxWidth(0.6f)
                     .height(48.dp),
                 shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF262938))
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE5E7EB))
             ) {
                 Icon(Icons.Default.ExitToApp, contentDescription = null, tint = Color.White)
                 Spacer(modifier = Modifier.width(8.dp))
@@ -377,7 +377,7 @@ fun ServerMaintenanceScreen(
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(16.dp))
                     .background(Color(0xFF141622))
-                    .border(1.dp, Color(0xFF262938), RoundedCornerShape(16.dp))
+                    .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(16.dp))
                     .padding(18.dp)
             ) {
                 Text(

@@ -297,7 +297,7 @@ fun AdminUserSecurityScreen(navController: NavController) {
     }
 
     Scaffold(
-        containerColor = Color(0xFF0C0D12),
+        containerColor = Color(0xFFF9FAFB),
         topBar = {
             TopAppBar(
                 title = {
@@ -328,7 +328,7 @@ fun AdminUserSecurityScreen(navController: NavController) {
                         Icon(Icons.Default.Refresh, contentDescription = "Refresh", tint = Color.White)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF0C0D12))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF9FAFB))
             )
         }
     ) { padding ->
@@ -366,7 +366,7 @@ fun AdminUserSecurityScreen(navController: NavController) {
             // Tab Row
             TabRow(
                 selectedTabIndex = selectedTab,
-                containerColor = Color(0xFF14161F),
+                containerColor = Color.White,
                 contentColor = Color(0xFFFF3366),
                 indicator = { tabPositions ->
                     TabRowDefaults.SecondaryIndicator(
@@ -422,13 +422,13 @@ fun AdminUserSecurityScreen(navController: NavController) {
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFFFF3366),
-                    unfocusedBorderColor = Color(0xFF262938),
+                    unfocusedBorderColor = Color(0xFFE5E7EB),
                     focusedLabelColor = Color(0xFFFF3366),
                     unfocusedLabelColor = Color(0xFF8E92A4),
                     focusedTextColor = Color.White,
                     unfocusedTextColor = Color.White,
-                    focusedContainerColor = Color(0xFF14161F),
-                    unfocusedContainerColor = Color(0xFF14161F)
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White
                 ),
                 shape = RoundedCornerShape(12.dp)
             )
@@ -452,10 +452,10 @@ fun AdminUserSecurityScreen(navController: NavController) {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(16.dp))
-                                .background(if (isUserBanned) Color(0xFF260D12) else Color(0xFF14161F))
+                                .background(if (isUserBanned) Color(0xFF260D12) else Color.White)
                                 .border(
                                     1.dp,
-                                    if (isUserBanned) Color(0xFFFF3366).copy(alpha = 0.6f) else Color(0xFF262938),
+                                    if (isUserBanned) Color(0xFFFF3366).copy(alpha = 0.6f) else Color(0xFFE5E7EB),
                                     RoundedCornerShape(16.dp)
                                 )
                                 .padding(14.dp)
@@ -758,7 +758,7 @@ fun AdminUserSecurityScreen(navController: NavController) {
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .clip(RoundedCornerShape(10.dp))
-                                            .background(Color(0xFF14161F))
+                                            .background(Color.White)
                                             .padding(10.dp)
                                     ) {
                                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {

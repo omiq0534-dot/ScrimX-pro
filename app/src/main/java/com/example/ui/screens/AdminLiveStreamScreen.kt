@@ -69,7 +69,7 @@ fun AdminLiveStreamScreen(
 
     if (selectedMatchForStream != null) {
         AlertDialog(
-            containerColor = Color(0xFF14161F),
+            containerColor = Color.White,
             onDismissRequest = { selectedMatchForStream = null },
             title = {
                 Text(
@@ -157,7 +157,7 @@ fun AdminLiveStreamScreen(
     }
 
     Scaffold(
-        containerColor = Color(0xFF0C0D12),
+        containerColor = Color(0xFFF9FAFB),
         topBar = {
             TopAppBar(
                 title = {
@@ -174,7 +174,7 @@ fun AdminLiveStreamScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF0C0D12))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF9FAFB))
             )
         }
     ) { padding ->
@@ -204,8 +204,8 @@ fun AdminLiveStreamScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(18.dp))
-                    .background(Color(0xFF14161F))
-                    .border(1.dp, Color(0xFF262938), RoundedCornerShape(18.dp))
+                    .background(Color.White)
+                    .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(18.dp))
                     .padding(18.dp)
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {

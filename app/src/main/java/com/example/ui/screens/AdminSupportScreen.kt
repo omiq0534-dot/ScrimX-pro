@@ -149,7 +149,7 @@ fun AdminSupportScreen(navController: NavController) {
     }
 
     Scaffold(
-        containerColor = Color(0xFF0C0D12),
+        containerColor = Color(0xFFF9FAFB),
         topBar = {
             TopAppBar(
                 title = {
@@ -194,7 +194,7 @@ fun AdminSupportScreen(navController: NavController) {
                         }
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF0C0D12))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF9FAFB))
             )
         }
     ) { padding ->
@@ -206,9 +206,9 @@ fun AdminSupportScreen(navController: NavController) {
             // Tab Selector (User Queries / Contact Settings / FAQs)
             TabRow(
                 selectedTabIndex = selectedTab,
-                containerColor = Color(0xFF14161F),
+                containerColor = Color.White,
                 contentColor = Color.White,
-                divider = { HorizontalDivider(color = Color(0xFF262938)) }
+                divider = { HorizontalDivider(color = Color(0xFFE5E7EB)) }
             ) {
                 Tab(
                     selected = selectedTab == 0,
@@ -261,9 +261,9 @@ fun AdminSupportScreen(navController: NavController) {
                                 onClick = { queryFilter = "All" },
                                 label = { Text("All (${tickets.size})") },
                                 colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = Color(0xFF262938),
+                                    selectedContainerColor = Color(0xFFE5E7EB),
                                     selectedLabelColor = Color.White,
-                                    containerColor = Color(0xFF14161F),
+                                    containerColor = Color.White,
                                     labelColor = Color(0xFF8E92A4)
                                 )
                             )
@@ -274,7 +274,7 @@ fun AdminSupportScreen(navController: NavController) {
                                 colors = FilterChipDefaults.filterChipColors(
                                     selectedContainerColor = Color(0xFF332014),
                                     selectedLabelColor = Color(0xFFFF9800),
-                                    containerColor = Color(0xFF14161F),
+                                    containerColor = Color.White,
                                     labelColor = Color(0xFF8E92A4)
                                 )
                             )
@@ -285,7 +285,7 @@ fun AdminSupportScreen(navController: NavController) {
                                 colors = FilterChipDefaults.filterChipColors(
                                     selectedContainerColor = Color(0xFF143320),
                                     selectedLabelColor = Color(0xFF00E676),
-                                    containerColor = Color(0xFF14161F),
+                                    containerColor = Color.White,
                                     labelColor = Color(0xFF8E92A4)
                                 )
                             )
@@ -363,9 +363,9 @@ fun AdminSupportScreen(navController: NavController) {
                                 focusedTextColor = Color.White,
                                 unfocusedTextColor = Color.White,
                                 focusedBorderColor = Color(0xFF3B82F6),
-                                unfocusedBorderColor = Color(0xFF262938),
-                                focusedContainerColor = Color(0xFF14161F),
-                                unfocusedContainerColor = Color(0xFF14161F)
+                                unfocusedBorderColor = Color(0xFFE5E7EB),
+                                focusedContainerColor = Color.White,
+                                unfocusedContainerColor = Color.White
                             ),
                             shape = RoundedCornerShape(14.dp)
                         )
@@ -380,9 +380,9 @@ fun AdminSupportScreen(navController: NavController) {
                                 focusedTextColor = Color.White,
                                 unfocusedTextColor = Color.White,
                                 focusedBorderColor = Color(0xFF25D366),
-                                unfocusedBorderColor = Color(0xFF262938),
-                                focusedContainerColor = Color(0xFF14161F),
-                                unfocusedContainerColor = Color(0xFF14161F)
+                                unfocusedBorderColor = Color(0xFFE5E7EB),
+                                focusedContainerColor = Color.White,
+                                unfocusedContainerColor = Color.White
                             ),
                             shape = RoundedCornerShape(14.dp)
                         )
@@ -397,9 +397,9 @@ fun AdminSupportScreen(navController: NavController) {
                                 focusedTextColor = Color.White,
                                 unfocusedTextColor = Color.White,
                                 focusedBorderColor = Color(0xFF229ED9),
-                                unfocusedBorderColor = Color(0xFF262938),
-                                focusedContainerColor = Color(0xFF14161F),
-                                unfocusedContainerColor = Color(0xFF14161F)
+                                unfocusedBorderColor = Color(0xFFE5E7EB),
+                                focusedContainerColor = Color.White,
+                                unfocusedContainerColor = Color.White
                             ),
                             shape = RoundedCornerShape(14.dp)
                         )
@@ -414,9 +414,9 @@ fun AdminSupportScreen(navController: NavController) {
                                 focusedTextColor = Color.White,
                                 unfocusedTextColor = Color.White,
                                 focusedBorderColor = Color(0xFF5865F2),
-                                unfocusedBorderColor = Color(0xFF262938),
-                                focusedContainerColor = Color(0xFF14161F),
-                                unfocusedContainerColor = Color(0xFF14161F)
+                                unfocusedBorderColor = Color(0xFFE5E7EB),
+                                focusedContainerColor = Color.White,
+                                unfocusedContainerColor = Color.White
                             ),
                             shape = RoundedCornerShape(14.dp)
                         )
@@ -431,9 +431,9 @@ fun AdminSupportScreen(navController: NavController) {
                                 focusedTextColor = Color.White,
                                 unfocusedTextColor = Color.White,
                                 focusedBorderColor = Color(0xFFFFD700),
-                                unfocusedBorderColor = Color(0xFF262938),
-                                focusedContainerColor = Color(0xFF14161F),
-                                unfocusedContainerColor = Color(0xFF14161F)
+                                unfocusedBorderColor = Color(0xFFE5E7EB),
+                                focusedContainerColor = Color.White,
+                                unfocusedContainerColor = Color.White
                             ),
                             shape = RoundedCornerShape(14.dp)
                         )
@@ -539,12 +539,12 @@ fun AdminSupportScreen(navController: NavController) {
                                     Card(
                                         modifier = Modifier.fillMaxWidth(),
                                         shape = RoundedCornerShape(14.dp),
-                                        colors = CardDefaults.cardColors(containerColor = Color(0xFF14161F))
+                                        colors = CardDefaults.cardColors(containerColor = Color.White)
                                     ) {
                                         Column(
                                             modifier = Modifier
                                                 .fillMaxWidth()
-                                                .border(1.dp, Color(0xFF262938), RoundedCornerShape(14.dp))
+                                                .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(14.dp))
                                                 .padding(16.dp)
                                         ) {
                                             Row(
@@ -588,7 +588,7 @@ fun AdminSupportScreen(navController: NavController) {
     if (showAddFaqDialog) {
         AlertDialog(
             onDismissRequest = { showAddFaqDialog = false },
-            containerColor = Color(0xFF14161F),
+            containerColor = Color.White,
             title = { Text("Add New FAQ", color = AppColors.TextPrimary, fontWeight = FontWeight.Bold) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -673,10 +673,10 @@ fun AdminTicketCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(18.dp))
-            .background(Color(0xFF14161F))
+            .background(Color.White)
             .border(
                 1.dp,
-                if (isPending) Color(0xFFFF9800).copy(alpha = 0.5f) else Color(0xFF262938),
+                if (isPending) Color(0xFFFF9800).copy(alpha = 0.5f) else Color(0xFFE5E7EB),
                 RoundedCornerShape(18.dp)
             )
             .padding(18.dp)
@@ -693,7 +693,7 @@ fun AdminTicketCard(
                         modifier = Modifier
                             .size(36.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFF262938)),
+                            .background(Color(0xFFE5E7EB)),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(

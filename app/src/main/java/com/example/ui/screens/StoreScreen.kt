@@ -113,7 +113,7 @@ fun StoreScreen(
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp))
                             .background(Color(0xFF0A0B10))
-                            .border(1.dp, Color(0xFF262938), RoundedCornerShape(12.dp))
+                            .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(12.dp))
                             .padding(12.dp)
                     ) {
                         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -139,7 +139,7 @@ fun StoreScreen(
                                     Text("$userCoins Coins", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                                 }
                             }
-                            Divider(color = Color(0xFF262938), modifier = Modifier.padding(vertical = 2.dp))
+                            Divider(color = Color(0xFFE5E7EB), modifier = Modifier.padding(vertical = 2.dp))
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
@@ -1056,7 +1056,7 @@ fun CelebrationCardDialog(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(20.dp))
-                .background(Color(0xFF14161F))
+                .background(Color.White)
                 .padding(24.dp),
             contentAlignment = Alignment.Center
         ) {

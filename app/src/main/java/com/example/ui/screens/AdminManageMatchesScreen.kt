@@ -65,7 +65,7 @@ fun AdminManageMatchesScreen(
     // 1. Edit Dialog
     if (showEditDialog && selectedMatchForEdit != null) {
         AlertDialog(
-            containerColor = Color(0xFF14161F),
+            containerColor = Color.White,
             onDismissRequest = { showEditDialog = false },
             title = {
                 Text(
@@ -112,8 +112,8 @@ fun AdminManageMatchesScreen(
                                 modifier = Modifier
                                     .weight(1f)
                                     .clip(RoundedCornerShape(8.dp))
-                                    .background(if (isSel) Color(0xFF222738) else Color(0xFF0C0D12))
-                                    .border(1.dp, if (isSel) Color(0xFFFFD700) else Color(0xFF262938), RoundedCornerShape(8.dp))
+                                    .background(if (isSel) Color(0xFF222738) else Color(0xFFF9FAFB))
+                                    .border(1.dp, if (isSel) Color(0xFFFFD700) else Color(0xFFE5E7EB), RoundedCornerShape(8.dp))
                                     .clickable { editEntryType = tKey }
                                     .padding(vertical = 8.dp),
                                 contentAlignment = Alignment.Center
@@ -174,9 +174,9 @@ fun AdminManageMatchesScreen(
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color(0xFFFFD700),
-                            unfocusedBorderColor = Color(0xFF262938),
-                            focusedContainerColor = Color(0xFF0C0D12),
-                            unfocusedContainerColor = Color(0xFF0C0D12),
+                            unfocusedBorderColor = Color(0xFFE5E7EB),
+                            focusedContainerColor = Color(0xFFF9FAFB),
+                            unfocusedContainerColor = Color(0xFFF9FAFB),
                             focusedTextColor = Color.White,
                             unfocusedTextColor = Color.White,
                             cursorColor = Color(0xFFFFD700)
@@ -193,8 +193,8 @@ fun AdminManageMatchesScreen(
                                 modifier = Modifier
                                     .weight(1f)
                                     .clip(RoundedCornerShape(8.dp))
-                                    .background(if (isSelected) Color(0xFF222636) else Color(0xFF0C0D12))
-                                    .border(1.dp, if (isSelected) Color.White else Color(0xFF262938), RoundedCornerShape(8.dp))
+                                    .background(if (isSelected) Color(0xFFE5E7EB) else Color(0xFFF9FAFB))
+                                    .border(1.dp, if (isSelected) Color.White else Color(0xFFE5E7EB), RoundedCornerShape(8.dp))
                                     .clickable { status = st }
                                     .padding(vertical = 10.dp),
                                 contentAlignment = Alignment.Center
@@ -263,7 +263,7 @@ fun AdminManageMatchesScreen(
         val uidsMap = targetMatch.slotUids
 
         AlertDialog(
-            containerColor = Color(0xFF14161F),
+            containerColor = Color.White,
             onDismissRequest = { showBookingsDialog = false },
             title = {
                 Row(
@@ -281,7 +281,7 @@ fun AdminManageMatchesScreen(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
-                            .background(Color(0xFF222636))
+                            .background(Color(0xFFE5E7EB))
                             .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Text("${bookedMap.size} Booked", color = Color(0xFFFFD700), fontSize = 11.sp, fontWeight = FontWeight.Black)
@@ -308,7 +308,7 @@ fun AdminManageMatchesScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(Color(0xFF0C0D12))
+                                .background(Color(0xFFF9FAFB))
                                 .padding(24.dp),
                             contentAlignment = Alignment.Center
                         ) {
@@ -326,8 +326,8 @@ fun AdminManageMatchesScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(12.dp))
-                                    .background(Color(0xFF0C0D12))
-                                    .border(1.dp, Color(0xFF262938), RoundedCornerShape(12.dp))
+                                    .background(Color(0xFFF9FAFB))
+                                    .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(12.dp))
                                     .padding(12.dp)
                             ) {
                                 Row(
@@ -374,7 +374,7 @@ fun AdminManageMatchesScreen(
     }
 
     Scaffold(
-        containerColor = Color(0xFF0C0D12),
+        containerColor = Color(0xFFF9FAFB),
         topBar = {
             TopAppBar(
                 title = {
@@ -391,7 +391,7 @@ fun AdminManageMatchesScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF0C0D12))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF9FAFB))
             )
         }
     ) { padding ->
@@ -410,8 +410,8 @@ fun AdminManageMatchesScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(18.dp))
-                            .background(Color(0xFF14161F))
-                            .border(1.dp, Color(0xFF262938), RoundedCornerShape(18.dp))
+                            .background(Color.White)
+                            .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(18.dp))
                             .padding(32.dp),
                         contentAlignment = Alignment.Center
                     ) {
@@ -426,10 +426,10 @@ fun AdminManageMatchesScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(18.dp))
-                        .background(Color(0xFF14161F))
+                        .background(Color.White)
                         .border(
                             1.dp,
-                            if (isLive) Color(0xFFFF5252).copy(alpha = 0.6f) else Color(0xFF262938),
+                            if (isLive) Color(0xFFFF5252).copy(alpha = 0.6f) else Color(0xFFE5E7EB),
                             RoundedCornerShape(18.dp)
                         )
                         .padding(16.dp)
@@ -489,7 +489,7 @@ fun AdminManageMatchesScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(10.dp))
-                                .background(Color(0xFF0C0D12))
+                                .background(Color(0xFFF9FAFB))
                                 .padding(12.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically

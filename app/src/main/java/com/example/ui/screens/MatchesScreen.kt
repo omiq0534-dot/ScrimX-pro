@@ -68,7 +68,7 @@ fun MatchesScreen(
                     "Tournaments & Scrims",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Black,
-                    color = AppColors.ScreenBackground
+                    color = AppColors.TextPrimary
                 )
                 Spacer(modifier = Modifier.height(14.dp))
 
@@ -86,7 +86,7 @@ fun MatchesScreen(
                         modifier = Modifier
                             .weight(1f)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(if (selectedTab == 0) Color(0xFF33384D) else Color.Transparent)
+                            .background(if (selectedTab == 0) Color(0xFFF3F4F6) else Color.Transparent)
                             .clickable { selectedTab = 0 }
                             .padding(vertical = 10.dp),
                         contentAlignment = Alignment.Center
@@ -113,7 +113,7 @@ fun MatchesScreen(
                         modifier = Modifier
                             .weight(1f)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(if (selectedTab == 1) Color(0xFF33384D) else Color.Transparent)
+                            .background(if (selectedTab == 1) Color(0xFFF3F4F6) else Color.Transparent)
                             .clickable { selectedTab = 1 }
                             .padding(vertical = 10.dp),
                         contentAlignment = Alignment.Center
@@ -300,7 +300,7 @@ fun MyJoinedMatchCard(
                     match.title,
                     fontWeight = FontWeight.Black,
                     fontSize = 17.sp,
-                    color = AppColors.ScreenBackground
+                    color = AppColors.TextPrimary
                 )
                 Spacer(modifier = Modifier.height(3.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -326,12 +326,12 @@ fun MyJoinedMatchCard(
                 ) {
                     Column {
                         Text("REGISTERED AS", fontSize = 9.sp, fontWeight = FontWeight.Black, color = Color(0xFF888899))
-                        Text(playerNameOrTeam, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = AppColors.ScreenBackground)
+                        Text(playerNameOrTeam, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = AppColors.TextPrimary)
                     }
                     if (inGameUid.isNotBlank()) {
                         Column(horizontalAlignment = Alignment.End) {
                             Text("FREE FIRE UID", fontSize = 9.sp, fontWeight = FontWeight.Black, color = Color(0xFF888899))
-                            Text(inGameUid, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = AppColors.ScreenBackground)
+                            Text(inGameUid, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = AppColors.TextPrimary)
                         }
                     }
                 }
@@ -343,7 +343,7 @@ fun MyJoinedMatchCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(14.dp))
-                        .background(Color(0xFF14161F))
+                        .background(Color.White)
                         .border(1.dp, Color(0xFFFFD700), RoundedCornerShape(14.dp))
                         .padding(12.dp)
                 ) {
@@ -371,7 +371,7 @@ fun MyJoinedMatchCard(
                             },
                             modifier = Modifier
                                 .size(34.dp)
-                                .background(Color(0xFF262938), RoundedCornerShape(8.dp))
+                                .background(Color(0xFFF3F4F6), RoundedCornerShape(8.dp))
                         ) {
                             Icon(Icons.Default.ContentCopy, contentDescription = "Copy Room Details", tint = AppColors.TextPrimary, modifier = Modifier.size(16.dp))
                         }
@@ -462,7 +462,7 @@ fun EmptyMatchesCard(
                 title,
                 fontWeight = FontWeight.Black,
                 fontSize = 16.sp,
-                color = AppColors.ScreenBackground,
+                color = AppColors.TextPrimary,
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
             Text(

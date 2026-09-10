@@ -71,7 +71,7 @@ fun AdminCreateMatchScreen(navController: NavController) {
     )
 
     Scaffold(
-        containerColor = Color(0xFF0C0D12),
+        containerColor = Color(0xFFF9FAFB),
         topBar = {
             TopAppBar(
                 title = {
@@ -88,7 +88,7 @@ fun AdminCreateMatchScreen(navController: NavController) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF0C0D12))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF9FAFB))
             )
         }
     ) { padding ->
@@ -114,8 +114,8 @@ fun AdminCreateMatchScreen(navController: NavController) {
                                 modifier = Modifier
                                     .weight(1f)
                                     .clip(RoundedCornerShape(12.dp))
-                                    .background(if (isSelected) Color(0xFF222738) else Color(0xFF14161F))
-                                    .border(1.2.dp, if (isSelected) Color(0xFFFFD700) else Color(0xFF262938), RoundedCornerShape(12.dp))
+                                    .background(if (isSelected) Color(0xFF222738) else Color.White)
+                                    .border(1.2.dp, if (isSelected) Color(0xFFFFD700) else Color(0xFFE5E7EB), RoundedCornerShape(12.dp))
                                     .clickable {
                                         matchType = typeKey
                                         when (typeKey) {
@@ -182,8 +182,8 @@ fun AdminCreateMatchScreen(navController: NavController) {
                         modifier = Modifier
                             .weight(1f)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(if (isSelected) Color(0xFF1F2332) else Color(0xFF14161F))
-                            .border(1.dp, if (isSelected) Color(0xFFFFD700) else Color(0xFF262938), RoundedCornerShape(12.dp))
+                            .background(if (isSelected) Color(0xFF1F2332) else Color.White)
+                            .border(1.dp, if (isSelected) Color(0xFFFFD700) else Color(0xFFE5E7EB), RoundedCornerShape(12.dp))
                             .clickable {
                                 selectedMode = mode
                                 customSlots = defaultSlots
@@ -241,7 +241,7 @@ fun AdminCreateMatchScreen(navController: NavController) {
                             }
                             .padding(horizontal = 8.dp, vertical = 6.dp)
                     ) {
-                        Text(mapSug, color = Color(0xFFC0C4D6), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Text(mapSug, color = Color(0xFF4B5563), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -304,8 +304,8 @@ fun AdminCreateMatchScreen(navController: NavController) {
                         modifier = Modifier
                             .weight(1f)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(if (isSelected) Color(0xFF222738) else Color(0xFF14161F))
-                            .border(1.2.dp, if (isSelected) Color(0xFFFFD700) else Color(0xFF262938), RoundedCornerShape(12.dp))
+                            .background(if (isSelected) Color(0xFF222738) else Color.White)
+                            .border(1.2.dp, if (isSelected) Color(0xFFFFD700) else Color(0xFFE5E7EB), RoundedCornerShape(12.dp))
                             .clickable { entryType = typeKey }
                             .padding(vertical = 10.dp, horizontal = 6.dp),
                         contentAlignment = Alignment.Center
@@ -320,7 +320,7 @@ fun AdminCreateMatchScreen(navController: NavController) {
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
                                 subLabel,
-                                color = if (isSelected) Color(0xFFC0C4D6) else Color(0xFF6B7280),
+                                color = if (isSelected) Color(0xFF4B5563) else Color(0xFF6B7280),
                                 fontSize = 9.sp,
                                 fontWeight = FontWeight.Medium
                             )
@@ -424,9 +424,9 @@ fun AdminCreateMatchScreen(navController: NavController) {
                 shape = RoundedCornerShape(14.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFFFFD700),
-                    unfocusedBorderColor = Color(0xFF262938),
-                    focusedContainerColor = Color(0xFF14161F),
-                    unfocusedContainerColor = Color(0xFF14161F),
+                    unfocusedBorderColor = Color(0xFFE5E7EB),
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
                     focusedTextColor = Color.White,
                     unfocusedTextColor = Color.White,
                     cursorColor = Color(0xFFFFD700)
@@ -448,7 +448,7 @@ fun AdminCreateMatchScreen(navController: NavController) {
                             .clickable { customRules = ruleTpl }
                             .padding(horizontal = 10.dp, vertical = 6.dp)
                     ) {
-                        Text(ruleTpl, color = Color(0xFFC0C4D6), fontSize = 11.sp)
+                        Text(ruleTpl, color = Color(0xFF4B5563), fontSize = 11.sp)
                     }
                 }
             }
@@ -494,8 +494,8 @@ fun AdminCreateMatchScreen(navController: NavController) {
                         modifier = Modifier
                             .weight(1f)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(if (isSelected) Color(0xFF1F2332) else Color(0xFF14161F))
-                            .border(1.dp, if (isSelected) Color.White else Color(0xFF262938), RoundedCornerShape(12.dp))
+                            .background(if (isSelected) Color(0xFF1F2332) else Color.White)
+                            .border(1.dp, if (isSelected) Color.White else Color(0xFFE5E7EB), RoundedCornerShape(12.dp))
                             .clickable { status = st }
                             .padding(vertical = 12.dp),
                         contentAlignment = Alignment.Center
@@ -610,9 +610,9 @@ fun ClassyDarkInput(
         shape = RoundedCornerShape(14.dp),
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = Color(0xFFFFD700),
-            unfocusedBorderColor = Color(0xFF262938),
-            focusedContainerColor = Color(0xFF14161F),
-            unfocusedContainerColor = Color(0xFF14161F),
+            unfocusedBorderColor = Color(0xFFE5E7EB),
+            focusedContainerColor = Color.White,
+            unfocusedContainerColor = Color.White,
             focusedTextColor = Color.White,
             unfocusedTextColor = Color.White,
             cursorColor = Color(0xFFFFD700)

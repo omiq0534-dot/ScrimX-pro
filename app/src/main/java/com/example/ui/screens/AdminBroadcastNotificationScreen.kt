@@ -253,7 +253,7 @@ fun AdminBroadcastNotificationScreen(navController: NavController) {
                                             selectedContainerColor = Color(0xFFFFD700),
                                             selectedLabelColor = Color.Black,
                                             containerColor = Color(0xFF1D2130),
-                                            labelColor = Color(0xFFC0C4D6)
+                                            labelColor = Color(0xFF4B5563)
                                         )
                                     )
                                 }
@@ -383,7 +383,7 @@ fun AdminBroadcastNotificationScreen(navController: NavController) {
                             if (matchesList.isEmpty()) {
                                 Surface(
                                     shape = RoundedCornerShape(10.dp),
-                                    color = Color(0xFF1E2130),
+                                    color = Color(0xFFF3F4F6),
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
                                     Text("No active tournament matches found. Please create a match first.", color = Color(0xFFFF5252), fontSize = 12.sp, modifier = Modifier.padding(12.dp))

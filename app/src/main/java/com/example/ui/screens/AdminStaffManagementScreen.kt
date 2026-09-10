@@ -288,7 +288,7 @@ fun AdminStaffManagementScreen(navController: NavController) {
     }
 
     Scaffold(
-        containerColor = Color(0xFF0C0D12),
+        containerColor = Color(0xFFF9FAFB),
         topBar = {
             TopAppBar(
                 title = {
@@ -306,7 +306,7 @@ fun AdminStaffManagementScreen(navController: NavController) {
                         Icon(Icons.Default.PersonAdd, contentDescription = "Add Mod", tint = Color(0xFF00E5FF))
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF0C0D12))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF9FAFB))
             )
         }
     ) { padding ->
@@ -403,9 +403,9 @@ fun AdminStaffManagementScreen(navController: NavController) {
                         },
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color(0xFF8B5CF6),
-                            unfocusedBorderColor = Color(0xFF262938),
-                            focusedContainerColor = Color(0xFF14161F),
-                            unfocusedContainerColor = Color(0xFF14161F),
+                            unfocusedBorderColor = Color(0xFFE5E7EB),
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White,
                             focusedTextColor = Color.White,
                             unfocusedTextColor = Color.White
                         ),

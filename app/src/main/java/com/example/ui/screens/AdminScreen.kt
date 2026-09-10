@@ -115,7 +115,7 @@ fun AdminScreen(navController: NavController) {
     }
 
     Scaffold(
-        containerColor = Color(0xFF0C0D12),
+        containerColor = Color(0xFFF9FAFB),
         topBar = {
             TopAppBar(
                 title = {
@@ -143,7 +143,7 @@ fun AdminScreen(navController: NavController) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF0C0D12))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF9FAFB))
             )
         }
     ) { padding ->
@@ -160,8 +160,8 @@ fun AdminScreen(navController: NavController) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(22.dp))
-                    .background(Color(0xFF14161F))
-                    .border(1.dp, Color(0xFF262938), RoundedCornerShape(22.dp))
+                    .background(Color.White)
+                    .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(22.dp))
                     .padding(20.dp)
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -189,7 +189,7 @@ fun AdminScreen(navController: NavController) {
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(10.dp))
-                                .background(if (isLiveStreamActive) Color(0xFF2A151A) else Color(0xFF1A1D27))
+                                .background(if (isLiveStreamActive) Color(0xFF2A151A) else Color(0xFFF9FAFB))
                                 .border(1.dp, if (isLiveStreamActive) Color(0xFFFF003C).copy(alpha = 0.5f) else Color(0xFF333748), RoundedCornerShape(10.dp))
                                 .padding(horizontal = 10.dp, vertical = 6.dp)
                         ) {
@@ -347,7 +347,7 @@ fun AdminScreen(navController: NavController) {
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(14.dp))
                         .background(Color(0xFF131520))
-                        .border(1.dp, Color(0xFF262938), RoundedCornerShape(14.dp))
+                        .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(14.dp))
                         .padding(14.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -398,8 +398,8 @@ fun ClassyAdminActionCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(18.dp))
-            .background(Color(0xFF14161F))
-            .border(1.dp, Color(0xFF262938), RoundedCornerShape(18.dp))
+            .background(Color.White)
+            .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(18.dp))
             .clickable { onClick() }
             .padding(18.dp)
     ) {
@@ -437,7 +437,7 @@ fun ClassyAdminActionCard(
                             .background(Color(0xFF202330))
                             .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
-                        Text(badge, color = Color(0xFFC0C4D6), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        Text(badge, color = Color(0xFF4B5563), fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     }
                     Spacer(modifier = Modifier.width(6.dp))
                 }

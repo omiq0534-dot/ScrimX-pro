@@ -373,7 +373,7 @@ fun WalletScreen(
         val qrApiUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=${URLEncoder.encode(upiUri, StandardCharsets.UTF_8.toString())}"
 
         AlertDialog(
-            containerColor = Color(0xFF14161F),
+            containerColor = Color.White,
             onDismissRequest = { if (!isSubmittingDeposit) showDepositDialog = false },
             properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false),
             modifier = Modifier.fillMaxWidth(0.93f),
@@ -392,7 +392,7 @@ fun WalletScreen(
                 ) {
                     Text(
                         "Step 1: Scan QR or Click to Pay using GPay / PhonePe / Paytm",
-                        color = Color(0xFFC0C4D6),
+                        color = Color(0xFF4B5563),
                         fontSize = 11.5.sp,
                         fontWeight = FontWeight.Medium,
                         modifier = Modifier.fillMaxWidth()
@@ -409,8 +409,8 @@ fun WalletScreen(
                                 modifier = Modifier
                                     .weight(1f)
                                     .clip(RoundedCornerShape(8.dp))
-                                    .background(if (isSelected) Color(0xFF222636) else Color(0xFF0C0D12))
-                                    .border(1.dp, if (isSelected) Color(0xFFFFD700) else Color(0xFF262938), RoundedCornerShape(8.dp))
+                                    .background(if (isSelected) Color(0xFFE5E7EB) else Color(0xFFF9FAFB))
+                                    .border(1.dp, if (isSelected) Color(0xFFFFD700) else Color(0xFFE5E7EB), RoundedCornerShape(8.dp))
                                     .clickable { depositAmount = amt }
                                     .padding(vertical = 6.dp),
                                 contentAlignment = Alignment.Center
@@ -476,8 +476,8 @@ fun WalletScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(10.dp))
-                            .background(Color(0xFF0C0D12))
-                            .border(1.dp, Color(0xFF262938), RoundedCornerShape(10.dp))
+                            .background(Color(0xFFF9FAFB))
+                            .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(10.dp))
                             .padding(8.dp)
                     ) {
                         Row(
@@ -510,7 +510,7 @@ fun WalletScreen(
                     ) {
                         Text(
                             "Step 2: Enter 12-Digit UTR (Mandatory):",
-                            color = Color(0xFFC0C4D6),
+                            color = Color(0xFF4B5563),
                             fontSize = 11.5.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -547,7 +547,7 @@ fun WalletScreen(
 
                     Text(
                         "Step 3: Attach Payment Screenshot (Mandatory):",
-                        color = Color(0xFFC0C4D6),
+                        color = Color(0xFF4B5563),
                         fontSize = 11.5.sp,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.fillMaxWidth()
@@ -559,7 +559,7 @@ fun WalletScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(Color(0xFF0C0D12))
+                                .background(Color(0xFFF9FAFB))
                                 .border(1.dp, Color(0xFF00E676), RoundedCornerShape(12.dp))
                                 .padding(10.dp)
                         ) {
@@ -680,7 +680,7 @@ fun WalletScreen(
         val canWithdraw = !isSubmittingWithdraw && isMinSatisfied && isBalanceSatisfied && isUpiValid
 
         AlertDialog(
-            containerColor = Color(0xFF14161F),
+            containerColor = Color.White,
             onDismissRequest = { if (!isSubmittingWithdraw) showWithdrawDialog = false },
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -695,7 +695,7 @@ fun WalletScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFF0C0D12))
+                            .background(Color(0xFFF9FAFB))
                             .padding(12.dp)
                     ) {
                         Row(
@@ -820,7 +820,7 @@ fun WalletScreen(
         val userCoins = profile?.appMoney ?: 0
 
         AlertDialog(
-            containerColor = Color(0xFF14161F),
+            containerColor = Color.White,
             onDismissRequest = { showConvertDialog = false },
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -833,7 +833,7 @@ fun WalletScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(14.dp))
-                            .background(Color(0xFF0C0D12))
+                            .background(Color(0xFFF9FAFB))
                             .border(1.dp, Color(0xFFFFD700).copy(alpha = 0.4f), RoundedCornerShape(14.dp))
                             .padding(14.dp)
                     ) {
@@ -842,7 +842,7 @@ fun WalletScreen(
                                 Text("Your Free Coins:", color = Color(0xFF8E92A4), fontSize = 12.sp)
                                 Text("$userCoins 🪙", color = Color(0xFFFFD700), fontWeight = FontWeight.Black, fontSize = 15.sp)
                             }
-                            Divider(color = Color(0xFF262938))
+                            Divider(color = Color(0xFFE5E7EB))
                             Text(
                                 "🎁 HOW TO USE YOUR COINS:",
                                 color = AppColors.TextPrimary,
@@ -853,7 +853,7 @@ fun WalletScreen(
                                 "1. 🏷️ Tournament Entry Discounts:\nWhen joining paid matches (e.g. ₹20 Entry), apply your coins to get up to ₹3 - ₹5 OFF! Remaining entry is paid from your deposit balance.\n\n" +
                                 "2. 🎟️ Google Play & Redeem Codes:\nRedeem special gaming gift vouchers and passes when available in the store.\n\n" +
                                 "3. 🛡️ Safe & Fair Policy:\nCoins are virtual skill perks and cannot be directly withdrawn to bank/UPI. Real match prizes are won from tournament gameplay!",
-                                color = Color(0xFFC0C4D6),
+                                color = Color(0xFF4B5563),
                                 fontSize = 11.sp,
                                 lineHeight = 16.sp
                             )
@@ -932,7 +932,7 @@ fun WalletScreen(
                         }
                         Spacer(modifier = Modifier.height(2.dp))
                         Text("Get +15 Free Coins per ad!", color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                        Text("Watch sponsor videos to join matches without depositing cash", color = Color(0xFFC0C4D6), fontSize = 11.sp)
+                        Text("Watch sponsor videos to join matches without depositing cash", color = Color(0xFF4B5563), fontSize = 11.sp)
                     }
 
                     Button(
@@ -968,7 +968,7 @@ fun WalletScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFF14161F))
+                    .background(Color.White)
             ) {
                 UnityBannerAd(modifier = Modifier.fillMaxWidth())
             }
@@ -1115,8 +1115,8 @@ fun AppMoneyCardV2(balance: Int, onOpenStore: () -> Unit = {}, onConvert: () -> 
                 ambientColor = Color(0x1A000000)
             )
             .clip(RoundedCornerShape(24.dp))
-            .background(Color(0xFF111319))
-            .border(1.2.dp, Color(0xFF262A38), RoundedCornerShape(24.dp))
+            .background(Color.White)
+            .border(1.2.dp, AppColors.BorderColor, RoundedCornerShape(24.dp))
             .padding(20.dp)
     ) {
         Row(
@@ -1130,7 +1130,7 @@ fun AppMoneyCardV2(balance: Int, onOpenStore: () -> Unit = {}, onConvert: () -> 
                         .size(42.dp)
                         .clip(CircleShape)
                         .background(Color(0xFF1E212D))
-                        .border(1.dp, Color(0xFF2D3244), CircleShape),
+                        .border(1.dp, AppColors.BorderColor, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(Icons.Default.Star, contentDescription = null, tint = Color(0xFFD97706), modifier = Modifier.size(22.dp))
@@ -1192,8 +1192,8 @@ fun TransactionHistoryV2(transactions: List<TransactionRecord>) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(16.dp))
-                    .background(Color(0xFF111319))
-                    .border(1.dp, Color(0xFF262A38), RoundedCornerShape(16.dp))
+                    .background(Color.White)
+                    .border(1.dp, AppColors.BorderColor, RoundedCornerShape(16.dp))
                     .padding(24.dp),
                 contentAlignment = Alignment.Center
             ) {
@@ -1212,8 +1212,8 @@ fun TransactionHistoryV2(transactions: List<TransactionRecord>) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(16.dp))
-                            .background(Color(0xFF111319))
-                            .border(1.dp, Color(0xFF262A38), RoundedCornerShape(16.dp))
+                            .background(Color.White)
+                            .border(1.dp, AppColors.BorderColor, RoundedCornerShape(16.dp))
                             .padding(14.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically

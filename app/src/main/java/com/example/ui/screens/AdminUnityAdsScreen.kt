@@ -87,7 +87,7 @@ fun AdminUnityAdsScreen(navController: NavController) {
     }
 
     Scaffold(
-        containerColor = Color(0xFF0C0D12),
+        containerColor = Color(0xFFF9FAFB),
         topBar = {
             TopAppBar(
                 title = {
@@ -113,7 +113,7 @@ fun AdminUnityAdsScreen(navController: NavController) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF0C0D12))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF9FAFB))
             )
         }
     ) { padding ->
@@ -213,8 +213,8 @@ fun AdminUnityAdsScreen(navController: NavController) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(14.dp))
-                        .background(Color(0xFF14161F))
-                        .border(1.dp, Color(0xFF262938), RoundedCornerShape(14.dp))
+                        .background(Color.White)
+                        .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(14.dp))
                         .padding(16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
@@ -238,8 +238,8 @@ fun AdminUnityAdsScreen(navController: NavController) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(14.dp))
-                        .background(Color(0xFF14161F))
-                        .border(1.dp, Color(0xFF262938), RoundedCornerShape(14.dp))
+                        .background(Color.White)
+                        .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(14.dp))
                         .padding(16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
@@ -475,8 +475,8 @@ fun AdminUnityAdsScreen(navController: NavController) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
-                        .background(Color(0xFF14161F))
-                        .border(1.dp, Color(0xFF262938), RoundedCornerShape(12.dp))
+                        .background(Color.White)
+                        .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(12.dp))
                         .padding(8.dp)
                 ) {
                     UnityBannerAd(
@@ -500,7 +500,7 @@ private fun ClassyDarkField(
     leadingIcon: androidx.compose.ui.graphics.vector.ImageVector
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Text(label, color = Color(0xFFC0C4D6), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        Text(label, color = Color(0xFF4B5563), fontSize = 12.sp, fontWeight = FontWeight.Bold)
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
@@ -509,10 +509,10 @@ private fun ClassyDarkField(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = Color(0xFF14161F),
-                unfocusedContainerColor = Color(0xFF14161F),
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White,
                 focusedBorderColor = Color(0xFF00E5FF),
-                unfocusedBorderColor = Color(0xFF262938),
+                unfocusedBorderColor = Color(0xFFE5E7EB),
                 focusedTextColor = Color.White,
                 unfocusedTextColor = Color.White
             ),
