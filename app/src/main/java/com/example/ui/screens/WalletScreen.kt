@@ -931,8 +931,8 @@ fun WalletScreen(
                             Text("WATCH & EARN", color = Color(0xFFFFD700), fontWeight = FontWeight.Black, fontSize = 11.sp, letterSpacing = 1.sp)
                         }
                         Spacer(modifier = Modifier.height(2.dp))
-                        Text("Get +15 Free Coins per ad!", color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                        Text("Watch sponsor videos to join matches without depositing cash", color = Color(0xFF4B5563), fontSize = 11.sp)
+                        Text("Get +15 Free Coins per ad!", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                        Text("Watch sponsor videos to join matches without depositing cash", color = Color(0xFF9CA3AF), fontSize = 11.sp)
                     }
 
                     Button(
@@ -1047,7 +1047,7 @@ fun RealMoneyCardV2(balance: Int, onAddCash: () -> Unit, onWithdraw: () -> Unit)
                     )
                     Text(
                         "REAL CASH BALANCE",
-                        color = AppColors.TextPrimary.copy(alpha = 0.75f),
+                        color = Color(0xFF9CA3AF),
                         fontWeight = FontWeight.Bold,
                         fontSize = 11.sp,
                         letterSpacing = 0.5.sp
@@ -1057,17 +1057,17 @@ fun RealMoneyCardV2(balance: Int, onAddCash: () -> Unit, onWithdraw: () -> Unit)
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
-                    .background(AppColors.TextPrimary.copy(alpha = 0.12f))
-                    .border(1.dp, AppColors.TextPrimary.copy(alpha = 0.2f), RoundedCornerShape(8.dp))
+                    .background(Color.White.copy(alpha = 0.12f))
+                    .border(1.dp, Color.White.copy(alpha = 0.2f), RoundedCornerShape(8.dp))
                     .padding(horizontal = 10.dp, vertical = 4.dp)
             ) {
-                Text("INR (₹)", fontWeight = FontWeight.Black, fontSize = 11.sp, color = AppColors.TextPrimary)
+                Text("INR (₹)", fontWeight = FontWeight.Black, fontSize = 11.sp, color = Color.White)
             }
         }
         
         Spacer(modifier = Modifier.height(18.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("₹$balance", fontSize = 40.sp, fontWeight = FontWeight.Black, color = AppColors.TextPrimary, letterSpacing = (-0.5).sp)
+            Text("₹$balance", fontSize = 40.sp, fontWeight = FontWeight.Black, color = Color.White, letterSpacing = (-0.5).sp)
         }
         Spacer(modifier = Modifier.height(22.dp))
         
@@ -1079,7 +1079,7 @@ fun RealMoneyCardV2(balance: Int, onAddCash: () -> Unit, onWithdraw: () -> Unit)
                     .height(50.dp)
                     .shadow(4.dp, CircleShape),
                 shape = CircleShape,
-                colors = ButtonDefaults.buttonColors(containerColor = AppColors.ButtonContainer, contentColor = AppColors.ButtonContent)
+                colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.Black)
             ) {
                 Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(modifier = Modifier.width(6.dp))
@@ -1093,7 +1093,7 @@ fun RealMoneyCardV2(balance: Int, onAddCash: () -> Unit, onWithdraw: () -> Unit)
                     .height(50.dp)
                     .shadow(4.dp, CircleShape),
                 shape = CircleShape,
-                colors = ButtonDefaults.buttonColors(containerColor = AppColors.CardBackground, contentColor = AppColors.TextPrimary)
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E212D), contentColor = Color.White)
             ) {
                 Icon(Icons.Default.ArrowUpward, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(18.dp))
                 Spacer(modifier = Modifier.width(6.dp))
@@ -1115,8 +1115,8 @@ fun AppMoneyCardV2(balance: Int, onOpenStore: () -> Unit = {}, onConvert: () -> 
                 ambientColor = Color(0x1A000000)
             )
             .clip(RoundedCornerShape(24.dp))
-            .background(Color.White)
-            .border(1.2.dp, AppColors.BorderColor, RoundedCornerShape(24.dp))
+            .background(Color(0xFF111319))
+            .border(1.2.dp, Color(0xFF262A38), RoundedCornerShape(24.dp))
             .padding(20.dp)
     ) {
         Row(
@@ -1130,18 +1130,18 @@ fun AppMoneyCardV2(balance: Int, onOpenStore: () -> Unit = {}, onConvert: () -> 
                         .size(42.dp)
                         .clip(CircleShape)
                         .background(Color(0xFF1E212D))
-                        .border(1.dp, AppColors.BorderColor, CircleShape),
+                        .border(1.dp, Color(0xFF262A38), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.Star, contentDescription = null, tint = Color(0xFFD97706), modifier = Modifier.size(22.dp))
+                    Icon(Icons.Default.Star, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(22.dp))
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
-                    Text("App Coins", fontWeight = FontWeight.Black, fontSize = 17.sp, color = AppColors.TextPrimary)
+                    Text("App Coins", fontWeight = FontWeight.Black, fontSize = 17.sp, color = Color.White)
                     Text("Earned from Watch Ad & Spin", fontSize = 11.sp, color = Color(0xFF9CA3AF))
                 }
             }
-            Text("$balance 🪙", fontWeight = FontWeight.Black, fontSize = 20.sp, color = AppColors.TextPrimary)
+            Text("$balance 🪙", fontWeight = FontWeight.Black, fontSize = 20.sp, color = Color.White)
         }
         
         Spacer(modifier = Modifier.height(16.dp))
@@ -1151,7 +1151,7 @@ fun AppMoneyCardV2(balance: Int, onOpenStore: () -> Unit = {}, onConvert: () -> 
             onClick = onOpenStore,
             modifier = Modifier.fillMaxWidth().height(48.dp),
             shape = CircleShape,
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700))
+            colors = ButtonDefaults.buttonColors(containerColor = Color.White)
         ) {
             Icon(Icons.Default.Storefront, contentDescription = null, tint = Color.Black, modifier = Modifier.size(18.dp))
             Spacer(modifier = Modifier.width(8.dp))
@@ -1164,12 +1164,12 @@ fun AppMoneyCardV2(balance: Int, onOpenStore: () -> Unit = {}, onConvert: () -> 
             onClick = onConvert,
             modifier = Modifier.fillMaxWidth().height(44.dp),
             shape = CircleShape,
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = AppColors.TextPrimary),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
             border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF2E3348))
         ) {
-            Icon(Icons.Default.Info, contentDescription = null, tint = Color(0xFF8E92A4), modifier = Modifier.size(16.dp))
+            Icon(Icons.Default.Info, contentDescription = null, tint = Color(0xFF9CA3AF), modifier = Modifier.size(16.dp))
             Spacer(modifier = Modifier.width(6.dp))
-            Text("How to use Coins for Match Discounts", fontWeight = FontWeight.Bold, fontSize = 11.5.sp, color = Color(0xFF8E92A4))
+            Text("How to use Coins for Match Discounts", fontWeight = FontWeight.Bold, fontSize = 11.5.sp, color = Color(0xFF9CA3AF))
         }
     }
 }

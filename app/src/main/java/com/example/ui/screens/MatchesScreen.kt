@@ -68,7 +68,7 @@ fun MatchesScreen(
                     "Tournaments & Scrims",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Black,
-                    color = AppColors.TextPrimary
+                    color = Color(0xFF111827)
                 )
                 Spacer(modifier = Modifier.height(14.dp))
 
@@ -86,7 +86,7 @@ fun MatchesScreen(
                         modifier = Modifier
                             .weight(1f)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(if (selectedTab == 0) Color(0xFFF3F4F6) else Color.Transparent)
+                            .background(if (selectedTab == 0) Color.White else Color.Transparent)
                             .clickable { selectedTab = 0 }
                             .padding(vertical = 10.dp),
                         contentAlignment = Alignment.Center
@@ -95,13 +95,13 @@ fun MatchesScreen(
                             Icon(
                                 Icons.Default.SportsEsports,
                                 contentDescription = null,
-                                tint = if (selectedTab == 0) AppColors.TextPrimary else Color(0xFF9CA3AF),
+                                tint = if (selectedTab == 0) Color.Black else Color(0xFF9CA3AF),
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 "All Scrims (${matches.size})",
-                                color = if (selectedTab == 0) Color.White else Color(0xFF9CA3AF),
+                                color = if (selectedTab == 0) Color.Black else Color(0xFF9CA3AF),
                                 fontWeight = FontWeight.Black,
                                 fontSize = 13.sp
                             )
@@ -113,7 +113,7 @@ fun MatchesScreen(
                         modifier = Modifier
                             .weight(1f)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(if (selectedTab == 1) Color(0xFFF3F4F6) else Color.Transparent)
+                            .background(if (selectedTab == 1) Color.White else Color.Transparent)
                             .clickable { selectedTab = 1 }
                             .padding(vertical = 10.dp),
                         contentAlignment = Alignment.Center
@@ -122,13 +122,13 @@ fun MatchesScreen(
                             Icon(
                                 Icons.Default.CheckCircle,
                                 contentDescription = null,
-                                tint = if (selectedTab == 1) Color(0xFFFFD700) else Color(0xFF9CA3AF),
+                                tint = if (selectedTab == 1) Color.Black else Color(0xFF9CA3AF),
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 "My Matches (${myMatches.size})",
-                                color = if (selectedTab == 1) Color.White else Color(0xFF9CA3AF),
+                                color = if (selectedTab == 1) Color.Black else Color(0xFF9CA3AF),
                                 fontWeight = FontWeight.Black,
                                 fontSize = 13.sp
                             )

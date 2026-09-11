@@ -258,7 +258,7 @@ fun ReferBannerCard(referralCode: String, onClick: () -> Unit) {
             Spacer(modifier = Modifier.width(14.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("REFER & EARN", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 15.sp)
+                    Text("REFER & EARN", color = Color.White, fontWeight = FontWeight.Black, fontSize = 15.sp)
                     Spacer(modifier = Modifier.width(6.dp))
                     Box(
                         modifier = Modifier
@@ -272,7 +272,7 @@ fun ReferBannerCard(referralCode: String, onClick: () -> Unit) {
                 Spacer(modifier = Modifier.height(2.dp))
                 Text("Invite friends or claim friend's code!", color = Color(0xFF94A3B8), fontSize = 12.sp)
             }
-            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = Color(0xFFFFD700))
+            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = Color.White)
         }
     }
 }
