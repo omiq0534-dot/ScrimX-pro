@@ -373,15 +373,16 @@ fun WalletScreen(
         val qrApiUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=${URLEncoder.encode(upiUri, StandardCharsets.UTF_8.toString())}"
 
         AlertDialog(
-            containerColor = Color.White,
+            containerColor = Color(0xFF111319),
             onDismissRequest = { if (!isSubmittingDeposit) showDepositDialog = false },
             properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false),
             modifier = Modifier.fillMaxWidth(0.93f),
+            shape = RoundedCornerShape(24.dp),
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(Color(0xFFFFD700)))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("ADD CASH VIA QR / UPI", fontWeight = FontWeight.Black, color = AppColors.TextPrimary, fontSize = 15.sp)
+                    Text("ADD CASH VIA QR / UPI", fontWeight = FontWeight.Black, color = Color.White, fontSize = 15.sp)
                 }
             },
             text = {
@@ -392,7 +393,7 @@ fun WalletScreen(
                 ) {
                     Text(
                         "Step 1: Scan QR or Click to Pay using GPay / PhonePe / Paytm",
-                        color = Color(0xFF4B5563),
+                        color = Color(0xFFCBD5E1),
                         fontSize = 11.5.sp,
                         fontWeight = FontWeight.Medium,
                         modifier = Modifier.fillMaxWidth()
@@ -409,13 +410,13 @@ fun WalletScreen(
                                 modifier = Modifier
                                     .weight(1f)
                                     .clip(RoundedCornerShape(8.dp))
-                                    .background(if (isSelected) Color(0xFFE5E7EB) else Color(0xFFF9FAFB))
-                                    .border(1.dp, if (isSelected) Color(0xFFFFD700) else Color(0xFFE5E7EB), RoundedCornerShape(8.dp))
+                                    .background(if (isSelected) Color(0xFFFFD700) else Color(0xFF1E212D))
+                                    .border(1.dp, if (isSelected) Color(0xFFFFD700) else Color(0xFF2E3348), RoundedCornerShape(8.dp))
                                     .clickable { depositAmount = amt }
                                     .padding(vertical = 6.dp),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text("₹$amt", color = if (isSelected) Color(0xFFFFD700) else AppColors.TextPrimary, fontWeight = FontWeight.Black, fontSize = 12.sp)
+                                Text("₹$amt", color = if (isSelected) Color.Black else Color.White, fontWeight = FontWeight.Black, fontSize = 12.sp)
                             }
                         }
                     }
@@ -430,10 +431,10 @@ fun WalletScreen(
                     // Compact High-Res Scanner QR Code Box (Zero wasted gap)
                     Box(
                         modifier = Modifier
-                            .size(125.dp)
+                            .size(135.dp)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(AppColors.TextPrimary)
-                            .border(1.5.dp, Color(0xFFFFD700), RoundedCornerShape(12.dp))
+                            .background(Color.White)
+                            .border(2.dp, Color(0xFFFFD700), RoundedCornerShape(12.dp))
                             .padding(6.dp),
                         contentAlignment = Alignment.Center
                     ) {
@@ -476,8 +477,8 @@ fun WalletScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(10.dp))
-                            .background(Color(0xFFF9FAFB))
-                            .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(10.dp))
+                            .background(Color(0xFF1E212D))
+                            .border(1.dp, Color(0xFF2E3348), RoundedCornerShape(10.dp))
                             .padding(8.dp)
                     ) {
                         Row(
@@ -486,8 +487,8 @@ fun WalletScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text("OFFICIAL TOURNAMENT UPI ID", color = Color(0xFF75798E), fontSize = 8.5.sp, fontWeight = FontWeight.Black)
-                                Text(targetUpi, color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                Text("OFFICIAL TOURNAMENT UPI ID", color = Color(0xFF94A3B8), fontSize = 8.5.sp, fontWeight = FontWeight.Black)
+                                Text(targetUpi, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                             }
                             IconButton(
                                 onClick = {
@@ -496,9 +497,9 @@ fun WalletScreen(
                                     clipboard.setPrimaryClip(clip)
                                     Toast.makeText(context, "UPI ID Copied!", Toast.LENGTH_SHORT).show()
                                 },
-                                modifier = Modifier.size(30.dp).background(Color(0xFF1E212D), RoundedCornerShape(6.dp))
+                                modifier = Modifier.size(30.dp).background(Color(0xFF2E3348), RoundedCornerShape(6.dp))
                             ) {
-                                Icon(Icons.Default.ContentCopy, contentDescription = "Copy", tint = AppColors.TextPrimary, modifier = Modifier.size(14.dp))
+                                Icon(Icons.Default.ContentCopy, contentDescription = "Copy", tint = Color(0xFFFFD700), modifier = Modifier.size(14.dp))
                             }
                         }
                     }
@@ -510,7 +511,7 @@ fun WalletScreen(
                     ) {
                         Text(
                             "Step 2: Enter 12-Digit UTR (Mandatory):",
-                            color = Color(0xFF4B5563),
+                            color = Color(0xFFCBD5E1),
                             fontSize = 11.5.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -547,7 +548,7 @@ fun WalletScreen(
 
                     Text(
                         "Step 3: Attach Payment Screenshot (Mandatory):",
-                        color = Color(0xFF4B5563),
+                        color = Color(0xFFCBD5E1),
                         fontSize = 11.5.sp,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.fillMaxWidth()
@@ -559,8 +560,8 @@ fun WalletScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(Color(0xFFF9FAFB))
-                                .border(1.dp, Color(0xFF00E676), RoundedCornerShape(12.dp))
+                                .background(Color(0xFF132A1C))
+                                .border(1.dp, Color(0xFF22C55E), RoundedCornerShape(12.dp))
                                 .padding(10.dp)
                         ) {
                             Row(
@@ -579,12 +580,12 @@ fun WalletScreen(
                                     }
                                     Column {
                                         Text("Screenshot Attached ✅", color = Color(0xFF00E676), fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                                        Text("Ready for instant admin verification", color = Color(0xFF8E92A4), fontSize = 10.sp)
+                                        Text("Ready for instant admin verification", color = Color(0xFF94A3B8), fontSize = 10.sp)
                                     }
                                 }
                                 IconButton(
                                     onClick = { depositScreenshotBase64 = "" },
-                                    modifier = Modifier.size(32.dp).background(Color(0xFF262112), CircleShape)
+                                    modifier = Modifier.size(32.dp).background(Color(0xFF2E3348), CircleShape)
                                 ) {
                                     Icon(Icons.Default.Close, contentDescription = "Remove", tint = Color.Red, modifier = Modifier.size(16.dp))
                                 }
@@ -647,7 +648,7 @@ fun WalletScreen(
                             }
                         )
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = if (canSubmit) Color(0xFFFFD700) else Color(0xFF2A2D3C)),
+                    colors = ButtonDefaults.buttonColors(containerColor = if (canSubmit) Color(0xFFFFD700) else Color(0xFF1E212D)),
                     shape = RoundedCornerShape(10.dp),
                     enabled = canSubmit
                 ) {
@@ -656,7 +657,7 @@ fun WalletScreen(
                     } else {
                         Text(
                             "SUBMIT DEPOSIT",
-                            color = if (canSubmit) Color.Black else Color(0xFF75798E),
+                            color = if (canSubmit) Color.Black else Color(0xFF64748B),
                             fontWeight = FontWeight.Black
                         )
                     }
@@ -664,7 +665,7 @@ fun WalletScreen(
             },
             dismissButton = {
                 TextButton(onClick = { if (!isSubmittingDeposit) showDepositDialog = false }) {
-                    Text("Cancel", color = Color(0xFF8E92A4))
+                    Text("Cancel", color = Color(0xFF94A3B8))
                 }
             }
         )
@@ -680,13 +681,14 @@ fun WalletScreen(
         val canWithdraw = !isSubmittingWithdraw && isMinSatisfied && isBalanceSatisfied && isUpiValid
 
         AlertDialog(
-            containerColor = Color.White,
+            containerColor = Color(0xFF111319),
             onDismissRequest = { if (!isSubmittingWithdraw) showWithdrawDialog = false },
+            shape = RoundedCornerShape(24.dp),
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(Color(0xFF00E676)))
                     Spacer(modifier = Modifier.width(10.dp))
-                    Text("WITHDRAW WINNINGS", fontWeight = FontWeight.Black, color = AppColors.TextPrimary, fontSize = 16.sp)
+                    Text("WITHDRAW WINNINGS", fontWeight = FontWeight.Black, color = Color.White, fontSize = 16.sp)
                 }
             },
             text = {
@@ -695,7 +697,8 @@ fun WalletScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFFF9FAFB))
+                            .background(Color(0xFF1E212D))
+                            .border(1.dp, Color(0xFF2E3348), RoundedCornerShape(12.dp))
                             .padding(12.dp)
                     ) {
                         Row(
@@ -703,7 +706,7 @@ fun WalletScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Withdrawable Real Balance", color = Color(0xFF75798E), fontSize = 12.sp)
+                            Text("Withdrawable Real Balance", color = Color(0xFF94A3B8), fontSize = 12.sp)
                             Text("₹$currentBalance", color = Color(0xFF00E676), fontWeight = FontWeight.Black, fontSize = 16.sp)
                         }
                     }
@@ -752,7 +755,7 @@ fun WalletScreen(
 
                     Text(
                         "• Minimum withdrawal limit is ₹${paymentSettings.minWithdraw}.\n• Funds will be credited directly to your UPI ID within minutes.",
-                        color = Color(0xFF8E92A4),
+                        color = Color(0xFF94A3B8),
                         fontSize = 11.sp,
                         lineHeight = 16.sp
                     )
@@ -792,7 +795,7 @@ fun WalletScreen(
                             }
                         )
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = if (canWithdraw) Color(0xFF00E676) else Color(0xFF232736)),
+                    colors = ButtonDefaults.buttonColors(containerColor = if (canWithdraw) Color(0xFF00E676) else Color(0xFF1E212D)),
                     shape = RoundedCornerShape(10.dp),
                     enabled = canWithdraw
                 ) {
@@ -801,7 +804,7 @@ fun WalletScreen(
                     } else {
                         Text(
                             "REQUEST WITHDRAWAL",
-                            color = if (canWithdraw) Color.Black else Color(0xFF75798E),
+                            color = if (canWithdraw) Color.Black else Color(0xFF64748B),
                             fontWeight = FontWeight.Black
                         )
                     }
@@ -809,7 +812,7 @@ fun WalletScreen(
             },
             dismissButton = {
                 TextButton(onClick = { if (!isSubmittingWithdraw) showWithdrawDialog = false }) {
-                    Text("Cancel", color = Color(0xFF8E92A4))
+                    Text("Cancel", color = Color(0xFF94A3B8))
                 }
             }
         )
@@ -820,8 +823,9 @@ fun WalletScreen(
         val userCoins = profile?.appMoney ?: 0
 
         AlertDialog(
-            containerColor = Color.White,
+            containerColor = Color(0xFF111319),
             onDismissRequest = { showConvertDialog = false },
+            shape = RoundedCornerShape(24.dp),
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("🪙 VIRTUAL GAME COINS", fontWeight = FontWeight.Black, color = Color(0xFFFFD700), fontSize = 16.sp)
@@ -833,19 +837,19 @@ fun WalletScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(14.dp))
-                            .background(Color(0xFFF9FAFB))
+                            .background(Color(0xFF1E212D))
                             .border(1.dp, Color(0xFFFFD700).copy(alpha = 0.4f), RoundedCornerShape(14.dp))
                             .padding(14.dp)
                     ) {
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                Text("Your Free Coins:", color = Color(0xFF8E92A4), fontSize = 12.sp)
+                                Text("Your Free Coins:", color = Color(0xFF94A3B8), fontSize = 12.sp)
                                 Text("$userCoins 🪙", color = Color(0xFFFFD700), fontWeight = FontWeight.Black, fontSize = 15.sp)
                             }
-                            Divider(color = Color(0xFFE5E7EB))
+                            HorizontalDivider(color = Color(0xFF2E3348))
                             Text(
                                 "🎁 HOW TO USE YOUR COINS:",
-                                color = AppColors.TextPrimary,
+                                color = Color.White,
                                 fontWeight = FontWeight.Black,
                                 fontSize = 12.sp
                             )
@@ -853,7 +857,7 @@ fun WalletScreen(
                                 "1. 🏷️ Tournament Entry Discounts:\nWhen joining paid matches (e.g. ₹20 Entry), apply your coins to get up to ₹3 - ₹5 OFF! Remaining entry is paid from your deposit balance.\n\n" +
                                 "2. 🎟️ Google Play & Redeem Codes:\nRedeem special gaming gift vouchers and passes when available in the store.\n\n" +
                                 "3. 🛡️ Safe & Fair Policy:\nCoins are virtual skill perks and cannot be directly withdrawn to bank/UPI. Real match prizes are won from tournament gameplay!",
-                                color = Color(0xFF4B5563),
+                                color = Color(0xFFCBD5E1),
                                 fontSize = 11.sp,
                                 lineHeight = 16.sp
                             )
