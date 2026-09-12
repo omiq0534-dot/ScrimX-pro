@@ -288,25 +288,25 @@ fun AdminStaffManagementScreen(navController: NavController) {
     }
 
     Scaffold(
-        containerColor = Color(0xFFF9FAFB),
+        containerColor = Color(0xFFFAFAFA),
         topBar = {
             TopAppBar(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("🛡️ STAFF & MODERATORS", fontWeight = FontWeight.Black, color = AppColors.TextPrimary, fontSize = 16.sp)
+                        Text("🛡️ STAFF & MODERATORS", fontWeight = FontWeight.Black, color = Color(0xFF111827), fontSize = 16.sp)
                     }
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color(0xFF111827))
                     }
                 },
                 actions = {
                     IconButton(onClick = { showManualAddDialog = true }) {
-                        Icon(Icons.Default.PersonAdd, contentDescription = "Add Mod", tint = Color(0xFF00E5FF))
+                        Icon(Icons.Default.PersonAdd, contentDescription = "Add Mod", tint = Color(0xFF8B5CF6))
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF9FAFB))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFFAFAFA))
             )
         }
     ) { padding ->
@@ -325,12 +325,8 @@ fun AdminStaffManagementScreen(navController: NavController) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(18.dp))
-                        .background(
-                            Brush.linearGradient(
-                                listOf(Color(0xFF1E1015), Color(0xFF141622))
-                            )
-                        )
-                        .border(1.dp, Color(0xFFFF0055).copy(alpha = 0.4f), RoundedCornerShape(18.dp))
+                        .background(Color(0xFF111319))
+                        .border(1.dp, Color(0xFFFF0055).copy(alpha = 0.5f), RoundedCornerShape(18.dp))
                         .padding(16.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -347,7 +343,7 @@ fun AdminStaffManagementScreen(navController: NavController) {
                         Spacer(modifier = Modifier.width(12.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("Supreme App Owner", color = AppColors.TextPrimary, fontWeight = FontWeight.Black, fontSize = 15.sp)
+                                Text("Supreme App Owner", color = Color.White, fontWeight = FontWeight.Black, fontSize = 15.sp)
                                 Spacer(modifier = Modifier.width(6.dp))
                                 AdminMasterBadge(isOwner = true, showClickInfo = false)
                             }
@@ -365,8 +361,8 @@ fun AdminStaffManagementScreen(navController: NavController) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(14.dp))
-                        .background(Color(0xFF12141D))
-                        .border(1.dp, Color(0xFF232738), RoundedCornerShape(14.dp))
+                        .background(Color(0xFF111319))
+                        .border(1.dp, Color(0xFF262A38), RoundedCornerShape(14.dp))
                         .padding(14.dp)
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -388,7 +384,7 @@ fun AdminStaffManagementScreen(navController: NavController) {
             // Search & Assign New Moderator Section
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("ADD / SEARCH NEW MODERATOR", color = Color(0xFF75798E), fontSize = 11.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
+                    Text("ADD / SEARCH NEW MODERATOR", color = Color(0xFF4B5563), fontSize = 11.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
                     OutlinedTextField(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
@@ -403,11 +399,12 @@ fun AdminStaffManagementScreen(navController: NavController) {
                         },
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color(0xFF8B5CF6),
-                            unfocusedBorderColor = Color(0xFFE5E7EB),
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White,
+                            unfocusedBorderColor = Color(0xFF262A38),
+                            focusedContainerColor = Color(0xFF111319),
+                            unfocusedContainerColor = Color(0xFF111319),
                             focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White
+                            unfocusedTextColor = Color.White,
+                            cursorColor = Color(0xFF8B5CF6)
                         ),
                         shape = RoundedCornerShape(14.dp),
                         singleLine = true,
@@ -429,8 +426,8 @@ fun AdminStaffManagementScreen(navController: NavController) {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(Color(0xFF161924))
-                                .border(1.dp, if (isAlreadyMod) Color(0xFF8B5CF6) else Color(0xFF2B2F42), RoundedCornerShape(12.dp))
+                                .background(Color(0xFF111319))
+                                .border(1.dp, if (isAlreadyMod) Color(0xFF8B5CF6) else Color(0xFF262A38), RoundedCornerShape(12.dp))
                                 .padding(12.dp)
                         ) {
                             Row(
@@ -440,7 +437,7 @@ fun AdminStaffManagementScreen(navController: NavController) {
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Text(user.name, color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                        Text(user.name, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                                         if (isAlreadyMod) {
                                             Spacer(modifier = Modifier.width(6.dp))
                                             AdminMasterBadge(isOwner = false, showClickInfo = false)
@@ -465,7 +462,7 @@ fun AdminStaffManagementScreen(navController: NavController) {
                                         shape = RoundedCornerShape(8.dp),
                                         contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
                                     ) {
-                                        Text("+ Make Mod", color = AppColors.TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.Black)
+                                        Text("+ Make Mod", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Black)
                                     }
                                 }
                             }
@@ -483,7 +480,7 @@ fun AdminStaffManagementScreen(navController: NavController) {
                 ) {
                     Text(
                         "ACTIVE MODERATORS (${activeModerators.size})",
-                        color = Color(0xFF75798E),
+                        color = Color(0xFF4B5563),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Black,
                         letterSpacing = 1.sp
@@ -503,15 +500,15 @@ fun AdminStaffManagementScreen(navController: NavController) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(14.dp))
-                            .background(Color(0xFF12141D))
-                            .border(1.dp, Color(0xFF232738), RoundedCornerShape(14.dp))
+                            .background(Color(0xFF111319))
+                            .border(1.dp, Color(0xFF262A38), RoundedCornerShape(14.dp))
                             .padding(24.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             Icon(Icons.Default.GroupAdd, contentDescription = null, tint = Color(0xFF64748B), modifier = Modifier.size(36.dp))
-                            Text("No Active Moderators Yet", color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                            Text("Search above or tap '+' to add your trusted helpers!", color = Color(0xFF8E92A4), fontSize = 11.sp)
+                            Text("No Active Moderators Yet", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text("Search above or tap '+' to add your trusted helpers!", color = Color(0xFF94A3B8), fontSize = 11.sp)
                         }
                     }
                 }
@@ -521,7 +518,7 @@ fun AdminStaffManagementScreen(navController: NavController) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(16.dp))
-                            .background(Color(0xFF141724))
+                            .background(Color(0xFF111319))
                             .border(1.dp, Color(0xFF8B5CF6).copy(alpha = 0.5f), RoundedCornerShape(16.dp))
                             .padding(16.dp)
                     ) {
@@ -545,7 +542,7 @@ fun AdminStaffManagementScreen(navController: NavController) {
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Column {
                                         Row(verticalAlignment = Alignment.CenterVertically) {
-                                            Text(mod.name, color = AppColors.TextPrimary, fontWeight = FontWeight.Black, fontSize = 14.sp)
+                                            Text(mod.name, color = Color.White, fontWeight = FontWeight.Black, fontSize = 14.sp)
                                             Spacer(modifier = Modifier.width(6.dp))
                                             AdminMasterBadge(isOwner = false, showClickInfo = true)
                                         }
@@ -558,7 +555,7 @@ fun AdminStaffManagementScreen(navController: NavController) {
                                 }
                             }
 
-                            HorizontalDivider(color = Color(0xFF24283B))
+                            HorizontalDivider(color = Color(0xFF262A38))
 
                             Row(
                                 modifier = Modifier.fillMaxWidth(),

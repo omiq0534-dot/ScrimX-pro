@@ -130,7 +130,7 @@ fun AdminScreen(navController: NavController) {
                         Text(
                             if (isOwner) "👑 OWNER HQ" else "🛡️ MODERATOR HQ",
                             fontWeight = FontWeight.Black,
-                            color = AppColors.TextPrimary,
+                            color = Color(0xFF111827),
                             fontSize = 17.sp,
                             letterSpacing = 1.sp
                         )
@@ -140,7 +140,7 @@ fun AdminScreen(navController: NavController) {
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color(0xFF111827))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF9FAFB))
@@ -160,8 +160,8 @@ fun AdminScreen(navController: NavController) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(22.dp))
-                    .background(Color.White)
-                    .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(22.dp))
+                    .background(Color(0xFF111319))
+                    .border(1.dp, Color(0xFF262A38), RoundedCornerShape(22.dp))
                     .padding(20.dp)
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -173,7 +173,7 @@ fun AdminScreen(navController: NavController) {
                         Column {
                             Text(
                                 if (isOwner) "SUPREME COMMAND CENTER" else "STAFF & MODERATOR PORTAL",
-                                color = Color(0xFF8E92A4),
+                                color = Color(0xFF9CA3AF),
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Black,
                                 letterSpacing = 1.5.sp
@@ -181,7 +181,7 @@ fun AdminScreen(navController: NavController) {
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
                                 if (isOwner) "Tournament & System Engine" else "Tournament Match Host Engine",
-                                color = AppColors.TextPrimary,
+                                color = Color.White,
                                 fontWeight = FontWeight.Black,
                                 fontSize = 17.sp
                             )
@@ -189,13 +189,13 @@ fun AdminScreen(navController: NavController) {
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(10.dp))
-                                .background(if (isLiveStreamActive) Color(0xFF2A151A) else Color(0xFFF9FAFB))
+                                .background(if (isLiveStreamActive) Color(0xFF2A151A) else Color(0xFF1E212D))
                                 .border(1.dp, if (isLiveStreamActive) Color(0xFFFF003C).copy(alpha = 0.5f) else Color(0xFF333748), RoundedCornerShape(10.dp))
                                 .padding(horizontal = 10.dp, vertical = 6.dp)
                         ) {
                             Text(
                                 if (isLiveStreamActive) "🔴 STREAM ON" else "STREAM OFF",
-                                color = if (isLiveStreamActive) Color(0xFFFF5252) else Color(0xFF8E92A4),
+                                color = if (isLiveStreamActive) Color(0xFFFF5252) else Color(0xFF9CA3AF),
                                 fontWeight = FontWeight.Black,
                                 fontSize = 10.sp
                             )
@@ -216,7 +216,7 @@ fun AdminScreen(navController: NavController) {
 
             // OWNER-EXCLUSIVE: STAFF MANAGEMENT BANNER
             if (isOwner) {
-                Text("STAFF & ACCESS CONTROL", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color(0xFF75798E), letterSpacing = 1.5.sp)
+                Text("STAFF & ACCESS CONTROL", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color(0xFF4B5563), letterSpacing = 1.5.sp)
                 ClassyAdminActionCard(
                     title = "Staff & Moderator Management",
                     subtitle = "Assign helper admins to create matches & release Room IDs on your behalf",
@@ -227,7 +227,7 @@ fun AdminScreen(navController: NavController) {
                 )
             }
 
-            Text("MATCH OPERATIONS", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color(0xFF75798E), letterSpacing = 1.5.sp)
+            Text("MATCH OPERATIONS", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color(0xFF4B5563), letterSpacing = 1.5.sp)
 
             // 0. Push Notifications & Broadcast Hub
             ClassyAdminActionCard(
@@ -280,7 +280,7 @@ fun AdminScreen(navController: NavController) {
 
             // OWNER-EXCLUSIVE POWER TOOLS
             if (isOwner) {
-                Text("OWNER SYSTEM CONTROLS", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color(0xFF75798E), letterSpacing = 1.5.sp)
+                Text("OWNER SYSTEM CONTROLS", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color(0xFF4B5563), letterSpacing = 1.5.sp)
 
                 // 5. Player Wallets
                 ClassyAdminActionCard(
@@ -346,8 +346,8 @@ fun AdminScreen(navController: NavController) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(14.dp))
-                        .background(Color(0xFF131520))
-                        .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(14.dp))
+                        .background(Color(0xFF111319))
+                        .border(1.dp, Color(0xFF262A38), RoundedCornerShape(14.dp))
                         .padding(14.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -355,7 +355,7 @@ fun AdminScreen(navController: NavController) {
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
                             "Logged in as Tournament Moderator. You have match hosting, room ID release, and helpdesk permissions.",
-                            color = Color(0xFF8E92A4),
+                            color = Color(0xFF9CA3AF),
                             fontSize = 11.sp
                         )
                     }
@@ -372,13 +372,13 @@ fun GlassStatCard(title: String, value: String, valueColor: Color, modifier: Mod
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(14.dp))
-            .background(Color(0xFF0F1117))
-            .border(1.dp, Color(0xFF222532), RoundedCornerShape(14.dp))
+            .background(Color(0xFF1A1D27))
+            .border(1.dp, Color(0xFF262A38), RoundedCornerShape(14.dp))
             .padding(vertical = 12.dp, horizontal = 10.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(title, color = Color(0xFF75798E), fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 0.5.sp)
+            Text(title, color = Color(0xFF9CA3AF), fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 0.5.sp)
             Spacer(modifier = Modifier.height(2.dp))
             Text(value, color = valueColor, fontSize = 18.sp, fontWeight = FontWeight.Black)
         }
@@ -398,8 +398,8 @@ fun ClassyAdminActionCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(18.dp))
-            .background(Color.White)
-            .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(18.dp))
+            .background(Color(0xFF111319))
+            .border(1.dp, Color(0xFF262A38), RoundedCornerShape(18.dp))
             .clickable { onClick() }
             .padding(18.dp)
     ) {
@@ -421,9 +421,9 @@ fun ClassyAdminActionCard(
                 }
                 Spacer(modifier = Modifier.width(14.dp))
                 Column {
-                    Text(title, fontWeight = FontWeight.Black, color = AppColors.TextPrimary, fontSize = 15.sp)
+                    Text(title, fontWeight = FontWeight.Black, color = Color.White, fontSize = 15.sp)
                     Spacer(modifier = Modifier.height(2.dp))
-                    Text(subtitle, color = Color(0xFF8E92A4), fontSize = 12.sp, lineHeight = 16.sp)
+                    Text(subtitle, color = Color(0xFF9CA3AF), fontSize = 12.sp, lineHeight = 16.sp)
                 }
             }
 
@@ -434,14 +434,15 @@ fun ClassyAdminActionCard(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
-                            .background(Color(0xFF202330))
+                            .background(Color(0xFF1E212D))
+                            .border(1.dp, Color(0xFF2E3348), RoundedCornerShape(6.dp))
                             .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
-                        Text(badge, color = Color(0xFF4B5563), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        Text(badge, color = Color(0xFFFFD700), fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     }
                     Spacer(modifier = Modifier.width(6.dp))
                 }
-                Icon(Icons.Default.ChevronRight, contentDescription = null, tint = Color(0xFF5A5E72), modifier = Modifier.size(20.dp))
+                Icon(Icons.Default.ChevronRight, contentDescription = null, tint = Color(0xFF9CA3AF), modifier = Modifier.size(20.dp))
             }
         }
     }

@@ -151,7 +151,7 @@ fun CustomerSupportScreen(navController: NavController) {
                         "Help & Support",
                         fontWeight = FontWeight.Black,
                         fontSize = 20.sp,
-                        color = AppColors.ScreenBackground
+                        color = Color(0xFF111827)
                     )
                 },
                 navigationIcon = {
@@ -159,7 +159,7 @@ fun CustomerSupportScreen(navController: NavController) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
-                            tint = AppColors.ScreenBackground
+                            tint = Color(0xFF111827)
                         )
                     }
                 },
@@ -177,21 +177,33 @@ fun CustomerSupportScreen(navController: NavController) {
             // Tabs: Contact & FAQs vs Ask Question / My Tickets
             TabRow(
                 selectedTabIndex = activeTab,
-                containerColor = AppColors.TextPrimary,
-                contentColor = AppColors.ScreenBackground,
+                containerColor = Color.White,
+                contentColor = Color(0xFF111827),
                 divider = { HorizontalDivider(color = Color(0xFFE2E8F0)) }
             ) {
                 Tab(
                     selected = activeTab == 0,
                     onClick = { activeTab = 0 },
-                    text = { Text("Contact & FAQs", fontWeight = FontWeight.Bold, fontSize = 13.sp) }
+                    text = {
+                        Text(
+                            "Contact & FAQs",
+                            fontWeight = if (activeTab == 0) FontWeight.Black else FontWeight.Medium,
+                            fontSize = 13.sp,
+                            color = if (activeTab == 0) Color(0xFF111827) else Color(0xFF64748B)
+                        )
+                    }
                 )
                 Tab(
                     selected = activeTab == 1,
                     onClick = { activeTab = 1 },
                     text = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("Ask Query / My Tickets", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                            Text(
+                                "Ask Query / My Tickets",
+                                fontWeight = if (activeTab == 1) FontWeight.Black else FontWeight.Medium,
+                                fontSize = 13.sp,
+                                color = if (activeTab == 1) Color(0xFF111827) else Color(0xFF64748B)
+                            )
                             if (myTickets.isNotEmpty()) {
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Box(
@@ -202,7 +214,7 @@ fun CustomerSupportScreen(navController: NavController) {
                                 ) {
                                     Text(
                                         "${myTickets.size}",
-                                        color = if (myAnsweredCount > 0) AppColors.ScreenBackground else AppColors.TextPrimary,
+                                        color = if (myAnsweredCount > 0) Color.Black else Color.White,
                                         fontSize = 10.sp,
                                         fontWeight = FontWeight.Black
                                     )
@@ -228,12 +240,8 @@ fun CustomerSupportScreen(navController: NavController) {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(22.dp))
-                                .background(
-                                    Brush.linearGradient(
-                                        listOf(Color(0xFF0F172A), AppColors.BorderColor)
-                                    )
-                                )
-                                .border(1.dp, Color(0xFF334155), RoundedCornerShape(22.dp))
+                                .background(Color(0xFF111319))
+                                .border(1.dp, Color(0xFF262A38), RoundedCornerShape(22.dp))
                                 .padding(20.dp)
                         ) {
                             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -266,7 +274,7 @@ fun CustomerSupportScreen(navController: NavController) {
                                         )
                                         Text(
                                             "How can we help you?",
-                                            color = AppColors.TextPrimary,
+                                            color = Color.White,
                                             fontWeight = FontWeight.Black,
                                             fontSize = 17.sp
                                         )
@@ -311,16 +319,16 @@ fun CustomerSupportScreen(navController: NavController) {
                                 .fillMaxWidth()
                                 .height(50.dp),
                             shape = RoundedCornerShape(14.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0F172A))
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF111319))
                         ) {
                             Icon(Icons.Default.HelpOutline, contentDescription = null, tint = Color(0xFFFFD700))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("ASK A QUESTION / RAISE TICKET", fontWeight = FontWeight.Black, fontSize = 13.sp, color = AppColors.TextPrimary)
+                            Text("ASK A QUESTION / RAISE TICKET", fontWeight = FontWeight.Black, fontSize = 13.sp, color = Color.White)
                         }
 
                         Text(
                             "OFFICIAL CONTACT CHANNELS",
-                            color = Color(0xFF64748B),
+                            color = Color(0xFF4B5563),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Black,
                             letterSpacing = 1.sp
@@ -455,45 +463,47 @@ fun CustomerSupportScreen(navController: NavController) {
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(20.dp),
-                            colors = CardDefaults.cardColors(containerColor = AppColors.TextPrimary),
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFF111319)),
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                         ) {
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(20.dp))
+                                    .border(1.dp, Color(0xFF262A38), RoundedCornerShape(20.dp))
                                     .padding(18.dp),
                                 verticalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
                                 Text(
                                     "SUBMIT SUPPORT QUERY",
-                                    color = Color(0xFF0F172A),
+                                    color = Color.White,
                                     fontWeight = FontWeight.Black,
                                     fontSize = 15.sp
                                 )
 
                                 Text(
                                     "Our admin team responds directly to your query right here in the app.",
-                                    color = Color(0xFF64748B),
+                                    color = Color(0xFF94A3B8),
                                     fontSize = 12.sp
                                 )
 
                                 // Category chips
-                                Text("Select Category", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF334155))
+                                Text("Select Category", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.White)
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                                 ) {
                                     categories.take(3).forEach { cat ->
-                                        FilterChip(
-                                            selected = selectedCategory == cat,
-                                            onClick = { selectedCategory = cat },
-                                            label = { Text(cat, fontSize = 11.sp) },
-                                            colors = FilterChipDefaults.filterChipColors(
-                                                selectedContainerColor = Color(0xFF0F172A),
-                                                selectedLabelColor = AppColors.TextPrimary
-                                            )
-                                        )
+                                        val isSel = selectedCategory == cat
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(8.dp))
+                                                .background(if (isSel) Color(0xFFFFD700) else Color(0xFF1E212D))
+                                                .border(1.dp, if (isSel) Color(0xFFFFD700) else Color(0xFF2E3348), RoundedCornerShape(8.dp))
+                                                .clickable { selectedCategory = cat }
+                                                .padding(horizontal = 10.dp, vertical = 6.dp)
+                                        ) {
+                                            Text(cat, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (isSel) Color.Black else Color.White)
+                                        }
                                     }
                                 }
                                 Row(
@@ -501,40 +511,52 @@ fun CustomerSupportScreen(navController: NavController) {
                                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                                 ) {
                                     categories.drop(3).forEach { cat ->
-                                        FilterChip(
-                                            selected = selectedCategory == cat,
-                                            onClick = { selectedCategory = cat },
-                                            label = { Text(cat, fontSize = 11.sp) },
-                                            colors = FilterChipDefaults.filterChipColors(
-                                                selectedContainerColor = Color(0xFF0F172A),
-                                                selectedLabelColor = AppColors.TextPrimary
-                                            )
-                                        )
+                                        val isSel = selectedCategory == cat
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(8.dp))
+                                                .background(if (isSel) Color(0xFFFFD700) else Color(0xFF1E212D))
+                                                .border(1.dp, if (isSel) Color(0xFFFFD700) else Color(0xFF2E3348), RoundedCornerShape(8.dp))
+                                                .clickable { selectedCategory = cat }
+                                                .padding(horizontal = 10.dp, vertical = 6.dp)
+                                        ) {
+                                            Text(cat, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (isSel) Color.Black else Color.White)
+                                        }
                                     }
                                 }
 
                                 OutlinedTextField(
                                     value = querySubject,
                                     onValueChange = { querySubject = it },
-                                    label = { Text("Subject (e.g., Room ID not received / Coin deduction)") },
+                                    label = { Text("Subject (e.g., Room ID not received / Coin deduction)", color = Color(0xFF94A3B8)) },
                                     modifier = Modifier.fillMaxWidth(),
                                     shape = RoundedCornerShape(12.dp),
                                     colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = Color(0xFF0F172A),
-                                        unfocusedBorderColor = Color(0xFFCBD5E1)
+                                        focusedBorderColor = Color(0xFFFFD700),
+                                        unfocusedBorderColor = Color(0xFF2E3348),
+                                        focusedContainerColor = Color(0xFF1A1D27),
+                                        unfocusedContainerColor = Color(0xFF1A1D27),
+                                        focusedTextColor = Color.White,
+                                        unfocusedTextColor = Color.White,
+                                        cursorColor = Color(0xFFFFD700)
                                     )
                                 )
 
                                 OutlinedTextField(
                                     value = queryMessage,
                                     onValueChange = { queryMessage = it },
-                                    label = { Text("Detailed Question / Problem Description") },
+                                    label = { Text("Detailed Question / Problem Description", color = Color(0xFF94A3B8)) },
                                     modifier = Modifier.fillMaxWidth(),
                                     minLines = 3,
                                     shape = RoundedCornerShape(12.dp),
                                     colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = Color(0xFF0F172A),
-                                        unfocusedBorderColor = Color(0xFFCBD5E1)
+                                        focusedBorderColor = Color(0xFFFFD700),
+                                        unfocusedBorderColor = Color(0xFF2E3348),
+                                        focusedContainerColor = Color(0xFF1A1D27),
+                                        unfocusedContainerColor = Color(0xFF1A1D27),
+                                        focusedTextColor = Color.White,
+                                        unfocusedTextColor = Color.White,
+                                        cursorColor = Color(0xFFFFD700)
                                     )
                                 )
 
@@ -579,15 +601,15 @@ fun CustomerSupportScreen(navController: NavController) {
                                         .fillMaxWidth()
                                         .height(48.dp),
                                     shape = RoundedCornerShape(12.dp),
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0F172A))
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700), disabledContainerColor = Color(0xFF1E212D))
                                 ) {
                                     if (isSubmitting) {
-                                        CircularProgressIndicator(color = AppColors.TextPrimary, modifier = Modifier.size(20.dp))
+                                        CircularProgressIndicator(color = Color.Black, modifier = Modifier.size(20.dp))
                                     } else {
                                         Row(verticalAlignment = Alignment.CenterVertically) {
-                                            Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(18.dp))
+                                            Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null, tint = Color.Black, modifier = Modifier.size(18.dp))
                                             Spacer(modifier = Modifier.width(8.dp))
-                                            Text("SUBMIT QUERY TO ADMIN", fontWeight = FontWeight.Black, fontSize = 13.sp, color = AppColors.TextPrimary)
+                                            Text("SUBMIT QUERY TO ADMIN", fontWeight = FontWeight.Black, fontSize = 13.sp, color = Color.Black)
                                         }
                                     }
                                 }
@@ -597,7 +619,7 @@ fun CustomerSupportScreen(navController: NavController) {
                         // My Queries / Tickets History
                         Text(
                             "MY QUERIES & ADMIN ANSWERS (${myTickets.size})",
-                            color = Color(0xFF64748B),
+                            color = Color(0xFF4B5563),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Black,
                             letterSpacing = 1.sp
@@ -608,8 +630,8 @@ fun CustomerSupportScreen(navController: NavController) {
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(16.dp))
-                                    .background(AppColors.TextPrimary)
-                                    .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(16.dp))
+                                    .background(Color(0xFF111319))
+                                    .border(1.dp, Color(0xFF262A38), RoundedCornerShape(16.dp))
                                     .padding(24.dp),
                                 contentAlignment = Alignment.Center
                             ) {
@@ -617,11 +639,11 @@ fun CustomerSupportScreen(navController: NavController) {
                                     Icon(
                                         Icons.Default.HelpOutline,
                                         contentDescription = null,
-                                        tint = Color(0xFFCBD5E1),
+                                        tint = Color(0xFF64748B),
                                         modifier = Modifier.size(40.dp)
                                     )
                                     Spacer(modifier = Modifier.height(8.dp))
-                                    Text("You haven't asked any questions yet.", color = Color(0xFF64748B), fontSize = 13.sp)
+                                    Text("You haven't asked any questions yet.", color = Color(0xFF94A3B8), fontSize = 13.sp)
                                 }
                             }
                         } else {
@@ -652,7 +674,7 @@ fun UserTicketCard(ticket: UserSupportTicket) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = AppColors.TextPrimary),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF111319)),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(
@@ -660,7 +682,7 @@ fun UserTicketCard(ticket: UserSupportTicket) {
                 .fillMaxWidth()
                 .border(
                     1.dp,
-                    if (isPending) Color(0xFFFFE082) else Color(0xFF00E676).copy(alpha = 0.5f),
+                    if (isPending) Color(0xFFFFD700).copy(alpha = 0.5f) else Color(0xFF00E676).copy(alpha = 0.5f),
                     RoundedCornerShape(18.dp)
                 )
                 .padding(16.dp),
@@ -674,12 +696,12 @@ fun UserTicketCard(ticket: UserSupportTicket) {
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(6.dp))
-                        .background(Color(0xFFF1F5F9))
+                        .background(Color(0xFF1E212D))
                         .padding(horizontal = 8.dp, vertical = 3.dp)
                 ) {
                     Text(
                         ticket.category.uppercase(),
-                        color = Color(0xFF334155),
+                        color = Color(0xFFFFD700),
                         fontWeight = FontWeight.Bold,
                         fontSize = 10.sp
                     )
@@ -688,12 +710,12 @@ fun UserTicketCard(ticket: UserSupportTicket) {
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(6.dp))
-                        .background(if (isPending) Color(0xFFFFF3E0) else Color(0xFFE8F5E9))
+                        .background(if (isPending) Color(0xFF332A15) else Color(0xFF153320))
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
                     Text(
                         if (isPending) "⏳ PENDING" else "✓ ANSWERED",
-                        color = if (isPending) Color(0xFFE65100) else Color(0xFF2E7D32),
+                        color = if (isPending) Color(0xFFFFB74D) else Color(0xFF00E676),
                         fontWeight = FontWeight.Black,
                         fontSize = 10.sp
                     )
@@ -704,19 +726,19 @@ fun UserTicketCard(ticket: UserSupportTicket) {
                 ticket.subject,
                 fontWeight = FontWeight.Black,
                 fontSize = 14.sp,
-                color = AppColors.ScreenBackground
+                color = Color.White
             )
 
             Text(
                 ticket.message,
-                color = Color(0xFF475569),
+                color = Color(0xFF94A3B8),
                 fontSize = 13.sp,
                 lineHeight = 18.sp
             )
 
             Text(
                 "Asked on: $formattedDate",
-                color = Color(0xFF94A3B8),
+                color = Color(0xFF64748B),
                 fontSize = 11.sp
             )
 
@@ -726,8 +748,8 @@ fun UserTicketCard(ticket: UserSupportTicket) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
-                        .background(Color(0xFFF0FDF4))
-                        .border(1.dp, Color(0xFF86EFAC), RoundedCornerShape(12.dp))
+                        .background(Color(0xFF132A1C))
+                        .border(1.dp, Color(0xFF22C55E), RoundedCornerShape(12.dp))
                         .padding(12.dp)
                 ) {
                     Column {
@@ -735,13 +757,13 @@ fun UserTicketCard(ticket: UserSupportTicket) {
                             Icon(
                                 Icons.Default.Verified,
                                 contentDescription = null,
-                                tint = Color(0xFF16A34A),
+                                tint = Color(0xFF22C55E),
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 "ADMIN OFFICIAL ANSWER:",
-                                color = Color(0xFF16A34A),
+                                color = Color(0xFF22C55E),
                                 fontWeight = FontWeight.Black,
                                 fontSize = 11.sp
                             )
@@ -749,7 +771,7 @@ fun UserTicketCard(ticket: UserSupportTicket) {
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             ticket.adminReply,
-                            color = Color(0xFF14532D),
+                            color = Color.White,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Medium,
                             lineHeight = 18.sp
@@ -775,13 +797,13 @@ fun SupportActionCard(
             .fillMaxWidth()
             .clickable { onAction() },
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = AppColors.TextPrimary),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF111319)),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(20.dp))
+                .border(1.dp, Color(0xFF262A38), RoundedCornerShape(20.dp))
                 .padding(18.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -789,24 +811,25 @@ fun SupportActionCard(
                 modifier = Modifier
                     .size(46.dp)
                     .clip(RoundedCornerShape(14.dp))
-                    .background(iconBg.copy(alpha = 0.12f)),
+                    .background(iconBg.copy(alpha = 0.18f)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(icon, contentDescription = null, tint = iconBg, modifier = Modifier.size(24.dp))
             }
             Spacer(modifier = Modifier.width(14.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(title, fontWeight = FontWeight.Black, fontSize = 14.sp, color = AppColors.ScreenBackground)
+                Text(title, fontWeight = FontWeight.Black, fontSize = 14.sp, color = Color.White)
                 Spacer(modifier = Modifier.height(2.dp))
-                Text(value, color = Color(0xFF64748B), fontSize = 12.sp)
+                Text(value, color = Color(0xFF94A3B8), fontSize = 12.sp)
             }
-            Button(
-                onClick = onAction,
-                shape = RoundedCornerShape(10.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
-                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color(0xFF1E212D))
+                    .border(1.dp, Color(0xFF2E3348), RoundedCornerShape(8.dp))
+                    .padding(horizontal = 10.dp, vertical = 6.dp)
             ) {
-                Text(actionLabel, color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                Text(actionLabel, color = Color(0xFFFFD700), fontWeight = FontWeight.Bold, fontSize = 11.sp)
             }
         }
     }
@@ -821,13 +844,13 @@ fun FaqCard(question: String, answer: String) {
             .fillMaxWidth()
             .clickable { expanded = !expanded },
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = AppColors.TextPrimary),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF111319)),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(16.dp))
+                .border(1.dp, Color(0xFF262A38), RoundedCornerShape(16.dp))
                 .padding(16.dp)
         ) {
             Row(
@@ -839,22 +862,22 @@ fun FaqCard(question: String, answer: String) {
                     question,
                     fontWeight = FontWeight.Bold,
                     fontSize = 13.sp,
-                    color = AppColors.ScreenBackground,
+                    color = Color.White,
                     modifier = Modifier.weight(1f)
                 )
                 Icon(
                     if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                     contentDescription = null,
-                    tint = Color.DarkGray
+                    tint = Color(0xFF94A3B8)
                 )
             }
             if (expanded) {
                 Spacer(modifier = Modifier.height(8.dp))
-                HorizontalDivider(color = Color(0xFFF1F5F9))
+                HorizontalDivider(color = Color(0xFF262A38))
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     answer,
-                    color = Color(0xFF475569),
+                    color = Color(0xFF94A3B8),
                     fontSize = 12.sp,
                     lineHeight = 17.sp
                 )
