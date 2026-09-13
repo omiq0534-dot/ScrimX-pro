@@ -67,6 +67,7 @@ import java.util.*
 data class TeamRankEntry(
     val rank: Int,
     val teamName: String,
+    val booyahs: Int = 0,
     val kills: String,
     val killPoints: Int = 0,
     val placePoints: Int = 0,
@@ -590,20 +591,48 @@ private fun ScorecardActionButtons(
                     RoundedCornerShape(14.dp)
                 )
                 .clickable(enabled = !isDownloading) { onDownload() }
-                .padding(vertical = 12.dp),
+                .padding(horizontal = 8.dp, vertical = 11.dp),
             contentAlignment = Alignment.Center
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 if (isDownloading) {
                     CircularProgressIndicator(
                         color = Color(0xFF00E676),
                         strokeWidth = 2.dp,
                         modifier = Modifier.size(16.dp)
                     )
-                    Text("SAVING...", color = Color(0xFF00E676), fontWeight = FontWeight.Black, fontSize = 11.5.sp)
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("SAVING...", color = Color(0xFF00E676), fontWeight = FontWeight.Black, fontSize = 11.sp)
                 } else {
-                    Icon(Icons.Default.Download, contentDescription = null, tint = Color(0xFF00E676), modifier = Modifier.size(16.dp))
-                    Text("DOWNLOAD SCORECARD", color = Color(0xFF00E676), fontWeight = FontWeight.Black, fontSize = 11.5.sp)
+                    Icon(
+                        Icons.Default.Download,
+                        contentDescription = "Download",
+                        tint = Color(0xFF00E676),
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Column(
+                        horizontalAlignment = Alignment.Start
+                    ) {
+                        Text(
+                            "DOWNLOAD",
+                            color = Color(0xFF00E676),
+                            fontWeight = FontWeight.Black,
+                            fontSize = 11.sp,
+                            lineHeight = 12.sp
+                        )
+                        Text(
+                            "SCORECARD",
+                            color = Color(0xFF80FFC0),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 9.sp,
+                            lineHeight = 10.sp
+                        )
+                    }
                 }
             }
         }
@@ -620,12 +649,39 @@ private fun ScorecardActionButtons(
                 )
                 .border(1.dp, Color(0x40FFFFFF), RoundedCornerShape(14.dp))
                 .clickable { onShare() }
-                .padding(vertical = 12.dp),
+                .padding(horizontal = 8.dp, vertical = 11.dp),
             contentAlignment = Alignment.Center
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                Icon(Icons.Default.Share, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
-                Text("SHARE STANDINGS", color = Color.White, fontWeight = FontWeight.Black, fontSize = 11.5.sp)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    Icons.Default.Share,
+                    contentDescription = "Share",
+                    tint = Color.White,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Column(
+                    horizontalAlignment = Alignment.Start
+                ) {
+                    Text(
+                        "SHARE",
+                        color = Color.White,
+                        fontWeight = FontWeight.Black,
+                        fontSize = 11.sp,
+                        lineHeight = 12.sp
+                    )
+                    Text(
+                        "STANDINGS",
+                        color = Color(0xFF94A3B8),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 9.sp,
+                        lineHeight = 10.sp
+                    )
+                }
             }
         }
     }
@@ -786,8 +842,8 @@ private fun InteractivePointsTableContainer(standings: List<TeamRankEntry>) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text("RANK", color = Color(0xFF94A3B8), fontSize = 10.5.sp, fontWeight = FontWeight.Black, modifier = Modifier.width(46.dp))
-                        Text("TEAM / PLAYER", color = Color(0xFF94A3B8), fontSize = 10.5.sp, fontWeight = FontWeight.Black, modifier = Modifier.width(180.dp))
-                        Text("BOOYAH", color = Color(0xFFFFD700), fontSize = 10.5.sp, fontWeight = FontWeight.Black, modifier = Modifier.width(74.dp), textAlign = TextAlign.Center)
+                        Text("TEAM / PLAYER", color = Color(0xFF94A3B8), fontSize = 10.5.sp, fontWeight = FontWeight.Black, modifier = Modifier.width(170.dp))
+                        Text("BOOYAH", color = Color(0xFFFFD700), fontSize = 10.5.sp, fontWeight = FontWeight.Black, modifier = Modifier.width(76.dp), textAlign = TextAlign.Center)
                         Text("KILLS", color = Color(0xFF94A3B8), fontSize = 10.5.sp, fontWeight = FontWeight.Black, modifier = Modifier.width(58.dp), textAlign = TextAlign.Center)
                         Text("PLACE", color = Color(0xFF94A3B8), fontSize = 10.5.sp, fontWeight = FontWeight.Black, modifier = Modifier.width(58.dp), textAlign = TextAlign.Center)
                         Text("TOTAL", color = Color(0xFF00E676), fontSize = 10.5.sp, fontWeight = FontWeight.Black, modifier = Modifier.width(68.dp), textAlign = TextAlign.Center)
@@ -798,8 +854,8 @@ private fun InteractivePointsTableContainer(standings: List<TeamRankEntry>) {
 
                     // Table Rows
                     standings.forEachIndexed { idx, item ->
-                        val isBooyah = item.rank == 1
-                        val rowBg = if (isBooyah) {
+                        val hasBooyah = item.booyahs > 0
+                        val rowBg = if (item.rank == 1) {
                             Color(0xFF1A2616)
                         } else if (idx % 2 == 0) {
                             Color(0xFF111723)
@@ -821,7 +877,7 @@ private fun InteractivePointsTableContainer(standings: List<TeamRankEntry>) {
                                 .background(rowBg)
                                 .border(
                                     0.6.dp,
-                                    if (isBooyah) Color(0x66FFD700) else Color(0x15FFFFFF),
+                                    if (item.rank == 1) Color(0x66FFD700) else Color(0x15FFFFFF),
                                     RoundedCornerShape(6.dp)
                                 )
                                 .padding(horizontal = 10.dp, vertical = 7.dp),
@@ -848,15 +904,15 @@ private fun InteractivePointsTableContainer(standings: List<TeamRankEntry>) {
                                 fontSize = 12.sp,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier.width(180.dp)
+                                modifier = Modifier.width(170.dp)
                             )
 
-                            // 3. Dedicated BOOYAH Column
+                            // 3. Dedicated BOOYAH Count Column
                             Box(
-                                modifier = Modifier.width(74.dp),
+                                modifier = Modifier.width(76.dp),
                                 contentAlignment = Alignment.Center
                             ) {
-                                if (isBooyah) {
+                                if (hasBooyah) {
                                     Box(
                                         modifier = Modifier
                                             .clip(RoundedCornerShape(4.dp))
@@ -865,7 +921,7 @@ private fun InteractivePointsTableContainer(standings: List<TeamRankEntry>) {
                                             .padding(horizontal = 6.dp, vertical = 2.dp)
                                     ) {
                                         Text(
-                                            "BOOYAH",
+                                            if (item.booyahs > 1) "${item.booyahs} BOOYAH" else "1 BOOYAH",
                                             color = Color(0xFFFFD700),
                                             fontSize = 9.sp,
                                             fontWeight = FontWeight.Black
@@ -873,9 +929,9 @@ private fun InteractivePointsTableContainer(standings: List<TeamRankEntry>) {
                                     }
                                 } else {
                                     Text(
-                                        "-",
-                                        color = Color(0xFF475569),
-                                        fontSize = 12.sp,
+                                        "0",
+                                        color = Color(0xFF64748B),
+                                        fontSize = 11.5.sp,
                                         fontWeight = FontWeight.Bold
                                     )
                                 }
@@ -1007,7 +1063,7 @@ private fun TeamStandingRowCard(entry: TeamRankEntry, isCurrentUserTeam: Boolean
                         overflow = TextOverflow.Ellipsis
                     )
 
-                    if (entry.rank == 1) {
+                    if (entry.booyahs > 0) {
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(6.dp))
@@ -1016,7 +1072,7 @@ private fun TeamStandingRowCard(entry: TeamRankEntry, isCurrentUserTeam: Boolean
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
                             Text(
-                                "BOOYAH",
+                                if (entry.booyahs > 1) "${entry.booyahs} BOOYAH" else "1 BOOYAH",
                                 color = Color(0xFFFFD700),
                                 fontSize = 9.sp,
                                 fontWeight = FontWeight.Black
@@ -1044,12 +1100,28 @@ private fun TeamStandingRowCard(entry: TeamRankEntry, isCurrentUserTeam: Boolean
                 }
             }
 
-            // Row 2: Stats Breakdown Pills (Kills, Place Points, Total Points)
+            // Row 2: Stats Breakdown Pills (Booyahs, Kills, Place Points, Total Points)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
+                // Booyah Pill
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(if (entry.booyahs > 0) Color(0xFFFFD700).copy(alpha = 0.18f) else Color(0xFF1E2638))
+                        .border(0.5.dp, if (entry.booyahs > 0) Color(0xFFFFD700).copy(alpha = 0.5f) else Color(0x33FFFFFF), RoundedCornerShape(6.dp))
+                        .padding(horizontal = 7.dp, vertical = 3.dp)
+                ) {
+                    Text(
+                        text = "BOOYAH: ${entry.booyahs}",
+                        color = if (entry.booyahs > 0) Color(0xFFFFD700) else Color(0xFF94A3B8),
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
                 // Kills Pill
                 Box(
                     modifier = Modifier
@@ -1126,10 +1198,11 @@ private fun getDefaultPlacePoints(rank: Int): Int {
 }
 
 /**
- * Parsing helper to convert multiline text formatted standings into structured list with Kills, Place Points, and Total Points
+ * Parsing helper to convert multiline text formatted standings into structured list with Booyahs, Kills, Place Points, and Total Points
  * Formats supported:
- * - "1 | Team Name | 14 Kills | ₹300"
- * - "1 | Team Name | 14 Kills | 26 Pts | ₹300"
+ * - "1 | Team Name | 14 Kills | ₹300" (Auto 1 Booyah if Rank 1)
+ * - "1 | Team Name | 2 Booyah | 14 Kills | 26 Pts | ₹300"
+ * - "1 | Team Name | 1 | 14 | 12 | 26 | ₹300" (Rank | Team | Booyah | Kills | Place | Total | Prize)
  * - "1 | Team Name | 14 | 12 | 26 | ₹300"
  */
 private fun parseStandings(rawText: String): List<TeamRankEntry> {
@@ -1144,6 +1217,7 @@ private fun parseStandings(rawText: String): List<TeamRankEntry> {
             val rank = parts[0].replace("#", "").trim().toIntOrNull() ?: (index + 1)
             val team = parts[1]
             val defaultPlace = getDefaultPlacePoints(rank)
+            val defaultBooyah = if (rank == 1) 1 else 0
 
             when (parts.size) {
                 2 -> {
@@ -1151,6 +1225,7 @@ private fun parseStandings(rawText: String): List<TeamRankEntry> {
                         TeamRankEntry(
                             rank = rank,
                             teamName = team,
+                            booyahs = defaultBooyah,
                             kills = "0 Kills",
                             killPoints = 0,
                             placePoints = defaultPlace,
@@ -1170,6 +1245,7 @@ private fun parseStandings(rawText: String): List<TeamRankEntry> {
                         TeamRankEntry(
                             rank = rank,
                             teamName = team,
+                            booyahs = defaultBooyah,
                             kills = if (killsStr.contains("kill", ignoreCase = true)) killsStr else "$killsNum Kills",
                             killPoints = killsNum,
                             placePoints = defaultPlace,
@@ -1179,12 +1255,18 @@ private fun parseStandings(rawText: String): List<TeamRankEntry> {
                     )
                 }
                 4 -> {
-                    val killsStr = parts[2]
-                    val killsNum = killsStr.replace("[^0-9]".toRegex(), "").toIntOrNull() ?: 0
+                    val p2 = parts[2]
                     val p3 = parts[3]
-                    val isPrize = p3.startsWith("₹") || p3.startsWith("Rs", ignoreCase = true) || (p3.contains("0") && !p3.contains("pt", ignoreCase = true))
-                    val prizeStr = if (isPrize) p3 else ""
-                    val explicitPts = if (!isPrize) p3.replace("[^0-9]".toRegex(), "").toIntOrNull() else null
+                    val isP2Booyah = p2.contains("booyah", ignoreCase = true) || p2.contains("wwcd", ignoreCase = true)
+                    val booyahNum = if (isP2Booyah) {
+                        p2.replace("[^0-9]".toRegex(), "").toIntOrNull() ?: 1
+                    } else defaultBooyah
+
+                    val killsStr = if (isP2Booyah) p3 else p2
+                    val killsNum = killsStr.replace("[^0-9]".toRegex(), "").toIntOrNull() ?: 0
+                    val isPrize = p3.startsWith("₹") || p3.startsWith("Rs", ignoreCase = true) || (!isP2Booyah && p3.contains("0") && !p3.contains("pt", ignoreCase = true))
+                    val prizeStr = if (isPrize && !isP2Booyah) p3 else ""
+                    val explicitPts = if (!isPrize && !isP2Booyah) p3.replace("[^0-9]".toRegex(), "").toIntOrNull() else null
                     val total = explicitPts ?: (defaultPlace + killsNum)
                     val placePts = if (explicitPts != null) (explicitPts - killsNum).coerceAtLeast(0) else defaultPlace
 
@@ -1192,6 +1274,7 @@ private fun parseStandings(rawText: String): List<TeamRankEntry> {
                         TeamRankEntry(
                             rank = rank,
                             teamName = team,
+                            booyahs = booyahNum,
                             kills = if (killsStr.contains("kill", ignoreCase = true)) killsStr else "$killsNum Kills",
                             killPoints = killsNum,
                             placePoints = placePts,
@@ -1201,17 +1284,39 @@ private fun parseStandings(rawText: String): List<TeamRankEntry> {
                     )
                 }
                 5 -> {
-                    val killsStr = parts[2]
-                    val killsNum = killsStr.replace("[^0-9]".toRegex(), "").toIntOrNull() ?: 0
-                    val ptsStr = parts[3]
-                    val explicitPts = ptsStr.replace("[^0-9]".toRegex(), "").toIntOrNull() ?: (defaultPlace + killsNum)
-                    val prizeStr = parts[4]
+                    // Check if parts[2] is booyah count (e.g., "1 | Team Toxic | 2 Booyah | 14 Kills | ₹300")
+                    val p2 = parts[2]
+                    val p3 = parts[3]
+                    val p4 = parts[4]
+                    val isP2Booyah = p2.contains("booyah", ignoreCase = true) || p2.contains("wwcd", ignoreCase = true)
+
+                    val booyahNum: Int
+                    val killsStr: String
+                    val killsNum: Int
+                    val explicitPts: Int
+                    val prizeStr: String
+
+                    if (isP2Booyah) {
+                        booyahNum = p2.replace("[^0-9]".toRegex(), "").toIntOrNull() ?: 1
+                        killsStr = p3
+                        killsNum = killsStr.replace("[^0-9]".toRegex(), "").toIntOrNull() ?: 0
+                        prizeStr = p4
+                        explicitPts = defaultPlace + killsNum
+                    } else {
+                        booyahNum = defaultBooyah
+                        killsStr = p2
+                        killsNum = killsStr.replace("[^0-9]".toRegex(), "").toIntOrNull() ?: 0
+                        val ptsOrPlace = p3.replace("[^0-9]".toRegex(), "").toIntOrNull() ?: (defaultPlace + killsNum)
+                        explicitPts = ptsOrPlace
+                        prizeStr = p4
+                    }
                     val placePts = (explicitPts - killsNum).coerceAtLeast(0)
 
                     result.add(
                         TeamRankEntry(
                             rank = rank,
                             teamName = team,
+                            booyahs = booyahNum,
                             kills = if (killsStr.contains("kill", ignoreCase = true)) killsStr else "$killsNum Kills",
                             killPoints = killsNum,
                             placePoints = placePts,
@@ -1220,17 +1325,52 @@ private fun parseStandings(rawText: String): List<TeamRankEntry> {
                         )
                     )
                 }
-                else -> {
-                    val killsStr = parts[2]
+                6 -> {
+                    // Format: 1 | Team Toxic | 2 Booyah | 14 Kills | 26 Pts | ₹300
+                    // OR: 1 | Team Toxic | 2 | 14 | 12 | ₹300
+                    val p2 = parts[2]
+                    val isP2Booyah = p2.contains("booyah", ignoreCase = true) || p2.contains("wwcd", ignoreCase = true)
+                    val booyahNum = if (isP2Booyah) {
+                        p2.replace("[^0-9]".toRegex(), "").toIntOrNull() ?: 1
+                    } else {
+                        // Could be: Rank | Team | BooyahCount | Kills | Place | Total
+                        p2.toIntOrNull() ?: defaultBooyah
+                    }
+
+                    val killsStr = parts[3]
                     val killsNum = killsStr.replace("[^0-9]".toRegex(), "").toIntOrNull() ?: 0
-                    val placePts = parts[3].replace("[^0-9]".toRegex(), "").toIntOrNull() ?: defaultPlace
-                    val totalPts = parts[4].replace("[^0-9]".toRegex(), "").toIntOrNull() ?: (placePts + killsNum)
+                    val p4 = parts[4]
+                    val placePts = p4.replace("[^0-9]".toRegex(), "").toIntOrNull() ?: defaultPlace
+                    val totalPts = placePts + killsNum
                     val prizeStr = parts[5]
 
                     result.add(
                         TeamRankEntry(
                             rank = rank,
                             teamName = team,
+                            booyahs = booyahNum,
+                            kills = if (killsStr.contains("kill", ignoreCase = true)) killsStr else "$killsNum Kills",
+                            killPoints = killsNum,
+                            placePoints = placePts,
+                            totalPoints = totalPts,
+                            prize = prizeStr
+                        )
+                    )
+                }
+                else -> {
+                    // 7 parts or more: Rank | Team | Booyahs | Kills | Place | Total | Prize
+                    val booyahNum = parts[2].replace("[^0-9]".toRegex(), "").toIntOrNull() ?: defaultBooyah
+                    val killsStr = parts[3]
+                    val killsNum = killsStr.replace("[^0-9]".toRegex(), "").toIntOrNull() ?: 0
+                    val placePts = parts[4].replace("[^0-9]".toRegex(), "").toIntOrNull() ?: defaultPlace
+                    val totalPts = parts[5].replace("[^0-9]".toRegex(), "").toIntOrNull() ?: (placePts + killsNum)
+                    val prizeStr = parts[6]
+
+                    result.add(
+                        TeamRankEntry(
+                            rank = rank,
+                            teamName = team,
+                            booyahs = booyahNum,
                             kills = if (killsStr.contains("kill", ignoreCase = true)) killsStr else "$killsNum Kills",
                             killPoints = killsNum,
                             placePoints = placePts,
@@ -1245,6 +1385,7 @@ private fun parseStandings(rawText: String): List<TeamRankEntry> {
                 TeamRankEntry(
                     rank = index + 1,
                     teamName = line,
+                    booyahs = if (index == 0) 1 else 0,
                     kills = "",
                     killPoints = 0,
                     placePoints = getDefaultPlacePoints(index + 1),
@@ -1407,45 +1548,58 @@ private fun createScorecardBitmap(
 
     val thPaint = Paint().apply {
         color = AndroidColor.parseColor("#94A3B8")
-        textSize = 22f
+        textSize = 21f
         typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
         isAntiAlias = true
     }
-    canvas.drawText("RANK", 65f, 410f, thPaint)
-    canvas.drawText("TEAM / PLAYER", 175f, 410f, thPaint)
-    canvas.drawText("KILL PTS", 560f, 410f, thPaint)
-    canvas.drawText("PLACE", 700f, 410f, thPaint)
-    canvas.drawText("TOTAL", 810f, 410f, thPaint)
-    canvas.drawText("PRIZE", 935f, 410f, thPaint)
+    val thBooyahPaint = Paint().apply {
+        color = AndroidColor.parseColor("#FFD700")
+        textSize = 21f
+        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        isAntiAlias = true
+    }
+    canvas.drawText("RANK", 60f, 410f, thPaint)
+    canvas.drawText("TEAM / PLAYER", 155f, 410f, thPaint)
+    canvas.drawText("BOOYAH", 490f, 410f, thBooyahPaint)
+    canvas.drawText("KILL PTS", 615f, 410f, thPaint)
+    canvas.drawText("PLACE", 740f, 410f, thPaint)
+    canvas.drawText("TOTAL", 845f, 410f, thPaint)
+    canvas.drawText("PRIZE", 950f, 410f, thPaint)
 
     // Rows
     var curY = 460f
     val rankTextPaint = Paint().apply {
-        textSize = 26f
+        textSize = 25f
         typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
         isAntiAlias = true
     }
     val teamPaint = Paint().apply {
         color = AndroidColor.WHITE
-        textSize = 26f
+        textSize = 25f
+        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        isAntiAlias = true
+    }
+    val booyahTextPaint = Paint().apply {
+        color = AndroidColor.parseColor("#FFD700")
+        textSize = 23f
         typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
         isAntiAlias = true
     }
     val statPaint = Paint().apply {
         color = AndroidColor.parseColor("#CBD5E1")
-        textSize = 24f
+        textSize = 23f
         typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
         isAntiAlias = true
     }
     val totalPtsPaint = Paint().apply {
         color = AndroidColor.parseColor("#00E676")
-        textSize = 26f
+        textSize = 25f
         typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
         isAntiAlias = true
     }
     val prizePaint = Paint().apply {
         color = AndroidColor.parseColor("#FFD700")
-        textSize = 25f
+        textSize = 24f
         typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
         isAntiAlias = true
     }
@@ -1471,12 +1625,18 @@ private fun createScorecardBitmap(
             }
 
             val rankPrefix = if (entry.rank == 1) "#1" else "#${entry.rank}"
-            canvas.drawText(rankPrefix, 65f, curY + 15f, rankTextPaint)
-            canvas.drawText(entry.teamName.take(18), 175f, curY + 15f, teamPaint)
-            canvas.drawText("${entry.killPoints}", 580f, curY + 15f, statPaint)
-            canvas.drawText("${entry.placePoints}", 720f, curY + 15f, statPaint)
-            canvas.drawText("${entry.totalPoints}", 825f, curY + 15f, totalPtsPaint)
-            canvas.drawText(entry.prize.ifBlank { "-" }, 935f, curY + 15f, prizePaint)
+            canvas.drawText(rankPrefix, 60f, curY + 15f, rankTextPaint)
+            canvas.drawText(entry.teamName.take(16), 155f, curY + 15f, teamPaint)
+            
+            // Booyah count column
+            val booyahStr = if (entry.booyahs > 0) "${entry.booyahs}" else "0"
+            booyahTextPaint.color = if (entry.booyahs > 0) AndroidColor.parseColor("#FFD700") else AndroidColor.parseColor("#64748B")
+            canvas.drawText(booyahStr, 515f, curY + 15f, booyahTextPaint)
+
+            canvas.drawText("${entry.killPoints}", 635f, curY + 15f, statPaint)
+            canvas.drawText("${entry.placePoints}", 755f, curY + 15f, statPaint)
+            canvas.drawText("${entry.totalPoints}", 855f, curY + 15f, totalPtsPaint)
+            canvas.drawText(entry.prize.ifBlank { "-" }, 950f, curY + 15f, prizePaint)
 
             curY += rowHeight
         }
@@ -1522,11 +1682,11 @@ private fun downloadScorecardSummary(
         sb.append("Time       : ${match.time}\n")
         sb.append("Prize Pool : ${match.prize}\n\n")
         sb.append("--- STANDINGS & POINTS LEADERBOARD ---\n")
-        sb.append("RANK | TEAM NAME | KILLS | PLACE PTS | TOTAL PTS | PRIZE\n")
+        sb.append("RANK | TEAM NAME | BOOYAH | KILLS | PLACE PTS | TOTAL PTS | PRIZE\n")
         if (standings.isNotEmpty()) {
             standings.forEach { s ->
-                val winTag = if (s.rank == 1) "[BOOYAH] " else ""
-                sb.append("$winTag#${s.rank} | ${s.teamName} | ${s.killPoints} Kills | ${s.placePoints} Place | ${s.totalPoints} Total | ${s.prize.ifBlank { "-" }}\n")
+                val winTag = if (s.booyahs > 0) "[BOOYAH x${s.booyahs}] " else ""
+                sb.append("$winTag#${s.rank} | ${s.teamName} | ${s.booyahs} Booyah | ${s.killPoints} Kills | ${s.placePoints} Place | ${s.totalPoints} Total | ${s.prize.ifBlank { "-" }}\n")
             }
         } else {
             sb.append("Admin Screenshot uploaded in app.\n")

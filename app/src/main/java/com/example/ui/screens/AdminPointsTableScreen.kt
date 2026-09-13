@@ -388,7 +388,7 @@ fun AdminPointsTableScreen(
                 Text("3. STANDINGS & POINTS MATRIX", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color(0xFF8E92A4), letterSpacing = 1.2.sp)
                 TextButton(
                     onClick = {
-                        pointsTableRanks = "1 | Team Toxic | 14 Kills | ₹300\n2 | Mafia Gang | 9 Kills | ₹150\n3 | Black Shadows | 6 Kills | ₹50\n4 | Royal Esports | 4 Kills | ₹0\n5 | GodLike Clan | 3 Kills | ₹0"
+                        pointsTableRanks = "1 | Team Toxic | 2 Booyah | 14 Kills | ₹300\n2 | Mafia Gang | 1 Booyah | 9 Kills | ₹150\n3 | Black Shadows | 0 Booyah | 6 Kills | ₹50\n4 | Royal Esports | 0 Booyah | 4 Kills | ₹0\n5 | GodLike Clan | 0 Booyah | 3 Kills | ₹0"
                     }
                 ) {
                     Text("+ Insert Template", color = Color(0xFF00E676), fontSize = 11.sp, fontWeight = FontWeight.Bold)
@@ -398,8 +398,8 @@ fun AdminPointsTableScreen(
             OutlinedTextField(
                 value = pointsTableRanks,
                 onValueChange = { pointsTableRanks = it },
-                label = { Text("Format: Rank | Team | Kills | Prize (Points auto-calculated)", fontSize = 11.sp) },
-                placeholder = { Text("1 | Team Toxic | 14 Kills | ₹300\n2 | Mafia Gang | 9 Kills | ₹150\n(Optional with custom points: 1 | Team | 14 Kills | 26 Pts | ₹300)", color = Color(0xFF6B7280)) },
+                label = { Text("Format: Rank | Team | Booyah | Kills | Prize", fontSize = 11.sp) },
+                placeholder = { Text("1 | Team Toxic | 2 Booyah | 14 Kills | ₹300\n2 | Mafia Gang | 1 Booyah | 9 Kills | ₹150\n(Supports Overall Tournament & Multi-Match combined results)", color = Color(0xFF6B7280)) },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 5,
                 maxLines = 10,

@@ -92,6 +92,14 @@ fun MainScreen(
         }
     }
 
+    // Start Presence Tracker for Live Online Users Tracking
+    LaunchedEffect(userProfile?.uid, userProfile?.email) {
+        val uid = userProfile?.uid ?: ""
+        if (uid.isNotBlank()) {
+            com.example.utils.PresenceTracker.startTracking(uid)
+        }
+    }
+
     // Trigger Android System Notification when Room ID & Pass become Live
     LaunchedEffect(allMatches, userProfile?.uid, userProfile?.email) {
         if (userProfile != null) {

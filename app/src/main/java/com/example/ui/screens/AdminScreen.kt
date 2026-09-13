@@ -30,6 +30,7 @@ import android.widget.Toast
 import com.example.FirebaseHelper
 import com.example.security.AppSecurityGuard
 import com.example.ui.components.AdminMasterBadge
+import com.example.utils.PresenceTracker
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,6 +48,7 @@ fun AdminScreen(navController: NavController) {
     var isLiveStreamActive by remember { mutableStateOf(false) }
     var pendingQueriesCount by remember { mutableStateOf(0) }
     var pendingRechargesCount by remember { mutableStateOf(0) }
+    val onlinePlayersCount by com.example.utils.PresenceTracker.onlinePlayersCount.collectAsState()
 
     LaunchedEffect(Unit) {
         if (db != null) {
@@ -223,9 +225,10 @@ fun AdminScreen(navController: NavController) {
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
+                        GlassStatCard("🟢 ONLINE", onlinePlayersCount.toString(), Color(0xFF00E676), Modifier.weight(1f))
                         GlassStatCard("LIVE GAMES", liveMatches.toString(), Color(0xFFFF5252), Modifier.weight(1f))
-                        GlassStatCard("TOTAL MATCHES", totalMatches.toString(), Color.White, Modifier.weight(1f))
-                        GlassStatCard("PLAYERS", totalUsers.toString(), Color(0xFF00E676), Modifier.weight(1f))
+                        GlassStatCard("TOTAL GAMES", totalMatches.toString(), Color.White, Modifier.weight(1f))
+                        GlassStatCard("USERS", totalUsers.toString(), Color(0xFF60A5FA), Modifier.weight(1f))
                     }
                 }
             }
