@@ -129,9 +129,10 @@ fun MatchDetailsScreen(
 
     // Classy Booking Confirmation Dialog
     if (showBookingDialog && selectedSlot != null) {
-        val isSquad = matchMode.equals("Squad", ignoreCase = true)
-        val nameLabel = if (isSquad) "Team Name" else "Player In-Game Name (IGN)"
-        val namePlaceholder = if (isSquad) "e.g. Total Gaming / GodLike" else "e.g. ProSniper_99"
+        // Rule: 3 or 4 slots = Squad / Custom Team Name required. 1 or 2 slots = Solo/Duo, no team name prompt required!
+        val isMultiSlotSquad = match.mode.contains("Squad", ignoreCase = true) || matchMode.contains("4v4", ignoreCase = true) || matchMode.contains("Squad", ignoreCase = true)
+        val nameLabel = "Player In-Game Name (IGN)"
+        val namePlaceholder = "e.g. ProSniper_99"
 
         val isAdMatch = match.entryType.equals("AD", ignoreCase = true) || match.entry.contains("Ad", ignoreCase = true)
         val isFreeMatch = match.entryType.equals("FREE", ignoreCase = true) || match.entry.equals("Free", ignoreCase = true)
@@ -374,7 +375,7 @@ fun MatchDetailsScreen(
                     Button(
                         onClick = {
                             if (!isFormValid) {
-                                Toast.makeText(context, "Please enter ${if (isSquad) "Team Name" else "Player Name"} first", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Please enter Player In-Game Name first", Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
                             val activity = context as? Activity
@@ -449,7 +450,7 @@ fun MatchDetailsScreen(
                     Button(
                         onClick = {
                             if (!isFormValid) {
-                                Toast.makeText(context, "Please enter ${if (isSquad) "Team Name" else "Player Name"}", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Please enter Player In-Game Name", Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
                             isBooking = true
