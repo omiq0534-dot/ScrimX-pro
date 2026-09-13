@@ -6,6 +6,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -55,13 +56,12 @@ fun AdminCreateMatchScreen(navController: NavController) {
     val csTdmMapSuggestions = listOf("Clash Squad Bermuda", "CS Kalahari", "TDM Warehouse", "CS Purgatory", "Custom Duel Arena")
 
     val matchTypeOptions = listOf(
-        "BR" to "🗺️ Battle Royale",
-        "CS" to "⚔️ Clash Squad",
-        "TDM" to "🔫 TDM / Warehouse",
-        "DUEL" to "🎯 1v1 Head-to-Head"
+        "BR" to "Battle Royale",
+        "CS" to "Clash Squad",
+        "TDM" to "TDM / Warehouse",
+        "DUEL" to "1v1 Head-to-Head"
     )
 
-    // Common quick rule templates
     val quickRuleTemplates = listOf(
         "Standard Scrims (No Hacks/Emulators)",
         "Desert Eagle / Pistol Only • 13 Rounds",
@@ -71,24 +71,33 @@ fun AdminCreateMatchScreen(navController: NavController) {
     )
 
     Scaffold(
-        containerColor = Color(0xFFFAFAFA),
+        containerColor = Color(0xFF0D0F14),
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        "CREATE TOURNAMENT MATCH",
-                        fontWeight = FontWeight.Black,
-                        color = Color(0xFF111827),
-                        fontSize = 15.sp,
-                        letterSpacing = 1.sp
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFF00E676))
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            "CREATE TOURNAMENT MATCH",
+                            fontWeight = FontWeight.Black,
+                            color = Color.White,
+                            fontSize = 15.sp,
+                            letterSpacing = 1.sp
+                        )
+                    }
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color(0xFF111827))
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFFAFAFA))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF0D0F14))
             )
         }
     ) { padding ->
@@ -97,11 +106,11 @@ fun AdminCreateMatchScreen(navController: NavController) {
                 .fillMaxSize()
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
-                .padding(20.dp),
+                .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Match Type Format
-            Text("1. SELECT MATCH FORMAT", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color(0xFF4B5563), letterSpacing = 1.5.sp)
+            Text("1. SELECT MATCH FORMAT", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color(0xFF8E92A4), letterSpacing = 1.2.sp)
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 matchTypeOptions.chunked(2).forEach { rowOptions ->
                     Row(
@@ -114,8 +123,8 @@ fun AdminCreateMatchScreen(navController: NavController) {
                                 modifier = Modifier
                                     .weight(1f)
                                     .clip(RoundedCornerShape(12.dp))
-                                    .background(if (isSelected) Color(0xFF111319) else Color.White)
-                                    .border(1.2.dp, if (isSelected) Color(0xFFFFD700) else Color(0xFFD1D5DB), RoundedCornerShape(12.dp))
+                                    .background(if (isSelected) Color(0xFF0D2517) else Color(0xFF141722))
+                                    .border(1.dp, if (isSelected) Color(0xFF00E676) else Color(0xFF23293A), RoundedCornerShape(12.dp))
                                     .clickable {
                                         matchType = typeKey
                                         when (typeKey) {
@@ -154,7 +163,7 @@ fun AdminCreateMatchScreen(navController: NavController) {
                             ) {
                                 Text(
                                     label,
-                                    color = if (isSelected) Color(0xFFFFD700) else Color(0xFF111827),
+                                    color = if (isSelected) Color(0xFF00E676) else Color.White,
                                     fontWeight = FontWeight.Black,
                                     fontSize = 12.sp
                                 )
@@ -165,7 +174,7 @@ fun AdminCreateMatchScreen(navController: NavController) {
             }
 
             // Mode Selector based on matchType
-            Text("2. MODE & SLOTS", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color(0xFF4B5563), letterSpacing = 1.5.sp)
+            Text("2. MODE & SLOTS", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color(0xFF8E92A4), letterSpacing = 1.2.sp)
             val availableModes = when (matchType) {
                 "BR" -> listOf("Solo" to "48", "Duo" to "24", "Squad" to "12")
                 "CS", "TDM" -> listOf("1v1" to "2", "2v2" to "4", "4v4" to "8")
@@ -182,8 +191,8 @@ fun AdminCreateMatchScreen(navController: NavController) {
                         modifier = Modifier
                             .weight(1f)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(if (isSelected) Color(0xFF111319) else Color.White)
-                            .border(1.dp, if (isSelected) Color(0xFFFFD700) else Color(0xFFD1D5DB), RoundedCornerShape(12.dp))
+                            .background(if (isSelected) Color(0xFF0D2517) else Color(0xFF141722))
+                            .border(1.dp, if (isSelected) Color(0xFF00E676) else Color(0xFF23293A), RoundedCornerShape(12.dp))
                             .clickable {
                                 selectedMode = mode
                                 customSlots = defaultSlots
@@ -195,13 +204,13 @@ fun AdminCreateMatchScreen(navController: NavController) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
                                 mode,
-                                color = if (isSelected) Color(0xFFFFD700) else Color(0xFF111827),
+                                color = if (isSelected) Color(0xFF00E676) else Color.White,
                                 fontWeight = FontWeight.Black,
                                 fontSize = 14.sp
                             )
                             Text(
-                                if (matchType == "CS" || matchType == "TDM" || matchType == "DUEL") "$defaultSlots Players (VS)" else "$defaultSlots Slots",
-                                color = if (isSelected) Color(0xFF94A3B8) else Color(0xFF6B7280),
+                                if (matchType == "CS" || matchType == "TDM" || matchType == "DUEL") "$defaultSlots Players" else "$defaultSlots Slots",
+                                color = if (isSelected) Color(0xFF00E676) else Color(0xFF8E92A4),
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.SemiBold
                             )
@@ -219,8 +228,8 @@ fun AdminCreateMatchScreen(navController: NavController) {
                         title = "$customMap $selectedMode Match"
                     }
                 },
-                label = "Map Name (Custom)",
-                placeholder = "Type custom map name..."
+                label = "Map Name",
+                placeholder = "Type map name..."
             )
 
             // Quick Map Chips
@@ -233,15 +242,15 @@ fun AdminCreateMatchScreen(navController: NavController) {
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
-                            .background(Color(0xFF111319))
-                            .border(1.dp, Color(0xFF262A38), RoundedCornerShape(8.dp))
+                            .background(Color(0xFF141722))
+                            .border(1.dp, Color(0xFF23293A), RoundedCornerShape(8.dp))
                             .clickable {
                                 customMap = mapSug
                                 title = "$mapSug $selectedMode Match"
                             }
                             .padding(horizontal = 8.dp, vertical = 6.dp)
                     ) {
-                        Text(mapSug, color = Color(0xFFFFD700), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Text(mapSug, color = Color(0xFF00E676), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -277,21 +286,20 @@ fun AdminCreateMatchScreen(navController: NavController) {
             }
 
             // PRIZE & ENTRY SECTION
-            Text("3. PRIZE POOL & ENTRY TYPE", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color(0xFF4B5563), letterSpacing = 1.5.sp)
+            Text("3. PRIZE POOL & ENTRY TYPE", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color(0xFF8E92A4), letterSpacing = 1.2.sp)
 
             ClassyDarkInput(
                 value = prize,
                 onValueChange = { prize = it },
-                label = "Prize Pool (Customizable)",
+                label = "Prize Pool",
                 placeholder = "e.g. ₹500, ₹1000, ₹2500"
             )
 
             // 3 Entry Type Options
-            Text("SELECT MATCH ENTRY TYPE (No limits):", fontSize = 10.sp, color = Color(0xFF4B5563), fontWeight = FontWeight.SemiBold)
             val entryTypeOptions = listOf(
-                Triple("FREE", "🆓 100% Free", "0 Coins • 0 Ads"),
-                Triple("AD", "🎬 Watch Ad to Join", "Free via Unity Ads"),
-                Triple("PAID", "💵 Paid Entry Fee", "Deduct Wallet Coins")
+                Triple("FREE", "100% Free", "0 Coins • 0 Ads"),
+                Triple("AD", "Watch Ad", "Free via Ads"),
+                Triple("PAID", "Paid Entry", "Deduct Wallet")
             )
 
             Row(
@@ -304,8 +312,8 @@ fun AdminCreateMatchScreen(navController: NavController) {
                         modifier = Modifier
                             .weight(1f)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(if (isSelected) Color(0xFF111319) else Color.White)
-                            .border(1.2.dp, if (isSelected) Color(0xFFFFD700) else Color(0xFFD1D5DB), RoundedCornerShape(12.dp))
+                            .background(if (isSelected) Color(0xFF0D2517) else Color(0xFF141722))
+                            .border(1.dp, if (isSelected) Color(0xFF00E676) else Color(0xFF23293A), RoundedCornerShape(12.dp))
                             .clickable { entryType = typeKey }
                             .padding(vertical = 10.dp, horizontal = 6.dp),
                         contentAlignment = Alignment.Center
@@ -313,14 +321,14 @@ fun AdminCreateMatchScreen(navController: NavController) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
                                 titleLabel,
-                                color = if (isSelected) Color(0xFFFFD700) else Color(0xFF111827),
+                                color = if (isSelected) Color(0xFF00E676) else Color.White,
                                 fontWeight = FontWeight.Black,
                                 fontSize = 11.sp
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
                                 subLabel,
-                                color = if (isSelected) Color(0xFF94A3B8) else Color(0xFF6B7280),
+                                color = if (isSelected) Color(0xFF00E676) else Color(0xFF8E92A4),
                                 fontSize = 9.sp,
                                 fontWeight = FontWeight.Medium
                             )
@@ -336,12 +344,12 @@ fun AdminCreateMatchScreen(navController: NavController) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(10.dp))
-                            .background(Color(0xFF132A1C))
-                            .border(1.dp, Color(0xFF22C55E), RoundedCornerShape(10.dp))
+                            .background(Color(0xFF0D2517))
+                            .border(1.dp, Color(0xFF00E676), RoundedCornerShape(10.dp))
                             .padding(12.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF22C55E), modifier = Modifier.size(18.dp))
+                            Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF00E676), modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 "100% Free Match: Players can join directly with 0 coins and no ads.",
@@ -357,10 +365,9 @@ fun AdminCreateMatchScreen(navController: NavController) {
                         ClassyDarkInput(
                             value = requiredAdsInput,
                             onValueChange = { requiredAdsInput = it },
-                            label = "Number of Sponsor Ads to Watch (No limit, edit any number)",
+                            label = "Number of Sponsor Ads to Watch",
                             placeholder = "e.g. 1, 2, 3, 5"
                         )
-                        // Quick chips for common ad counts
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             listOf("1 Ad", "2 Ads", "3 Ads", "5 Ads").forEach { adPreset ->
                                 val num = adPreset.filter { it.isDigit() }
@@ -368,12 +375,12 @@ fun AdminCreateMatchScreen(navController: NavController) {
                                 Box(
                                     modifier = Modifier
                                         .clip(RoundedCornerShape(8.dp))
-                                        .background(if (isPresetSel) Color(0xFF111319) else Color.White)
-                                        .border(1.dp, if (isPresetSel) Color(0xFFFFD700) else Color(0xFFD1D5DB), RoundedCornerShape(8.dp))
-                                        .clickable { requiredAdsInput = num }
-                                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                                        .background(if (isPresetSel) Color(0xFF0D2517) else Color(0xFF141722))
+                                        .border(1.dp, if (isPresetSel) Color(0xFF00E676) else Color(0xFF23293A), RoundedCornerShape(8.dp))
+                                    .clickable { requiredAdsInput = num }
+                                    .padding(horizontal = 10.dp, vertical = 6.dp)
                                 ) {
-                                    Text(adPreset, color = if (isPresetSel) Color(0xFFFFD700) else Color(0xFF111827), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                    Text(adPreset, color = if (isPresetSel) Color(0xFF00E676) else Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
@@ -384,23 +391,21 @@ fun AdminCreateMatchScreen(navController: NavController) {
                         ClassyDarkInput(
                             value = paidEntryFee,
                             onValueChange = { paidEntryFee = it },
-                            label = "Entry Fee (₹ / Coins - No limit, edit any amount)",
-                            placeholder = "e.g. 10, 20, 50, 100, 500"
+                            label = "Entry Fee (Coins)",
+                            placeholder = "e.g. 10, 20, 50, 100"
                         )
-                        // Quick chips for common entry amounts
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            listOf("₹5", "₹10", "₹20", "₹50", "₹100").forEach { feePreset ->
-                                val num = feePreset.filter { it.isDigit() }
-                                val isFeeSel = paidEntryFee == num || paidEntryFee == feePreset
+                            listOf("5", "10", "20", "50", "100").forEach { feePreset ->
+                                val isFeeSel = paidEntryFee == feePreset
                                 Box(
                                     modifier = Modifier
                                         .clip(RoundedCornerShape(8.dp))
-                                        .background(if (isFeeSel) Color(0xFF111319) else Color.White)
-                                        .border(1.dp, if (isFeeSel) Color(0xFFFFD700) else Color(0xFFD1D5DB), RoundedCornerShape(8.dp))
-                                        .clickable { paidEntryFee = num }
-                                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                                        .background(if (isFeeSel) Color(0xFF0D2517) else Color(0xFF141722))
+                                        .border(1.dp, if (isFeeSel) Color(0xFF00E676) else Color(0xFF23293A), RoundedCornerShape(8.dp))
+                                    .clickable { paidEntryFee = feePreset }
+                                    .padding(horizontal = 10.dp, vertical = 6.dp)
                                 ) {
-                                    Text(feePreset, color = if (isFeeSel) Color(0xFFFFD700) else Color(0xFF111827), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                    Text("₹$feePreset", color = if (isFeeSel) Color(0xFF00E676) else Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
@@ -416,39 +421,39 @@ fun AdminCreateMatchScreen(navController: NavController) {
             )
 
             // CUSTOM RULES FOR THIS MATCH
-            Text("MATCH SPECIFIC RULES (Admin Custom Rules)", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color(0xFF4B5563), letterSpacing = 1.5.sp)
+            Text("MATCH RULES", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color(0xFF8E92A4), letterSpacing = 1.2.sp)
             OutlinedTextField(
                 value = customRules,
                 onValueChange = { customRules = it },
-                label = { Text("Custom Rules for this match", color = Color(0xFF94A3B8)) },
-                placeholder = { Text("e.g. Desert Eagle Only, 13 Rounds, No Grenade, Headshot Only...", color = Color(0xFF64748B)) },
+                label = { Text("Custom Rules for this match", color = Color(0xFF8E92A4)) },
+                placeholder = { Text("e.g. Desert Eagle Only, 13 Rounds, No Grenades...", color = Color(0xFF75798E)) },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(14.dp),
+                shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFFFFD700),
-                    unfocusedBorderColor = Color(0xFF262A38),
-                    focusedContainerColor = Color(0xFF111319),
-                    unfocusedContainerColor = Color(0xFF111319),
+                    focusedBorderColor = Color(0xFF00E676),
+                    unfocusedBorderColor = Color(0xFF23293A),
+                    focusedContainerColor = Color(0xFF1A1D2B),
+                    unfocusedContainerColor = Color(0xFF1A1D2B),
                     focusedTextColor = Color.White,
                     unfocusedTextColor = Color.White,
-                    cursorColor = Color(0xFFFFD700)
+                    cursorColor = Color(0xFF00E676)
                 ),
                 minLines = 3,
                 maxLines = 6
             )
 
             // Quick Rule Templates Chips
-            Text("Quick Rule Templates (Tap to apply):", fontSize = 10.sp, color = Color(0xFF4B5563), fontWeight = FontWeight.SemiBold)
+            Text("Quick Rule Templates:", fontSize = 10.sp, color = Color(0xFF8E92A4), fontWeight = FontWeight.SemiBold)
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 quickRuleTemplates.forEach { ruleTpl ->
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(8.dp))
-                            .background(Color(0xFF111319))
-                            .border(1.dp, Color(0xFF262A38), RoundedCornerShape(8.dp))
+                            .background(Color(0xFF141722))
+                            .border(1.dp, Color(0xFF23293A), RoundedCornerShape(8.dp))
                             .clickable { customRules = ruleTpl }
-                            .padding(horizontal = 10.dp, vertical = 6.dp)
+                            .padding(horizontal = 10.dp, vertical = 8.dp)
                     ) {
                         Text(ruleTpl, color = Color.White, fontSize = 11.sp)
                     }
@@ -464,7 +469,7 @@ fun AdminCreateMatchScreen(navController: NavController) {
             )
 
             // Room Credentials
-            Text("ROOM CREDENTIALS (Can update later)", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color(0xFF4B5563), letterSpacing = 1.5.sp)
+            Text("ROOM CREDENTIALS", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color(0xFF8E92A4), letterSpacing = 1.2.sp)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -481,14 +486,14 @@ fun AdminCreateMatchScreen(navController: NavController) {
                     ClassyDarkInput(
                         value = roomPass,
                         onValueChange = { roomPass = it },
-                        label = "Room Password",
+                        label = "Password",
                         placeholder = "e.g. 1234"
                     )
                 }
             }
 
             // Match Status
-            Text("INITIAL STATUS", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color(0xFF4B5563), letterSpacing = 1.5.sp)
+            Text("INITIAL STATUS", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color(0xFF8E92A4), letterSpacing = 1.2.sp)
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 listOf("Upcoming", "Live", "Completed").forEach { st ->
                     val isSelected = status == st
@@ -496,15 +501,15 @@ fun AdminCreateMatchScreen(navController: NavController) {
                         modifier = Modifier
                             .weight(1f)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(if (isSelected) Color(0xFF111319) else Color.White)
-                            .border(1.dp, if (isSelected) Color(0xFFFFD700) else Color(0xFFD1D5DB), RoundedCornerShape(12.dp))
+                            .background(if (isSelected) Color(0xFF0D2517) else Color(0xFF141722))
+                            .border(1.dp, if (isSelected) Color(0xFF00E676) else Color(0xFF23293A), RoundedCornerShape(12.dp))
                             .clickable { status = st }
                             .padding(vertical = 12.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             st,
-                            color = if (isSelected) Color(0xFFFFD700) else Color(0xFF111827),
+                            color = if (isSelected) Color(0xFF00E676) else Color.White,
                             fontWeight = FontWeight.Black,
                             fontSize = 12.sp
                         )
@@ -577,21 +582,21 @@ fun AdminCreateMatchScreen(navController: NavController) {
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF111319)),
-                shape = RoundedCornerShape(16.dp),
+                    .height(52.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E676)),
+                shape = RoundedCornerShape(14.dp),
                 enabled = !isLoading && time.isNotBlank()
             ) {
                 if (isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.size(22.dp), color = Color(0xFFFFD700))
+                    CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.Black)
                 } else {
-                    Icon(Icons.Default.Publish, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(18.dp))
+                    Icon(Icons.Default.Publish, contentDescription = null, tint = Color.Black, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("PUBLISH TOURNAMENT", fontSize = 14.sp, fontWeight = FontWeight.Black, color = Color.White, letterSpacing = 1.sp)
+                    Text("PUBLISH TOURNAMENT", fontSize = 13.sp, fontWeight = FontWeight.Black, color = Color.Black, letterSpacing = 0.5.sp)
                 }
             }
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(30.dp))
         }
     }
 }
@@ -606,18 +611,18 @@ fun ClassyDarkInput(
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        label = { Text(label, color = Color(0xFF94A3B8)) },
-        placeholder = { Text(placeholder, color = Color(0xFF64748B)) },
+        label = { Text(label, color = Color(0xFF8E92A4)) },
+        placeholder = { Text(placeholder, color = Color(0xFF75798E)) },
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(14.dp),
+        shape = RoundedCornerShape(12.dp),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = Color(0xFFFFD700),
-            unfocusedBorderColor = Color(0xFF262A38),
-            focusedContainerColor = Color(0xFF111319),
-            unfocusedContainerColor = Color(0xFF111319),
+            focusedBorderColor = Color(0xFF00E676),
+            unfocusedBorderColor = Color(0xFF23293A),
+            focusedContainerColor = Color(0xFF1A1D2B),
+            unfocusedContainerColor = Color(0xFF1A1D2B),
             focusedTextColor = Color.White,
             unfocusedTextColor = Color.White,
-            cursorColor = Color(0xFFFFD700)
+            cursorColor = Color(0xFF00E676)
         ),
         singleLine = true
     )

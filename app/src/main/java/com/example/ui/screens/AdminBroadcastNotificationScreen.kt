@@ -2,8 +2,8 @@ package com.example.ui.screens
 import com.example.ui.theme.AppColors
 
 import android.widget.Toast
-import androidx.compose.animation.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,7 +18,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -44,7 +43,7 @@ fun AdminBroadcastNotificationScreen(navController: NavController) {
     val context = LocalContext.current
     val db = remember { FirebaseHelper.getFirestore() }
 
-    var broadcastMode by remember { mutableStateOf(0) } // 0 = Global All Users, 1 = Room Joined Users Only
+    var broadcastMode by remember { mutableIntStateOf(0) } // 0 = Global All Users, 1 = Room Joined Users Only
     var isSending by remember { mutableStateOf(false) }
 
     // Global Notification State
@@ -62,10 +61,8 @@ fun AdminBroadcastNotificationScreen(navController: NavController) {
     // Broadcast Logs State
     var logsList by remember { mutableStateOf<List<BroadcastLog>>(emptyList()) }
 
-    // Load matches and broadcast history
     LaunchedEffect(Unit) {
         if (db != null) {
-            // Load Matches
             db.collection("matches").addSnapshotListener { snap, _ ->
                 if (snap != null) {
                     val list = snap.documents.mapNotNull { doc ->
@@ -84,7 +81,6 @@ fun AdminBroadcastNotificationScreen(navController: NavController) {
                 }
             }
 
-            // Load Notification Broadcast Logs
             db.collection("broadcast_logs")
                 .orderBy("timestamp", Query.Direction.DESCENDING)
                 .limit(20)
@@ -106,26 +102,25 @@ fun AdminBroadcastNotificationScreen(navController: NavController) {
     }
 
     Scaffold(
-        containerColor = Color(0xFF0C0D14),
+        containerColor = Color(0xFF0D0F14),
         topBar = {
             TopAppBar(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            "PUSH NOTIFICATION HUB",
-                            fontWeight = FontWeight.Black,
-                            fontSize = 17.sp,
-                            color = AppColors.TextPrimary
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
                         Box(
                             modifier = Modifier
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(Color(0xFFFF0055).copy(alpha = 0.2f))
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
-                        ) {
-                            Text("ADMIN LIVE", color = Color(0xFFFF0055), fontSize = 9.sp, fontWeight = FontWeight.Black)
-                        }
+                                .size(8.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFF00E676))
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            "PUSH NOTIFICATIONS",
+                            fontWeight = FontWeight.Black,
+                            fontSize = 15.sp,
+                            color = Color.White,
+                            letterSpacing = 1.sp
+                        )
                     }
                 },
                 navigationIcon = {
@@ -133,7 +128,7 @@ fun AdminBroadcastNotificationScreen(navController: NavController) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF10121A))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF0D0F14))
             )
         }
     ) { padding ->
@@ -144,24 +139,30 @@ fun AdminBroadcastNotificationScreen(navController: NavController) {
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Header Info Pill
+            // Header Info Card
             item {
-                Surface(
-                    shape = RoundedCornerShape(14.dp),
-                    color = Color(0xFF151824),
-                    border = CardDefaults.outlinedCardBorder().copy(
-                        brush = Brush.horizontalGradient(listOf(Color(0xFFFFD700).copy(alpha = 0.3f), Color.Transparent))
-                    )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(Color(0xFF141722))
+                        .border(1.dp, Color(0xFF23293A), RoundedCornerShape(18.dp))
+                        .padding(16.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.padding(14.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(Icons.Default.NotificationsActive, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(26.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFF1A1D2B)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Default.NotificationsActive, contentDescription = null, tint = Color(0xFF00E676), modifier = Modifier.size(20.dp))
+                        }
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
-                            Text("Instant Push & In-App Broadcast", color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                            Text("Sends high-priority notification to phones & writes to live alerts", color = Color(0xFF8E92A4), fontSize = 11.sp)
+                            Text("PUSH & IN-APP BROADCAST", color = Color.White, fontWeight = FontWeight.Black, fontSize = 13.sp)
+                            Text("Sends high-priority notifications to registered phones", color = Color(0xFF8E92A4), fontSize = 11.sp)
                         }
                     }
                 }
@@ -172,39 +173,30 @@ fun AdminBroadcastNotificationScreen(navController: NavController) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(Color(0xFF131520))
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(Color(0xFF141722))
+                        .border(1.dp, Color(0xFF23293A), RoundedCornerShape(14.dp))
                         .padding(4.dp),
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    // Global Broadcast Tab
-                    Button(
-                        onClick = { broadcastMode = 0 },
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (broadcastMode == 0) Color(0xFFFFD700) else Color.Transparent,
-                            contentColor = if (broadcastMode == 0) Color.Black else Color(0xFF8E92A4)
-                        ),
-                        shape = RoundedCornerShape(10.dp)
-                    ) {
-                        Icon(Icons.Default.Public, contentDescription = null, modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("Global All Users", fontWeight = FontWeight.Black, fontSize = 12.sp)
-                    }
-
-                    // Room Users Only Tab
-                    Button(
-                        onClick = { broadcastMode = 1 },
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (broadcastMode == 1) Color(0xFFFF0055) else Color.Transparent,
-                            contentColor = if (broadcastMode == 1) Color.White else Color(0xFF8E92A4)
-                        ),
-                        shape = RoundedCornerShape(10.dp)
-                    ) {
-                        Icon(Icons.Default.MeetingRoom, contentDescription = null, modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("Room Users Only", fontWeight = FontWeight.Black, fontSize = 12.sp)
+                    listOf("Global (All Users)", "Room Players Only").forEachIndexed { index, title ->
+                        val isSelected = broadcastMode == index
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(if (isSelected) Color(0xFF00E676) else Color.Transparent)
+                                .clickable { broadcastMode = index }
+                                .padding(vertical = 10.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                title,
+                                color = if (isSelected) Color.Black else Color(0xFF8E92A4),
+                                fontWeight = FontWeight.Black,
+                                fontSize = 12.sp
+                            )
+                        }
                     }
                 }
             }
@@ -212,37 +204,34 @@ fun AdminBroadcastNotificationScreen(navController: NavController) {
             // 1. GLOBAL NOTIFICATION CARD
             if (broadcastMode == 0) {
                 item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(18.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF141622)),
-                        border = CardDefaults.outlinedCardBorder().copy(
-                            brush = Brush.verticalGradient(listOf(Color(0xFFFFD700).copy(alpha = 0.5f), Color.Transparent))
-                        )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(18.dp))
+                            .background(Color(0xFF141722))
+                            .border(1.dp, Color(0xFF23293A), RoundedCornerShape(18.dp))
+                            .padding(18.dp)
                     ) {
-                        Column(modifier = Modifier.padding(18.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Box(
                                     modifier = Modifier
                                         .size(36.dp)
                                         .clip(CircleShape)
-                                        .background(Color(0xFFFFD700).copy(alpha = 0.2f)),
+                                        .background(Color(0xFF1A1D2B)),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Icon(Icons.Default.Campaign, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(20.dp))
+                                    Icon(Icons.Default.Campaign, contentDescription = null, tint = Color(0xFF00E676), modifier = Modifier.size(20.dp))
                                 }
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column {
-                                    Text("GLOBAL ANNOUNCEMENT", color = AppColors.TextPrimary, fontWeight = FontWeight.Black, fontSize = 15.sp)
+                                    Text("GLOBAL ANNOUNCEMENT", color = Color.White, fontWeight = FontWeight.Black, fontSize = 14.sp)
                                     Text("Delivered to every player with system push notification", color = Color(0xFF8E92A4), fontSize = 11.sp)
                                 }
                             }
 
-                            Spacer(modifier = Modifier.height(16.dp))
-
                             // Category selector
                             Text("CATEGORY", color = Color(0xFF8E92A4), fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
-                            Spacer(modifier = Modifier.height(6.dp))
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 listOf("Announcement", "Tournament", "Cash Prize", "System").forEach { cat ->
                                     FilterChip(
@@ -250,46 +239,52 @@ fun AdminBroadcastNotificationScreen(navController: NavController) {
                                         onClick = { selectedCategory = cat },
                                         label = { Text(cat, fontSize = 11.sp, fontWeight = FontWeight.Bold) },
                                         colors = FilterChipDefaults.filterChipColors(
-                                            selectedContainerColor = Color(0xFFFFD700),
+                                            selectedContainerColor = Color(0xFF00E676),
                                             selectedLabelColor = Color.Black,
-                                            containerColor = Color(0xFF1D2130),
-                                            labelColor = Color(0xFF4B5563)
+                                            containerColor = Color(0xFF1A1D2B),
+                                            labelColor = Color(0xFF8E92A4)
+                                        ),
+                                        border = FilterChipDefaults.filterChipBorder(
+                                            borderColor = Color(0xFF23293A),
+                                            selectedBorderColor = Color(0xFF00E676),
+                                            enabled = true,
+                                            selected = selectedCategory == cat
                                         )
                                     )
                                 }
                             }
-
-                            Spacer(modifier = Modifier.height(14.dp))
 
                             // Title Field
                             OutlinedTextField(
                                 value = globalTitle,
                                 onValueChange = { globalTitle = it },
                                 label = { Text("Title / Headline", color = Color(0xFF8E92A4)) },
-                                placeholder = { Text("e.g. ⚡ ₹10,000 Grand BGMI Finale Tonight!", color = Color(0xFF475569)) },
+                                placeholder = { Text("e.g. Grand BGMI Finale Tonight", color = Color(0xFF75798E)) },
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedTextColor = Color.White,
                                     unfocusedTextColor = Color.White,
-                                    focusedBorderColor = Color(0xFFFFD700),
-                                    unfocusedBorderColor = Color(0xFF2C3044)
+                                    focusedBorderColor = Color(0xFF00E676),
+                                    unfocusedBorderColor = Color(0xFF23293A),
+                                    focusedContainerColor = Color(0xFF1A1D2B),
+                                    unfocusedContainerColor = Color(0xFF1A1D2B)
                                 ),
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(12.dp)
                             )
-
-                            Spacer(modifier = Modifier.height(12.dp))
 
                             // Message Field
                             OutlinedTextField(
                                 value = globalMessage,
                                 onValueChange = { globalMessage = it },
                                 label = { Text("Message Body", color = Color(0xFF8E92A4)) },
-                                placeholder = { Text("Enter detailed broadcast message for all players...", color = Color(0xFF475569)) },
+                                placeholder = { Text("Enter broadcast message for all players...", color = Color(0xFF75798E)) },
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedTextColor = Color.White,
                                     unfocusedTextColor = Color.White,
-                                    focusedBorderColor = Color(0xFFFFD700),
-                                    unfocusedBorderColor = Color(0xFF2C3044)
+                                    focusedBorderColor = Color(0xFF00E676),
+                                    unfocusedBorderColor = Color(0xFF23293A),
+                                    focusedContainerColor = Color(0xFF1A1D2B),
+                                    unfocusedContainerColor = Color(0xFF1A1D2B)
                                 ),
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -298,23 +293,19 @@ fun AdminBroadcastNotificationScreen(navController: NavController) {
                                 maxLines = 4
                             )
 
-                            Spacer(modifier = Modifier.height(20.dp))
-
                             // Dispatch Button
                             Button(
                                 onClick = {
                                     if (globalMessage.isNotBlank()) {
                                         isSending = true
-                                        val titleToSend = globalTitle.ifBlank { "📢 ScrimX Global Announcement" }
-                                        
-                                        // 1. Trigger local system push on admin's phone immediately
+                                        val titleToSend = globalTitle.ifBlank { "ScrimX Announcement" }
+
                                         NotificationHelper.showGeneralAnnouncementNotification(
                                             context = context,
                                             title = titleToSend,
                                             message = globalMessage
                                         )
 
-                                        // 2. Write to Firestore for all users
                                         val logData = hashMapOf(
                                             "title" to titleToSend,
                                             "message" to globalMessage,
@@ -325,20 +316,22 @@ fun AdminBroadcastNotificationScreen(navController: NavController) {
                                         db?.collection("broadcast_logs")?.add(logData)
                                         db?.collection("global_notifications")?.add(logData)
 
-                                        Toast.makeText(context, "✅ Global Broadcast Sent + Phone Push Triggered!", Toast.LENGTH_LONG).show()
+                                        Toast.makeText(context, "Global Broadcast Sent", Toast.LENGTH_SHORT).show()
                                         globalTitle = ""
                                         globalMessage = ""
                                         isSending = false
                                     }
                                 },
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700)),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(48.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E676)),
                                 shape = RoundedCornerShape(12.dp),
                                 enabled = !isSending && globalMessage.isNotBlank()
                             ) {
                                 Icon(Icons.Default.Send, contentDescription = null, tint = Color.Black)
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("SEND GLOBAL BROADCAST + PUSH ALERT", color = Color.Black, fontWeight = FontWeight.Black)
+                                Text("SEND GLOBAL BROADCAST", color = Color.Black, fontWeight = FontWeight.Black)
                             }
                         }
                     }
@@ -348,72 +341,67 @@ fun AdminBroadcastNotificationScreen(navController: NavController) {
             // 2. ROOM JOINED USERS ONLY CARD
             if (broadcastMode == 1) {
                 item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(18.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF141622)),
-                        border = CardDefaults.outlinedCardBorder().copy(
-                            brush = Brush.verticalGradient(listOf(Color(0xFFFF0055).copy(alpha = 0.5f), Color.Transparent))
-                        )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(18.dp))
+                            .background(Color(0xFF141722))
+                            .border(1.dp, Color(0xFF23293A), RoundedCornerShape(18.dp))
+                            .padding(18.dp)
                     ) {
-                        Column(modifier = Modifier.padding(18.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Box(
                                     modifier = Modifier
                                         .size(36.dp)
                                         .clip(CircleShape)
-                                        .background(Color(0xFFFF0055).copy(alpha = 0.2f)),
+                                        .background(Color(0xFF1A1D2B)),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Icon(Icons.Default.VpnKey, contentDescription = null, tint = Color(0xFFFF0055), modifier = Modifier.size(20.dp))
+                                    Icon(Icons.Default.VpnKey, contentDescription = null, tint = Color(0xFF00E676), modifier = Modifier.size(20.dp))
                                 }
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column {
-                                    Text("ROOM JOINED USERS ONLY", color = AppColors.TextPrimary, fontWeight = FontWeight.Black, fontSize = 15.sp)
-                                    Text("Send Room ID, Password & Alerts only to registered players", color = Color(0xFF8E92A4), fontSize = 11.sp)
+                                    Text("ROOM PLAYERS ONLY", color = Color.White, fontWeight = FontWeight.Black, fontSize = 14.sp)
+                                    Text("Send Room ID and Password to registered players", color = Color(0xFF8E92A4), fontSize = 11.sp)
                                 }
                             }
 
-                            Spacer(modifier = Modifier.height(16.dp))
-
                             // Tournament Selector
                             Text("SELECT TOURNAMENT MATCH", color = Color(0xFF8E92A4), fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
-                            Spacer(modifier = Modifier.height(8.dp))
 
                             if (matchesList.isEmpty()) {
-                                Surface(
-                                    shape = RoundedCornerShape(10.dp),
-                                    color = Color(0xFFF3F4F6),
-                                    modifier = Modifier.fillMaxWidth()
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(Color(0xFF1A1D2B))
+                                        .padding(12.dp)
                                 ) {
-                                    Text("No active tournament matches found. Please create a match first.", color = Color(0xFFFF5252), fontSize = 12.sp, modifier = Modifier.padding(12.dp))
+                                    Text("No active tournament matches found.", color = Color(0xFFFF5252), fontSize = 12.sp)
                                 }
                             } else {
                                 matchesList.take(4).forEach { match ->
                                     val isSelected = selectedMatch?.id == match.id
                                     val bookedCount = match.bookedSlots.size
-                                    Surface(
-                                        onClick = {
-                                            selectedMatch = match
-                                            roomIdInput = match.roomId
-                                            roomPassInput = match.roomPass
-                                        },
-                                        shape = RoundedCornerShape(12.dp),
-                                        color = if (isSelected) Color(0xFFFF0055).copy(alpha = 0.15f) else Color(0xFF1B1E2B),
-                                        border = CardDefaults.outlinedCardBorder().copy(
-                                            brush = Brush.linearGradient(
-                                                if (isSelected) listOf(Color(0xFFFF0055), Color(0xFFFFD700))
-                                                else listOf(Color(0xFF2C3044), Color.Transparent)
-                                            )
-                                        ),
+                                    Box(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .padding(vertical = 3.dp)
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .background(if (isSelected) Color(0xFF0D2517) else Color(0xFF1A1D2B))
+                                            .border(
+                                                1.dp,
+                                                if (isSelected) Color(0xFF00E676) else Color(0xFF23293A),
+                                                RoundedCornerShape(12.dp)
+                                            )
+                                            .clickable {
+                                                selectedMatch = match
+                                                roomIdInput = match.roomId
+                                                roomPassInput = match.roomPass
+                                            }
+                                            .padding(12.dp)
                                     ) {
-                                        Row(
-                                            modifier = Modifier.padding(12.dp),
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
                                             RadioButton(
                                                 selected = isSelected,
                                                 onClick = {
@@ -421,13 +409,13 @@ fun AdminBroadcastNotificationScreen(navController: NavController) {
                                                     roomIdInput = match.roomId
                                                     roomPassInput = match.roomPass
                                                 },
-                                                colors = RadioButtonDefaults.colors(selectedColor = Color(0xFFFF0055))
+                                                colors = RadioButtonDefaults.colors(selectedColor = Color(0xFF00E676))
                                             )
                                             Spacer(modifier = Modifier.width(6.dp))
                                             Column(modifier = Modifier.weight(1f)) {
-                                                Text(match.title, color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                                Text(match.title, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                                                 Text(
-                                                    "${match.mode} (${match.map}) • $bookedCount/${match.totalSlots} Slots Booked",
+                                                    "${match.mode} (${match.map}) • $bookedCount/${match.totalSlots} Booked",
                                                     color = Color(0xFF00E676),
                                                     fontSize = 11.sp
                                                 )
@@ -436,8 +424,6 @@ fun AdminBroadcastNotificationScreen(navController: NavController) {
                                     }
                                 }
                             }
-
-                            Spacer(modifier = Modifier.height(16.dp))
 
                             // Room ID & Pass input fields
                             Row(
@@ -448,12 +434,14 @@ fun AdminBroadcastNotificationScreen(navController: NavController) {
                                     value = roomIdInput,
                                     onValueChange = { roomIdInput = it },
                                     label = { Text("Room ID", color = Color(0xFF8E92A4)) },
-                                    placeholder = { Text("e.g. 849201", color = Color(0xFF475569)) },
+                                    placeholder = { Text("e.g. 849201", color = Color(0xFF75798E)) },
                                     colors = OutlinedTextFieldDefaults.colors(
                                         focusedTextColor = Color.White,
                                         unfocusedTextColor = Color.White,
-                                        focusedBorderColor = Color(0xFFFF0055),
-                                        unfocusedBorderColor = Color(0xFF2C3044)
+                                        focusedBorderColor = Color(0xFF00E676),
+                                        unfocusedBorderColor = Color(0xFF23293A),
+                                        focusedContainerColor = Color(0xFF1A1D2B),
+                                        unfocusedContainerColor = Color(0xFF1A1D2B)
                                     ),
                                     modifier = Modifier.weight(1f),
                                     shape = RoundedCornerShape(12.dp)
@@ -463,37 +451,37 @@ fun AdminBroadcastNotificationScreen(navController: NavController) {
                                     value = roomPassInput,
                                     onValueChange = { roomPassInput = it },
                                     label = { Text("Password", color = Color(0xFF8E92A4)) },
-                                    placeholder = { Text("e.g. 778", color = Color(0xFF475569)) },
+                                    placeholder = { Text("e.g. 778", color = Color(0xFF75798E)) },
                                     colors = OutlinedTextFieldDefaults.colors(
                                         focusedTextColor = Color.White,
                                         unfocusedTextColor = Color.White,
-                                        focusedBorderColor = Color(0xFFFF0055),
-                                        unfocusedBorderColor = Color(0xFF2C3044)
+                                        focusedBorderColor = Color(0xFF00E676),
+                                        unfocusedBorderColor = Color(0xFF23293A),
+                                        focusedContainerColor = Color(0xFF1A1D2B),
+                                        unfocusedContainerColor = Color(0xFF1A1D2B)
                                     ),
                                     modifier = Modifier.weight(1f),
                                     shape = RoundedCornerShape(12.dp)
                                 )
                             }
 
-                            Spacer(modifier = Modifier.height(12.dp))
-
                             // Instructions Field
                             OutlinedTextField(
                                 value = customRoomInstructions,
                                 onValueChange = { customRoomInstructions = it },
-                                label = { Text("Slot/Starting Alert", color = Color(0xFF8E92A4)) },
-                                placeholder = { Text("e.g. Join your allocated slot immediately! Match starts in 10 mins.", color = Color(0xFF475569)) },
+                                label = { Text("Instructions", color = Color(0xFF8E92A4)) },
+                                placeholder = { Text("e.g. Join your slot now. Match starts in 10 mins.", color = Color(0xFF75798E)) },
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedTextColor = Color.White,
                                     unfocusedTextColor = Color.White,
-                                    focusedBorderColor = Color(0xFFFF0055),
-                                    unfocusedBorderColor = Color(0xFF2C3044)
+                                    focusedBorderColor = Color(0xFF00E676),
+                                    unfocusedBorderColor = Color(0xFF23293A),
+                                    focusedContainerColor = Color(0xFF1A1D2B),
+                                    unfocusedContainerColor = Color(0xFF1A1D2B)
                                 ),
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(12.dp)
                             )
-
-                            Spacer(modifier = Modifier.height(20.dp))
 
                             // Send Room Button
                             Button(
@@ -502,7 +490,6 @@ fun AdminBroadcastNotificationScreen(navController: NavController) {
                                     if (target != null) {
                                         isSending = true
 
-                                        // 1. Update Match Room in Firestore
                                         db?.collection("matches")?.document(target.id)?.update(
                                             mapOf(
                                                 "roomId" to roomIdInput,
@@ -511,7 +498,6 @@ fun AdminBroadcastNotificationScreen(navController: NavController) {
                                             )
                                         )
 
-                                        // 2. Trigger System Notification on Admin's device to test
                                         NotificationHelper.showRoomCredentialsNotification(
                                             context = context,
                                             matchId = target.id,
@@ -521,28 +507,29 @@ fun AdminBroadcastNotificationScreen(navController: NavController) {
                                             gameMode = target.mode
                                         )
 
-                                        // 3. Save to broadcast log
                                         val logData = hashMapOf(
-                                            "title" to "🔑 ${target.title} - Room Credentials",
-                                            "message" to "Room ID: $roomIdInput | Password: $roomPassInput\n${customRoomInstructions.ifBlank { "Join your slot now!" }}",
+                                            "title" to "${target.title} - Room Credentials",
+                                            "message" to "Room ID: $roomIdInput | Password: $roomPassInput\n${customRoomInstructions.ifBlank { "Join your slot now" }}",
                                             "type" to "ROOM_ONLY",
                                             "targetMode" to target.mode,
                                             "timestamp" to System.currentTimeMillis()
                                         )
                                         db?.collection("broadcast_logs")?.add(logData)
 
-                                        Toast.makeText(context, "✅ Room Credentials Dispatched to Joined Players + Push Alert Triggered!", Toast.LENGTH_LONG).show()
+                                        Toast.makeText(context, "Room Credentials Dispatched", Toast.LENGTH_SHORT).show()
                                         isSending = false
                                     }
                                 },
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF0055)),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(48.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E676)),
                                 shape = RoundedCornerShape(12.dp),
                                 enabled = !isSending && (selectedMatch != null || matchesList.isNotEmpty())
                             ) {
-                                Icon(Icons.Default.Send, contentDescription = null, tint = Color.White)
+                                Icon(Icons.Default.Send, contentDescription = null, tint = Color.Black)
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("SEND TO ROOM JOINED PLAYERS ONLY", color = AppColors.TextPrimary, fontWeight = FontWeight.Black)
+                                Text("SEND TO ROOM PLAYERS", color = Color.Black, fontWeight = FontWeight.Black)
                             }
                         }
                     }
@@ -556,55 +543,60 @@ fun AdminBroadcastNotificationScreen(navController: NavController) {
 
             if (logsList.isEmpty()) {
                 item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF141622)),
-                        shape = RoundedCornerShape(14.dp)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(Color(0xFF141722))
+                            .border(1.dp, Color(0xFF23293A), RoundedCornerShape(14.dp))
+                            .padding(16.dp)
                     ) {
                         Text(
-                            "No broadcasts sent yet. Use the controls above to send your first alert!",
-                            color = Color(0xFF64748B),
-                            fontSize = 12.sp,
-                            modifier = Modifier.padding(16.dp)
+                            "No broadcasts sent yet.",
+                            color = Color(0xFF8E92A4),
+                            fontSize = 12.sp
                         )
                     }
                 }
             } else {
                 items(logsList) { log ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF141622)),
-                        shape = RoundedCornerShape(14.dp),
-                        border = CardDefaults.outlinedCardBorder().copy(
-                            brush = Brush.horizontalGradient(listOf(Color(0xFF2C3044), Color.Transparent))
-                        )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(Color(0xFF141722))
+                            .border(1.dp, Color(0xFF23293A), RoundedCornerShape(14.dp))
+                            .padding(14.dp)
                     ) {
-                        Column(modifier = Modifier.padding(14.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(log.title, color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                                Surface(
-                                    shape = RoundedCornerShape(6.dp),
-                                    color = if (log.type == "ROOM_ONLY") Color(0xFFFF0055).copy(alpha = 0.2f) else Color(0xFFFFD700).copy(alpha = 0.2f)
+                                Text(log.title, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .background(if (log.type == "ROOM_ONLY") Color(0xFF0D2517) else Color(0xFF1A1D2B))
+                                        .border(1.dp, if (log.type == "ROOM_ONLY") Color(0xFF00E676) else Color(0xFF23293A), RoundedCornerShape(6.dp))
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
                                 ) {
                                     Text(
                                         if (log.type == "ROOM_ONLY") "ROOM ONLY" else "GLOBAL",
-                                        color = if (log.type == "ROOM_ONLY") Color(0xFFFF0055) else Color(0xFFFFD700),
+                                        color = if (log.type == "ROOM_ONLY") Color(0xFF00E676) else Color(0xFF8E92A4),
                                         fontSize = 9.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                        fontWeight = FontWeight.Bold
                                     )
                                 }
                             }
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(log.message, color = Color(0xFFCBD5E1), fontSize = 12.sp)
+                            Text(log.message, color = Color(0xFF8E92A4), fontSize = 12.sp)
                         }
                     }
                 }
             }
+
+            item { Spacer(modifier = Modifier.height(20.dp)) }
         }
     }
 }

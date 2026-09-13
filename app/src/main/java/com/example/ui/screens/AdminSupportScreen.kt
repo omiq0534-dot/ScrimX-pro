@@ -2,7 +2,6 @@ package com.example.ui.screens
 import com.example.ui.theme.AppColors
 
 import android.widget.Toast
-import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -22,34 +21,34 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.FirebaseHelper
-import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
+
+import com.example.FirebaseHelper
 
 data class AdminSupportTicket(
     val id: String = "",
     val userId: String = "",
-    val userName: String = "Gamer",
     val userEmail: String = "",
-    val userPhone: String = "",
+    val userName: String = "Player",
     val category: String = "General",
     val subject: String = "",
     val message: String = "",
-    val status: String = "Pending",
-    val adminReply: String = "",
     val timestamp: Long = 0L,
+    val status: String = "Pending", // "Pending" or "Answered"
+    val adminReply: String = "",
     val answeredAt: Long = 0L
 )
 
-data class CustomFaqItem(
+data class AdminFaqItem(
     val id: String = "",
     val question: String = "",
     val answer: String = "",
@@ -59,97 +58,79 @@ data class CustomFaqItem(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminSupportScreen(navController: NavController) {
-    val context = LocalContext.current
     val db = remember { FirebaseHelper.getFirestore() }
+    val context = LocalContext.current
 
-    var selectedTab by remember { mutableIntStateOf(0) } // 0: User Queries, 1: Contact Channels, 2: FAQ Manager
-    var queryFilter by remember { mutableStateOf("All") } // "All", "Pending", "Answered"
-
+    var selectedTab by remember { mutableIntStateOf(0) } // 0: User Queries, 1: Live Channels Setup, 2: App FAQs
     var tickets by remember { mutableStateOf<List<AdminSupportTicket>>(emptyList()) }
-    var faqs by remember { mutableStateOf<List<CustomFaqItem>>(emptyList()) }
+    var faqs by remember { mutableStateOf<List<AdminFaqItem>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
 
-    // Settings fields
-    var supportEmail by remember { mutableStateOf("omiq0534@gmail.com") }
-    var supportWhatsApp by remember { mutableStateOf("+91 9876543210") }
+    // Live Support Channels State
+    var supportEmail by remember { mutableStateOf("support@scrimx.com") }
+    var supportWhatsApp by remember { mutableStateOf("+91 98765 43210") }
     var supportTelegram by remember { mutableStateOf("https://t.me/scrimx_official") }
     var supportDiscord by remember { mutableStateOf("https://discord.gg/scrimx") }
-    var supportWorkingHours by remember { mutableStateOf("10:00 AM - 11:00 PM IST (Daily)") }
+    var supportWorkingHours by remember { mutableStateOf("10:00 AM - 11:00 PM (Daily)") }
     var isSavingSettings by remember { mutableStateOf(false) }
 
-    // Add FAQ Dialog
+    // Add FAQ Dialog State
     var showAddFaqDialog by remember { mutableStateOf(false) }
     var newFaqQuestion by remember { mutableStateOf("") }
     var newFaqAnswer by remember { mutableStateOf("") }
 
-    // Listen to real-time Support Tickets
+    // Query Filter: All, Pending, Answered
+    var queryFilter by remember { mutableStateOf("All") }
+
     LaunchedEffect(Unit) {
         if (db != null) {
+            // Realtime Queries Listener
             db.collection("support_tickets")
-                .orderBy("timestamp", Query.Direction.DESCENDING)
-                .addSnapshotListener { snap, _ ->
-                    if (snap != null) {
-                        tickets = snap.documents.map { doc ->
-                            AdminSupportTicket(
-                                id = doc.id,
-                                userId = doc.getString("userId") ?: "",
-                                userName = doc.getString("userName") ?: "Player",
-                                userEmail = doc.getString("userEmail") ?: "No Email",
-                                userPhone = doc.getString("userPhone") ?: "",
-                                category = doc.getString("category") ?: "General",
-                                subject = doc.getString("subject") ?: "Support Query",
-                                message = doc.getString("message") ?: "",
-                                status = doc.getString("status") ?: "Pending",
-                                adminReply = doc.getString("adminReply") ?: "",
-                                timestamp = doc.getLong("timestamp") ?: 0L,
-                                answeredAt = doc.getLong("answeredAt") ?: 0L
-                            )
-                        }
+                .addSnapshotListener { snapshot, error ->
+                    if (error == null && snapshot != null) {
+                        tickets = snapshot.documents.mapNotNull { doc ->
+                            doc.toObject(AdminSupportTicket::class.java)?.copy(id = doc.id)
+                        }.sortedByDescending { it.timestamp }
                     }
                     isLoading = false
                 }
 
-            // Listen to support contact channels settings
-            db.collection("settings").document("support").addSnapshotListener { doc, _ ->
-                if (doc != null && doc.exists()) {
-                    doc.getString("email")?.let { supportEmail = it }
-                    doc.getString("whatsapp")?.let { supportWhatsApp = it }
-                    doc.getString("telegram")?.let { supportTelegram = it }
-                    doc.getString("discord")?.let { supportDiscord = it }
-                    doc.getString("hours")?.let { supportWorkingHours = it }
-                }
-            }
-
-            // Listen to FAQs
-            db.collection("faqs").orderBy("timestamp", Query.Direction.DESCENDING).addSnapshotListener { snap, _ ->
-                if (snap != null) {
-                    faqs = snap.documents.map { doc ->
-                        CustomFaqItem(
-                            id = doc.id,
-                            question = doc.getString("question") ?: "",
-                            answer = doc.getString("answer") ?: "",
-                            timestamp = doc.getLong("timestamp") ?: 0L
-                        )
+            // Realtime FAQs Listener
+            db.collection("faqs")
+                .addSnapshotListener { snapshot, error ->
+                    if (error == null && snapshot != null) {
+                        faqs = snapshot.documents.mapNotNull { doc ->
+                            doc.toObject(AdminFaqItem::class.java)?.copy(id = doc.id)
+                        }.sortedByDescending { it.timestamp }
                     }
                 }
-            }
+
+            // Fetch Current Support Channels
+            db.collection("settings").document("support")
+                .get()
+                .addOnSuccessListener { doc ->
+                    if (doc != null && doc.exists()) {
+                        supportEmail = doc.getString("email") ?: supportEmail
+                        supportWhatsApp = doc.getString("whatsapp") ?: supportWhatsApp
+                        supportTelegram = doc.getString("telegram") ?: supportTelegram
+                        supportDiscord = doc.getString("discord") ?: supportDiscord
+                        supportWorkingHours = doc.getString("hours") ?: supportWorkingHours
+                    }
+                }
         } else {
             isLoading = false
         }
     }
 
     val pendingCount = tickets.count { it.status.equals("Pending", ignoreCase = true) }
-
-    val filteredTickets = remember(tickets, queryFilter) {
-        when (queryFilter) {
-            "Pending" -> tickets.filter { it.status.equals("Pending", ignoreCase = true) }
-            "Answered" -> tickets.filter { it.status.equals("Answered", ignoreCase = true) }
-            else -> tickets
-        }
+    val filteredTickets = when (queryFilter) {
+        "Pending" -> tickets.filter { it.status.equals("Pending", ignoreCase = true) }
+        "Answered" -> tickets.filter { it.status.equals("Answered", ignoreCase = true) }
+        else -> tickets
     }
 
     Scaffold(
-        containerColor = Color(0xFFF9FAFB),
+        containerColor = Color(0xFF0D0F14),
         topBar = {
             TopAppBar(
                 title = {
@@ -158,14 +139,14 @@ fun AdminSupportScreen(navController: NavController) {
                             modifier = Modifier
                                 .size(8.dp)
                                 .clip(CircleShape)
-                                .background(Color(0xFF00E5FF))
+                                .background(Color(0xFF00E676))
                         )
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
-                            "CUSTOMER HELPDESK",
+                            "SUPPORT & HELP DESK",
                             fontWeight = FontWeight.Black,
-                            color = AppColors.TextPrimary,
-                            fontSize = 17.sp,
+                            color = Color.White,
+                            fontSize = 15.sp,
                             letterSpacing = 1.sp
                         )
                     }
@@ -175,26 +156,7 @@ fun AdminSupportScreen(navController: NavController) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 },
-                actions = {
-                    if (pendingCount > 0) {
-                        Box(
-                            modifier = Modifier
-                                .padding(end = 12.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(Color(0xFFFF3366).copy(alpha = 0.2f))
-                                .border(1.dp, Color(0xFFFF3366), RoundedCornerShape(8.dp))
-                                .padding(horizontal = 10.dp, vertical = 5.dp)
-                        ) {
-                            Text(
-                                "$pendingCount Pending",
-                                color = Color(0xFFFF5252),
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF9FAFB))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF0D0F14))
             )
         }
     ) { padding ->
@@ -203,44 +165,39 @@ fun AdminSupportScreen(navController: NavController) {
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Tab Selector (User Queries / Contact Settings / FAQs)
-            TabRow(
-                selectedTabIndex = selectedTab,
-                containerColor = Color.White,
-                contentColor = Color.White,
-                divider = { HorizontalDivider(color = Color(0xFFE5E7EB)) }
+            // Tab Selector Bar
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(Color(0xFF141722))
+                    .border(1.dp, Color(0xFF23293A), RoundedCornerShape(14.dp))
+                    .padding(4.dp)
             ) {
-                Tab(
-                    selected = selectedTab == 0,
-                    onClick = { selectedTab = 0 },
-                    text = {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("User Queries", fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                            if (pendingCount > 0) {
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Box(
-                                    modifier = Modifier
-                                        .size(18.dp)
-                                        .clip(CircleShape)
-                                        .background(Color(0xFFFF3366)),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text("$pendingCount", color = AppColors.TextPrimary, fontSize = 10.sp, fontWeight = FontWeight.Black)
-                                }
-                            }
-                        }
+                listOf(
+                    "Tickets (${pendingCount})",
+                    "Live Channels",
+                    "App FAQs (${faqs.size})"
+                ).forEachIndexed { index, title ->
+                    val isSelected = selectedTab == index
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(if (isSelected) Color(0xFF00E676) else Color.Transparent)
+                            .clickable { selectedTab = index }
+                            .padding(vertical = 10.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            title,
+                            color = if (isSelected) Color.Black else Color(0xFF8E92A4),
+                            fontWeight = FontWeight.Black,
+                            fontSize = 11.sp
+                        )
                     }
-                )
-                Tab(
-                    selected = selectedTab == 1,
-                    onClick = { selectedTab = 1 },
-                    text = { Text("Channels Setup", fontWeight = FontWeight.Bold, fontSize = 13.sp) }
-                )
-                Tab(
-                    selected = selectedTab == 2,
-                    onClick = { selectedTab = 2 },
-                    text = { Text("FAQ Manager", fontWeight = FontWeight.Bold, fontSize = 13.sp) }
-                )
+                }
             }
 
             when (selectedTab) {
@@ -261,10 +218,16 @@ fun AdminSupportScreen(navController: NavController) {
                                 onClick = { queryFilter = "All" },
                                 label = { Text("All (${tickets.size})") },
                                 colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = Color(0xFFE5E7EB),
-                                    selectedLabelColor = Color.White,
-                                    containerColor = Color.White,
+                                    selectedContainerColor = Color(0xFF00E676),
+                                    selectedLabelColor = Color.Black,
+                                    containerColor = Color(0xFF141722),
                                     labelColor = Color(0xFF8E92A4)
+                                ),
+                                border = FilterChipDefaults.filterChipBorder(
+                                    borderColor = Color(0xFF23293A),
+                                    selectedBorderColor = Color(0xFF00E676),
+                                    enabled = true,
+                                    selected = queryFilter == "All"
                                 )
                             )
                             FilterChip(
@@ -272,10 +235,16 @@ fun AdminSupportScreen(navController: NavController) {
                                 onClick = { queryFilter = "Pending" },
                                 label = { Text("Pending ($pendingCount)") },
                                 colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = Color(0xFF332014),
-                                    selectedLabelColor = Color(0xFFFF9800),
-                                    containerColor = Color.White,
+                                    selectedContainerColor = Color(0xFFFF9800),
+                                    selectedLabelColor = Color.Black,
+                                    containerColor = Color(0xFF141722),
                                     labelColor = Color(0xFF8E92A4)
+                                ),
+                                border = FilterChipDefaults.filterChipBorder(
+                                    borderColor = Color(0xFF23293A),
+                                    selectedBorderColor = Color(0xFFFF9800),
+                                    enabled = true,
+                                    selected = queryFilter == "Pending"
                                 )
                             )
                             FilterChip(
@@ -283,10 +252,16 @@ fun AdminSupportScreen(navController: NavController) {
                                 onClick = { queryFilter = "Answered" },
                                 label = { Text("Answered (${tickets.size - pendingCount})") },
                                 colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = Color(0xFF143320),
-                                    selectedLabelColor = Color(0xFF00E676),
-                                    containerColor = Color.White,
+                                    selectedContainerColor = Color(0xFF00E676),
+                                    selectedLabelColor = Color.Black,
+                                    containerColor = Color(0xFF141722),
                                     labelColor = Color(0xFF8E92A4)
+                                ),
+                                border = FilterChipDefaults.filterChipBorder(
+                                    borderColor = Color(0xFF23293A),
+                                    selectedBorderColor = Color(0xFF00E676),
+                                    enabled = true,
+                                    selected = queryFilter == "Answered"
                                 )
                             )
                         }
@@ -304,7 +279,7 @@ fun AdminSupportScreen(navController: NavController) {
                                     Icon(
                                         Icons.Default.MarkChatRead,
                                         contentDescription = null,
-                                        tint = Color(0xFF474C65),
+                                        tint = Color(0xFF00E676),
                                         modifier = Modifier.size(56.dp)
                                     )
                                     Spacer(modifier = Modifier.height(12.dp))
@@ -322,7 +297,7 @@ fun AdminSupportScreen(navController: NavController) {
                             ) {
                                 items(filteredTickets, key = { it.id }) { ticket ->
                                     AdminTicketCard(ticket = ticket, onReplySuccess = {
-                                        Toast.makeText(context, "Answer sent to user!", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, "Answer sent to user", Toast.LENGTH_SHORT).show()
                                     })
                                 }
                             }
@@ -348,7 +323,7 @@ fun AdminSupportScreen(navController: NavController) {
                         )
 
                         Text(
-                            "These details are shown dynamically to all users in the SCRIMX Support screen.",
+                            "These details are shown dynamically to all users in the support screen.",
                             color = Color(0xFFC5C9D8),
                             fontSize = 13.sp
                         )
@@ -356,16 +331,16 @@ fun AdminSupportScreen(navController: NavController) {
                         OutlinedTextField(
                             value = supportEmail,
                             onValueChange = { supportEmail = it },
-                            label = { Text("Official Support Email") },
-                            leadingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = Color(0xFF3B82F6)) },
+                            label = { Text("Official Support Email", color = Color(0xFF8E92A4)) },
+                            leadingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = Color(0xFF00E676)) },
                             modifier = Modifier.fillMaxWidth(),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedTextColor = Color.White,
                                 unfocusedTextColor = Color.White,
-                                focusedBorderColor = Color(0xFF3B82F6),
-                                unfocusedBorderColor = Color(0xFFE5E7EB),
-                                focusedContainerColor = Color.White,
-                                unfocusedContainerColor = Color.White
+                                focusedBorderColor = Color(0xFF00E676),
+                                unfocusedBorderColor = Color(0xFF23293A),
+                                focusedContainerColor = Color(0xFF141722),
+                                unfocusedContainerColor = Color(0xFF141722)
                             ),
                             shape = RoundedCornerShape(14.dp)
                         )
@@ -373,16 +348,16 @@ fun AdminSupportScreen(navController: NavController) {
                         OutlinedTextField(
                             value = supportWhatsApp,
                             onValueChange = { supportWhatsApp = it },
-                            label = { Text("WhatsApp Contact Number / Chat") },
-                            leadingIcon = { Icon(Icons.Default.Chat, contentDescription = null, tint = Color(0xFF25D366)) },
+                            label = { Text("WhatsApp Contact Number / Chat", color = Color(0xFF8E92A4)) },
+                            leadingIcon = { Icon(Icons.Default.Chat, contentDescription = null, tint = Color(0xFF00E676)) },
                             modifier = Modifier.fillMaxWidth(),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedTextColor = Color.White,
                                 unfocusedTextColor = Color.White,
-                                focusedBorderColor = Color(0xFF25D366),
-                                unfocusedBorderColor = Color(0xFFE5E7EB),
-                                focusedContainerColor = Color.White,
-                                unfocusedContainerColor = Color.White
+                                focusedBorderColor = Color(0xFF00E676),
+                                unfocusedBorderColor = Color(0xFF23293A),
+                                focusedContainerColor = Color(0xFF141722),
+                                unfocusedContainerColor = Color(0xFF141722)
                             ),
                             shape = RoundedCornerShape(14.dp)
                         )
@@ -390,16 +365,16 @@ fun AdminSupportScreen(navController: NavController) {
                         OutlinedTextField(
                             value = supportTelegram,
                             onValueChange = { supportTelegram = it },
-                            label = { Text("Telegram Group / Alerts Channel Link") },
-                            leadingIcon = { Icon(Icons.Default.Send, contentDescription = null, tint = Color(0xFF229ED9)) },
+                            label = { Text("Telegram Group / Channel Link", color = Color(0xFF8E92A4)) },
+                            leadingIcon = { Icon(Icons.Default.Send, contentDescription = null, tint = Color(0xFF00E676)) },
                             modifier = Modifier.fillMaxWidth(),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedTextColor = Color.White,
                                 unfocusedTextColor = Color.White,
-                                focusedBorderColor = Color(0xFF229ED9),
-                                unfocusedBorderColor = Color(0xFFE5E7EB),
-                                focusedContainerColor = Color.White,
-                                unfocusedContainerColor = Color.White
+                                focusedBorderColor = Color(0xFF00E676),
+                                unfocusedBorderColor = Color(0xFF23293A),
+                                focusedContainerColor = Color(0xFF141722),
+                                unfocusedContainerColor = Color(0xFF141722)
                             ),
                             shape = RoundedCornerShape(14.dp)
                         )
@@ -407,16 +382,16 @@ fun AdminSupportScreen(navController: NavController) {
                         OutlinedTextField(
                             value = supportDiscord,
                             onValueChange = { supportDiscord = it },
-                            label = { Text("Discord Community Server Link") },
-                            leadingIcon = { Icon(Icons.Default.SportsEsports, contentDescription = null, tint = Color(0xFF5865F2)) },
+                            label = { Text("Discord Community Server Link", color = Color(0xFF8E92A4)) },
+                            leadingIcon = { Icon(Icons.Default.SportsEsports, contentDescription = null, tint = Color(0xFF00E676)) },
                             modifier = Modifier.fillMaxWidth(),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedTextColor = Color.White,
                                 unfocusedTextColor = Color.White,
-                                focusedBorderColor = Color(0xFF5865F2),
-                                unfocusedBorderColor = Color(0xFFE5E7EB),
-                                focusedContainerColor = Color.White,
-                                unfocusedContainerColor = Color.White
+                                focusedBorderColor = Color(0xFF00E676),
+                                unfocusedBorderColor = Color(0xFF23293A),
+                                focusedContainerColor = Color(0xFF141722),
+                                unfocusedContainerColor = Color(0xFF141722)
                             ),
                             shape = RoundedCornerShape(14.dp)
                         )
@@ -424,16 +399,16 @@ fun AdminSupportScreen(navController: NavController) {
                         OutlinedTextField(
                             value = supportWorkingHours,
                             onValueChange = { supportWorkingHours = it },
-                            label = { Text("Support Working Hours (e.g., 10 AM - 11 PM)") },
-                            leadingIcon = { Icon(Icons.Default.AccessTime, contentDescription = null, tint = Color(0xFFFFD700)) },
+                            label = { Text("Support Working Hours (e.g. 10 AM - 11 PM)", color = Color(0xFF8E92A4)) },
+                            leadingIcon = { Icon(Icons.Default.AccessTime, contentDescription = null, tint = Color(0xFF00E676)) },
                             modifier = Modifier.fillMaxWidth(),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedTextColor = Color.White,
                                 unfocusedTextColor = Color.White,
-                                focusedBorderColor = Color(0xFFFFD700),
-                                unfocusedBorderColor = Color(0xFFE5E7EB),
-                                focusedContainerColor = Color.White,
-                                unfocusedContainerColor = Color.White
+                                focusedBorderColor = Color(0xFF00E676),
+                                unfocusedBorderColor = Color(0xFF23293A),
+                                focusedContainerColor = Color(0xFF141722),
+                                unfocusedContainerColor = Color(0xFF141722)
                             ),
                             shape = RoundedCornerShape(14.dp)
                         )
@@ -456,7 +431,7 @@ fun AdminSupportScreen(navController: NavController) {
                                         .set(data)
                                         .addOnSuccessListener {
                                             isSavingSettings = false
-                                            Toast.makeText(context, "Support channels updated successfully!", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(context, "Support channels updated", Toast.LENGTH_SHORT).show()
                                         }
                                         .addOnFailureListener { e ->
                                             isSavingSettings = false
@@ -469,7 +444,7 @@ fun AdminSupportScreen(navController: NavController) {
                                 .fillMaxWidth()
                                 .height(52.dp),
                             shape = RoundedCornerShape(14.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E5FF))
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E676))
                         ) {
                             if (isSavingSettings) {
                                 CircularProgressIndicator(color = Color.Black, modifier = Modifier.size(22.dp))
@@ -506,7 +481,7 @@ fun AdminSupportScreen(navController: NavController) {
                             Button(
                                 onClick = { showAddFaqDialog = true },
                                 shape = RoundedCornerShape(10.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700)),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E676)),
                                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                             ) {
                                 Icon(Icons.Default.Add, contentDescription = null, tint = Color.Black, modifier = Modifier.size(16.dp))
@@ -539,12 +514,12 @@ fun AdminSupportScreen(navController: NavController) {
                                     Card(
                                         modifier = Modifier.fillMaxWidth(),
                                         shape = RoundedCornerShape(14.dp),
-                                        colors = CardDefaults.cardColors(containerColor = Color.White)
+                                        colors = CardDefaults.cardColors(containerColor = Color(0xFF141722))
                                     ) {
                                         Column(
                                             modifier = Modifier
                                                 .fillMaxWidth()
-                                                .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(14.dp))
+                                                .border(1.dp, Color(0xFF23293A), RoundedCornerShape(14.dp))
                                                 .padding(16.dp)
                                         ) {
                                             Row(
@@ -555,7 +530,7 @@ fun AdminSupportScreen(navController: NavController) {
                                                 Text(
                                                     "Q: ${faq.question}",
                                                     fontWeight = FontWeight.Bold,
-                                                    color = AppColors.TextPrimary,
+                                                    color = Color.White,
                                                     fontSize = 14.sp,
                                                     modifier = Modifier.weight(1f)
                                                 )
@@ -569,7 +544,7 @@ fun AdminSupportScreen(navController: NavController) {
                                             Spacer(modifier = Modifier.height(6.dp))
                                             Text(
                                                 "A: ${faq.answer}",
-                                                color = Color(0xFF94A3B8),
+                                                color = Color(0xFF8E92A4),
                                                 fontSize = 13.sp,
                                                 lineHeight = 18.sp
                                             )
@@ -588,34 +563,40 @@ fun AdminSupportScreen(navController: NavController) {
     if (showAddFaqDialog) {
         AlertDialog(
             onDismissRequest = { showAddFaqDialog = false },
-            containerColor = Color.White,
-            title = { Text("Add New FAQ", color = AppColors.TextPrimary, fontWeight = FontWeight.Bold) },
+            containerColor = Color(0xFF141722),
+            title = { Text("Add New FAQ", color = Color.White, fontWeight = FontWeight.Bold) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     OutlinedTextField(
                         value = newFaqQuestion,
                         onValueChange = { newFaqQuestion = it },
-                        label = { Text("Question") },
+                        label = { Text("Question", color = Color(0xFF8E92A4)) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedTextColor = Color.White,
                             unfocusedTextColor = Color.White,
-                            focusedBorderColor = Color(0xFFFFD700),
-                            unfocusedBorderColor = Color(0xFF333748)
-                        )
+                            focusedBorderColor = Color(0xFF00E676),
+                            unfocusedBorderColor = Color(0xFF23293A),
+                            focusedContainerColor = Color(0xFF1A1D2B),
+                            unfocusedContainerColor = Color(0xFF1A1D2B)
+                        ),
+                        shape = RoundedCornerShape(10.dp)
                     )
                     OutlinedTextField(
                         value = newFaqAnswer,
                         onValueChange = { newFaqAnswer = it },
-                        label = { Text("Answer") },
+                        label = { Text("Answer", color = Color(0xFF8E92A4)) },
                         modifier = Modifier.fillMaxWidth(),
                         minLines = 3,
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedTextColor = Color.White,
                             unfocusedTextColor = Color.White,
-                            focusedBorderColor = Color(0xFFFFD700),
-                            unfocusedBorderColor = Color(0xFF333748)
-                        )
+                            focusedBorderColor = Color(0xFF00E676),
+                            unfocusedBorderColor = Color(0xFF23293A),
+                            focusedContainerColor = Color(0xFF1A1D2B),
+                            unfocusedContainerColor = Color(0xFF1A1D2B)
+                        ),
+                        shape = RoundedCornerShape(10.dp)
                     )
                 }
             },
@@ -633,17 +614,17 @@ fun AdminSupportScreen(navController: NavController) {
                             newFaqQuestion = ""
                             newFaqAnswer = ""
                             showAddFaqDialog = false
-                            Toast.makeText(context, "FAQ Added Live!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "FAQ Added", Toast.LENGTH_SHORT).show()
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700))
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E676))
                 ) {
                     Text("Add FAQ", color = Color.Black, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showAddFaqDialog = false }) {
-                    Text("Cancel", color = Color.LightGray)
+                    Text("Cancel", color = Color(0xFF8E92A4))
                 }
             }
         )
@@ -673,10 +654,10 @@ fun AdminTicketCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(18.dp))
-            .background(Color.White)
+            .background(Color(0xFF141722))
             .border(
                 1.dp,
-                if (isPending) Color(0xFFFF9800).copy(alpha = 0.5f) else Color(0xFFE5E7EB),
+                if (isPending) Color(0xFFFF9800).copy(alpha = 0.5f) else Color(0xFF23293A),
                 RoundedCornerShape(18.dp)
             )
             .padding(18.dp)
@@ -693,19 +674,19 @@ fun AdminTicketCard(
                         modifier = Modifier
                             .size(36.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFFE5E7EB)),
+                            .background(Color(0xFF1A1D2B)),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             ticket.userName.take(1).uppercase(),
-                            color = Color(0xFFFFD700),
+                            color = Color(0xFF00E676),
                             fontWeight = FontWeight.Black,
                             fontSize = 15.sp
                         )
                     }
                     Spacer(modifier = Modifier.width(10.dp))
                     Column {
-                        Text(ticket.userName, color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text(ticket.userName, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         Text(ticket.userEmail, color = Color(0xFF8E92A4), fontSize = 11.sp)
                     }
                 }
@@ -723,7 +704,7 @@ fun AdminTicketCard(
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        if (isPending) "⏳ PENDING" else "✓ ANSWERED",
+                        if (isPending) "PENDING" else "ANSWERED",
                         color = if (isPending) Color(0xFFFF9800) else Color(0xFF00E676),
                         fontWeight = FontWeight.Black,
                         fontSize = 10.sp
@@ -740,12 +721,12 @@ fun AdminTicketCard(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(6.dp))
-                        .background(Color(0xFF222534))
+                        .background(Color(0xFF1A1D2B))
                         .padding(horizontal = 8.dp, vertical = 3.dp)
                 ) {
                     Text(
                         ticket.category.uppercase(),
-                        color = Color(0xFF00E5FF),
+                        color = Color(0xFF00E676),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -756,7 +737,7 @@ fun AdminTicketCard(
             Text(
                 ticket.subject,
                 fontWeight = FontWeight.Black,
-                color = AppColors.TextPrimary,
+                color = Color.White,
                 fontSize = 15.sp
             )
 
@@ -765,8 +746,8 @@ fun AdminTicketCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFF0F1117))
-                    .border(1.dp, Color(0xFF222532), RoundedCornerShape(12.dp))
+                    .background(Color(0xFF1A1D2B))
+                    .border(1.dp, Color(0xFF23293A), RoundedCornerShape(12.dp))
                     .padding(12.dp)
             ) {
                 Column {
@@ -795,14 +776,14 @@ fun AdminTicketCard(
                             Text("ADMIN ANSWER (SENT):", color = Color(0xFF00E676), fontSize = 10.sp, fontWeight = FontWeight.Black)
                             Text(
                                 "Edit Answer",
-                                color = Color(0xFF00E5FF),
+                                color = Color(0xFF00E676),
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.clickable { showReplyBox = true }
                             )
                         }
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text(ticket.adminReply, color = AppColors.TextPrimary, fontSize = 13.sp, lineHeight = 18.sp)
+                        Text(ticket.adminReply, color = Color.White, fontSize = 13.sp, lineHeight = 18.sp)
                     }
                 }
             }
@@ -812,16 +793,16 @@ fun AdminTicketCard(
                 OutlinedTextField(
                     value = replyText,
                     onValueChange = { replyText = it },
-                    label = { Text("Write your reply / solution here...") },
+                    label = { Text("Write your reply / solution here...", color = Color(0xFF8E92A4)) },
                     modifier = Modifier.fillMaxWidth(),
                     minLines = 2,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedTextColor = Color.White,
                         unfocusedTextColor = Color.White,
-                        focusedBorderColor = Color(0xFF00E5FF),
-                        unfocusedBorderColor = Color(0xFF333748),
-                        focusedContainerColor = Color(0xFF0F1117),
-                        unfocusedContainerColor = Color(0xFF0F1117)
+                        focusedBorderColor = Color(0xFF00E676),
+                        unfocusedBorderColor = Color(0xFF23293A),
+                        focusedContainerColor = Color(0xFF1A1D2B),
+                        unfocusedContainerColor = Color(0xFF1A1D2B)
                     ),
                     shape = RoundedCornerShape(12.dp)
                 )
@@ -833,7 +814,7 @@ fun AdminTicketCard(
                 ) {
                     if (!isPending) {
                         TextButton(onClick = { showReplyBox = false }) {
-                            Text("Cancel", color = Color.LightGray)
+                            Text("Cancel", color = Color(0xFF8E92A4))
                         }
                         Spacer(modifier = Modifier.width(8.dp))
                     }
@@ -861,7 +842,7 @@ fun AdminTicketCard(
                         },
                         enabled = !isReplying && replyText.isNotBlank(),
                         shape = RoundedCornerShape(10.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E5FF))
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E676))
                     ) {
                         if (isReplying) {
                             CircularProgressIndicator(color = Color.Black, modifier = Modifier.size(16.dp))

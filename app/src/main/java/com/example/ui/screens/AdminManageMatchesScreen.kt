@@ -1,5 +1,4 @@
 package com.example.ui.screens
-import com.example.ui.theme.AppColors
 
 import android.content.Intent
 import android.net.Uri
@@ -28,9 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
-
 import com.example.FirebaseHelper
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -43,6 +40,12 @@ fun AdminManageMatchesScreen(
     val db = remember { FirebaseHelper.getFirestore() }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+
+    val bgColor = Color(0xFF0D0F14)
+    val cardBg = Color(0xFF141722)
+    val cardBorder = Color(0xFF23293A)
+    val neonGreen = Color(0xFF00E676)
+    val surfaceSubtle = Color(0xFF1E2330)
 
     // Edit Room & Match Info Dialog
     var showEditDialog by remember { mutableStateOf(false) }
@@ -65,13 +68,14 @@ fun AdminManageMatchesScreen(
     // 1. Edit Dialog
     if (showEditDialog && selectedMatchForEdit != null) {
         AlertDialog(
-            containerColor = Color.White,
+            containerColor = cardBg,
             onDismissRequest = { showEditDialog = false },
+            shape = RoundedCornerShape(20.dp),
             title = {
                 Text(
                     "EDIT MATCH & ROOM",
                     fontWeight = FontWeight.Black,
-                    color = AppColors.TextPrimary,
+                    color = Color.White,
                     fontSize = 15.sp,
                     letterSpacing = 1.sp
                 )
@@ -81,12 +85,17 @@ fun AdminManageMatchesScreen(
                     modifier = Modifier.verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text(selectedMatchForEdit!!.title, color = Color(0xFFFFD700), fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    Text(
+                        selectedMatchForEdit!!.title,
+                        color = neonGreen,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 13.sp
+                    )
 
                     ClassyDarkInput(
                         value = editMap,
                         onValueChange = { editMap = it },
-                        label = "Map Name (Custom)",
+                        label = "Map Name",
                         placeholder = "Bermuda / Kalahari / Erangel"
                     )
 
@@ -94,33 +103,39 @@ fun AdminManageMatchesScreen(
                         value = editPrize,
                         onValueChange = { editPrize = it },
                         label = "Prize Pool",
-                        placeholder = "e.g. ₹500"
+                        placeholder = "e.g. 500 Coins"
                     )
 
-                    Text("ENTRY TYPE & REQUIREMENTS", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color(0xFF75798E))
+                    Text(
+                        "ENTRY TYPE",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Black,
+                        color = Color(0xFF94A3B8),
+                        letterSpacing = 1.sp
+                    )
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         listOf(
-                            "FREE" to "🆓 Free",
-                            "AD" to "🎬 Watch Ad",
-                            "PAID" to "💵 Paid"
+                            "FREE" to "Free",
+                            "AD" to "Watch Ads",
+                            "PAID" to "Paid Coins"
                         ).forEach { (tKey, tLabel) ->
                             val isSel = editEntryType == tKey
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
                                     .clip(RoundedCornerShape(8.dp))
-                                    .background(if (isSel) Color(0xFF222738) else Color(0xFFF9FAFB))
-                                    .border(1.dp, if (isSel) Color(0xFFFFD700) else Color(0xFFE5E7EB), RoundedCornerShape(8.dp))
+                                    .background(if (isSel) neonGreen else surfaceSubtle)
+                                    .border(1.dp, if (isSel) neonGreen else cardBorder, RoundedCornerShape(8.dp))
                                     .clickable { editEntryType = tKey }
                                     .padding(vertical = 8.dp),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     tLabel,
-                                    color = if (isSel) Color(0xFFFFD700) else Color.White,
+                                    color = if (isSel) Color.Black else Color.White,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 11.sp
                                 )
@@ -132,14 +147,14 @@ fun AdminManageMatchesScreen(
                         ClassyDarkInput(
                             value = editRequiredAds,
                             onValueChange = { editRequiredAds = it },
-                            label = "Number of Ads to Watch",
+                            label = "Required Ads Count",
                             placeholder = "1, 2, 3..."
                         )
                     } else if (editEntryType == "PAID") {
                         ClassyDarkInput(
                             value = editPaidEntryFee,
                             onValueChange = { editPaidEntryFee = it },
-                            label = "Entry Fee (Coins / ₹)",
+                            label = "Entry Fee",
                             placeholder = "10, 20, 50..."
                         )
                     }
@@ -161,47 +176,56 @@ fun AdminManageMatchesScreen(
                     ClassyDarkInput(
                         value = liveUrl,
                         onValueChange = { liveUrl = it },
-                        label = "Match Live Stream URL",
+                        label = "Live Stream URL",
                         placeholder = "https://youtube.com/live/..."
                     )
 
                     OutlinedTextField(
                         value = editRules,
                         onValueChange = { editRules = it },
-                        label = { Text("Match Custom Rules", color = Color(0xFF75798E)) },
-                        placeholder = { Text("e.g. Desert Eagle Only, 13 Rounds, No Grenades...", color = Color(0xFF3E4254)) },
+                        label = { Text("Match Rules", color = Color(0xFF94A3B8)) },
+                        placeholder = { Text("e.g. Desert Eagle Only, No Grenades", color = Color(0xFF64748B)) },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFFFFD700),
-                            unfocusedBorderColor = Color(0xFFE5E7EB),
-                            focusedContainerColor = Color(0xFFF9FAFB),
-                            unfocusedContainerColor = Color(0xFFF9FAFB),
+                            focusedBorderColor = neonGreen,
+                            unfocusedBorderColor = cardBorder,
+                            focusedContainerColor = surfaceSubtle,
+                            unfocusedContainerColor = surfaceSubtle,
                             focusedTextColor = Color.White,
                             unfocusedTextColor = Color.White,
-                            cursorColor = Color(0xFFFFD700)
+                            cursorColor = neonGreen
                         ),
                         minLines = 2,
                         maxLines = 4
                     )
 
-                    Text("Match Status", fontWeight = FontWeight.Bold, fontSize = 11.sp, color = Color(0xFF75798E))
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(
+                        "STATUS",
+                        fontWeight = FontWeight.Black,
+                        fontSize = 10.sp,
+                        color = Color(0xFF94A3B8),
+                        letterSpacing = 1.sp
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
                         listOf("Upcoming", "Live", "Completed").forEach { st ->
                             val isSelected = status == st
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
                                     .clip(RoundedCornerShape(8.dp))
-                                    .background(if (isSelected) Color(0xFFE5E7EB) else Color(0xFFF9FAFB))
-                                    .border(1.dp, if (isSelected) Color.White else Color(0xFFE5E7EB), RoundedCornerShape(8.dp))
+                                    .background(if (isSelected) neonGreen else surfaceSubtle)
+                                    .border(1.dp, if (isSelected) neonGreen else cardBorder, RoundedCornerShape(8.dp))
                                     .clickable { status = st }
                                     .padding(vertical = 10.dp),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     st,
-                                    color = if (isSelected) Color.White else Color(0xFF75798E),
+                                    color = if (isSelected) Color.Black else Color.White,
                                     fontWeight = FontWeight.Black,
                                     fontSize = 11.sp
                                 )
@@ -217,7 +241,7 @@ fun AdminManageMatchesScreen(
                             "FREE" -> "FREE"
                             "AD" -> {
                                 val adsCount = editRequiredAds.toIntOrNull()?.coerceAtLeast(1) ?: 1
-                                "Free ($adsCount Ad${if (adsCount > 1) "s" else ""})"
+                                "Free ($adsCount Ads)"
                             }
                             else -> "₹${editPaidEntryFee.trim().removePrefix("₹").ifBlank { "10" }}"
                         }
@@ -240,7 +264,7 @@ fun AdminManageMatchesScreen(
                             showEditDialog = false
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                    colors = ButtonDefaults.buttonColors(containerColor = neonGreen),
                     shape = RoundedCornerShape(10.dp)
                 ) {
                     Text("Save Changes", color = Color.Black, fontWeight = FontWeight.Black)
@@ -248,7 +272,7 @@ fun AdminManageMatchesScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showEditDialog = false }) {
-                    Text("Cancel", color = Color(0xFF75798E))
+                    Text("Cancel", color = Color(0xFF94A3B8))
                 }
             }
         )
@@ -257,106 +281,108 @@ fun AdminManageMatchesScreen(
     // 2. View Bookings & Player List Dialog
     if (showBookingsDialog && selectedMatchForBookings != null) {
         val targetMatch = selectedMatchForBookings!!
-        val isSquad = targetMatch.mode.equals("Squad", ignoreCase = true) || targetMatch.title.contains("Squad", true)
-        val bookedMap = targetMatch.bookedSlots
-        val namesMap = targetMatch.slotNames
-        val uidsMap = targetMatch.slotUids
+        var registeredPlayers by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
+        var isFetchingPlayers by remember { mutableStateOf(true) }
+
+        LaunchedEffect(targetMatch.id) {
+            isFetchingPlayers = true
+            try {
+                db?.collection("bookings")
+                    ?.whereEqualTo("matchId", targetMatch.id)
+                    ?.get()
+                    ?.addOnSuccessListener { snapshot ->
+                        registeredPlayers = snapshot?.documents?.mapNotNull { it.data } ?: emptyList()
+                        isFetchingPlayers = false
+                    }
+                    ?.addOnFailureListener {
+                        registeredPlayers = emptyList()
+                        isFetchingPlayers = false
+                    }
+            } catch (e: Exception) {
+                registeredPlayers = emptyList()
+                isFetchingPlayers = false
+            }
+        }
 
         AlertDialog(
-            containerColor = Color.White,
+            containerColor = cardBg,
             onDismissRequest = { showBookingsDialog = false },
+            shape = RoundedCornerShape(20.dp),
             title = {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                Column {
                     Text(
-                        "REGISTERED PLAYERS & TEAMS",
+                        "REGISTERED PLAYERS",
                         fontWeight = FontWeight.Black,
-                        color = AppColors.TextPrimary,
-                        fontSize = 14.sp,
-                        letterSpacing = 0.5.sp
+                        color = Color.White,
+                        fontSize = 15.sp,
+                        letterSpacing = 1.sp
                     )
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(Color(0xFFE5E7EB))
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                    ) {
-                        Text("${bookedMap.size} Booked", color = Color(0xFFFFD700), fontSize = 11.sp, fontWeight = FontWeight.Black)
-                    }
-                }
-            },
-            text = {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(max = 380.dp)
-                        .verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        "${targetMatch.title} • Map: ${targetMatch.map}",
-                        color = Color(0xFF8E92A4),
+                        "${targetMatch.title} • ${targetMatch.bookedSlots.size} Slots Booked",
+                        color = neonGreen,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium
                     )
-
-                    if (bookedMap.isEmpty()) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(Color(0xFFF9FAFB))
-                                .padding(24.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text("No slots booked yet for this match.", color = Color(0xFF75798E), fontSize = 13.sp)
-                        }
+                }
+            },
+            text = {
+                Box(modifier = Modifier.fillMaxWidth().heightIn(max = 380.dp)) {
+                    if (isFetchingPlayers) {
+                        CircularProgressIndicator(
+                            color = neonGreen,
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    } else if (registeredPlayers.isEmpty() && targetMatch.bookedSlots.isEmpty()) {
+                        Text(
+                            "No players have registered for this match yet.",
+                            color = Color(0xFF94A3B8),
+                            fontSize = 13.sp,
+                            modifier = Modifier.align(Alignment.Center)
+                        )
                     } else {
-                        val sortedSlotKeys = bookedMap.keys.mapNotNull { it.toIntOrNull() }.sorted()
-                        sortedSlotKeys.forEach { slotNum ->
-                            val key = slotNum.toString()
-                            val registeredName = namesMap[key] ?: "Player $slotNum"
-                            val inGameUid = uidsMap[key] ?: "N/A"
-                            val accountEmail = bookedMap[key] ?: ""
+                        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            if (registeredPlayers.isNotEmpty()) {
+                                items(registeredPlayers) { reg ->
+                                    val inGameUid = reg["inGameUid"]?.toString() ?: reg["inGameName"]?.toString() ?: "N/A"
+                                    val registeredName = reg["userName"]?.toString() ?: reg["inGameName"]?.toString() ?: "Player"
+                                    val slotNum = reg["slotNumber"]?.toString() ?: "?"
+                                    val accountEmail = reg["userEmail"]?.toString() ?: "No email"
 
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(Color(0xFFF9FAFB))
-                                    .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(12.dp))
-                                    .padding(12.dp)
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clip(RoundedCornerShape(10.dp))
+                                            .background(surfaceSubtle)
+                                            .padding(10.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
                                         Box(
                                             modifier = Modifier
                                                 .size(32.dp)
                                                 .clip(CircleShape)
-                                                .background(Color(0xFF202330)),
+                                                .background(neonGreen.copy(alpha = 0.15f)),
                                             contentAlignment = Alignment.Center
                                         ) {
-                                            Text("$slotNum", color = Color(0xFFFFD700), fontWeight = FontWeight.Black, fontSize = 13.sp)
+                                            Text(
+                                                slotNum,
+                                                color = neonGreen,
+                                                fontWeight = FontWeight.Black,
+                                                fontSize = 12.sp
+                                            )
                                         }
                                         Spacer(modifier = Modifier.width(10.dp))
                                         Column {
                                             Text(
                                                 registeredName,
-                                                color = AppColors.TextPrimary,
+                                                color = Color.White,
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 14.sp
                                             )
                                             if (inGameUid.isNotBlank() && inGameUid != "N/A") {
-                                                Text("UID: $inGameUid", color = Color(0xFF8E92A4), fontSize = 11.sp)
+                                                Text("UID: $inGameUid", color = Color(0xFF94A3B8), fontSize = 11.sp)
                                             }
-                                            Text("Email: $accountEmail", color = Color(0xFF5A5E72), fontSize = 10.sp)
+                                            Text("Email: $accountEmail", color = Color(0xFF64748B), fontSize = 10.sp)
                                         }
                                     }
                                 }
@@ -367,31 +393,40 @@ fun AdminManageMatchesScreen(
             },
             confirmButton = {
                 TextButton(onClick = { showBookingsDialog = false }) {
-                    Text("Close", color = AppColors.TextPrimary, fontWeight = FontWeight.Bold)
+                    Text("Close", color = neonGreen, fontWeight = FontWeight.Bold)
                 }
             }
         )
     }
 
     Scaffold(
-        containerColor = Color(0xFFF9FAFB),
+        containerColor = bgColor,
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        "MANAGE MATCHES & ROOMS",
-                        fontWeight = FontWeight.Black,
-                        color = AppColors.TextPrimary,
-                        fontSize = 15.sp,
-                        letterSpacing = 1.sp
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .clip(CircleShape)
+                                .background(neonGreen)
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            "MANAGE MATCHES & ROOMS",
+                            fontWeight = FontWeight.Black,
+                            color = Color.White,
+                            fontSize = 15.sp,
+                            letterSpacing = 0.5.sp
+                        )
+                    }
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF9FAFB))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = bgColor)
             )
         }
     ) { padding ->
@@ -399,7 +434,7 @@ fun AdminManageMatchesScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = 20.dp),
+                .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             item { Spacer(modifier = Modifier.height(4.dp)) }
@@ -409,13 +444,13 @@ fun AdminManageMatchesScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(18.dp))
-                            .background(Color.White)
-                            .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(18.dp))
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(cardBg)
+                            .border(1.dp, cardBorder, RoundedCornerShape(16.dp))
                             .padding(32.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("No matches to manage. Create one from Command Center!", color = Color(0xFF75798E), fontSize = 13.sp)
+                        Text("No matches to manage. Create one from Command Center.", color = Color(0xFF94A3B8), fontSize = 13.sp)
                     }
                 }
             }
@@ -425,12 +460,12 @@ fun AdminManageMatchesScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(18.dp))
-                        .background(Color.White)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(cardBg)
                         .border(
                             1.dp,
-                            if (isLive) Color(0xFFFF5252).copy(alpha = 0.6f) else Color(0xFFE5E7EB),
-                            RoundedCornerShape(18.dp)
+                            if (isLive) Color(0xFFFF5252).copy(alpha = 0.8f) else cardBorder,
+                            RoundedCornerShape(16.dp)
                         )
                         .padding(16.dp)
                 ) {
@@ -441,11 +476,11 @@ fun AdminManageMatchesScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(match.title, fontWeight = FontWeight.Black, fontSize = 16.sp, color = AppColors.TextPrimary)
+                                Text(match.title, fontWeight = FontWeight.Black, fontSize = 15.sp, color = Color.White)
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
                                     "Map: ${match.map} • ${match.time} • ${match.prize}",
-                                    color = Color(0xFF8E92A4),
+                                    color = Color(0xFF94A3B8),
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Medium
                                 )
@@ -464,7 +499,7 @@ fun AdminManageMatchesScreen(
                                         1.dp,
                                         when (match.status) {
                                             "Live", "Ongoing" -> Color(0xFFFF5252)
-                                            "Completed" -> Color(0xFF00E676)
+                                            "Completed" -> neonGreen
                                             else -> Color(0xFF43475C)
                                         },
                                         RoundedCornerShape(6.dp)
@@ -477,7 +512,7 @@ fun AdminManageMatchesScreen(
                                     fontSize = 9.sp,
                                     color = when (match.status) {
                                         "Live", "Ongoing" -> Color(0xFFFF5252)
-                                        "Completed" -> Color(0xFF00E676)
+                                        "Completed" -> neonGreen
                                         else -> Color.White
                                     }
                                 )
@@ -489,23 +524,24 @@ fun AdminManageMatchesScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(10.dp))
-                                .background(Color(0xFFF9FAFB))
+                                .background(bgColor)
+                                .border(1.dp, cardBorder, RoundedCornerShape(10.dp))
                                 .padding(12.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column {
-                                Text("ROOM ID & PASSWORD", fontSize = 9.sp, fontWeight = FontWeight.Black, color = Color(0xFF75798E), letterSpacing = 1.sp)
+                                Text("ROOM ID & PASSWORD", fontSize = 9.sp, fontWeight = FontWeight.Black, color = Color(0xFF64748B), letterSpacing = 1.sp)
                                 val roomInfo = if (match.roomId.isNotBlank()) "ID: ${match.roomId} | Pass: ${match.roomPass}" else "Not Set Yet"
-                                Text(roomInfo, color = if (match.roomId.isNotBlank()) Color(0xFFFFD700) else Color(0xFF5A5E72), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                Text(roomInfo, color = if (match.roomId.isNotBlank()) neonGreen else Color(0xFF94A3B8), fontSize = 12.sp, fontWeight = FontWeight.Bold)
                             }
                             
-                            // Booked slots clickable badge
+                            // Booked slots badge
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(8.dp))
-                                    .background(Color(0xFF1A1D28))
-                                    .border(1.dp, Color(0xFF2C3042), RoundedCornerShape(8.dp))
+                                    .background(Color(0xFF141F1A))
+                                    .border(1.dp, neonGreen.copy(alpha = 0.4f), RoundedCornerShape(8.dp))
                                     .clickable {
                                         selectedMatchForBookings = match
                                         showBookingsDialog = true
@@ -513,9 +549,9 @@ fun AdminManageMatchesScreen(
                                     .padding(horizontal = 10.dp, vertical = 6.dp)
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Default.Groups, contentDescription = null, tint = Color(0xFF00E5FF), modifier = Modifier.size(14.dp))
+                                    Icon(Icons.Default.Groups, contentDescription = null, tint = neonGreen, modifier = Modifier.size(14.dp))
                                     Spacer(modifier = Modifier.width(5.dp))
-                                    Text("${match.bookedSlots.size} Booked", color = Color(0xFF00E5FF), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                    Text("${match.bookedSlots.size} Booked", color = neonGreen, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
@@ -526,7 +562,8 @@ fun AdminManageMatchesScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(8.dp))
-                                    .background(Color(0xFF1F1216))
+                                    .background(Color(0xFF261218))
+                                    .border(1.dp, Color(0xFFFF5252).copy(alpha = 0.3f), RoundedCornerShape(8.dp))
                                     .padding(horizontal = 10.dp, vertical = 6.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.SpaceBetween
@@ -562,13 +599,13 @@ fun AdminManageMatchesScreen(
                                     selectedMatchForBookings = match
                                     showBookingsDialog = true
                                 },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E212D)),
+                                colors = ButtonDefaults.buttonColors(containerColor = surfaceSubtle),
                                 shape = RoundedCornerShape(10.dp),
                                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                             ) {
                                 Icon(Icons.Default.PeopleOutline, contentDescription = null, tint = Color.White, modifier = Modifier.size(15.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
-                                Text("Players List", color = AppColors.TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                Text("Players List", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                             }
 
                             Spacer(modifier = Modifier.width(8.dp))
@@ -594,13 +631,13 @@ fun AdminManageMatchesScreen(
                                     editRules = match.rules
                                     showEditDialog = true
                                 },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF262A3B)),
+                                colors = ButtonDefaults.buttonColors(containerColor = surfaceSubtle),
                                 shape = RoundedCornerShape(10.dp),
                                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                             ) {
-                                Icon(Icons.Default.Edit, contentDescription = null, tint = Color.White, modifier = Modifier.size(15.dp))
+                                Icon(Icons.Default.Edit, contentDescription = null, tint = neonGreen, modifier = Modifier.size(15.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
-                                Text("Edit / IDP", color = AppColors.TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                Text("Edit / IDP", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                             }
 
                             Spacer(modifier = Modifier.width(8.dp))

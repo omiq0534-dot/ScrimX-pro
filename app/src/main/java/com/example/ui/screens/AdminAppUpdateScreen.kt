@@ -206,7 +206,7 @@ fun AdminAppUpdateScreen(navController: NavController) {
     }
 
     Scaffold(
-        containerColor = Color(0xFFF9FAFB),
+        containerColor = Color(0xFF0D0F14),
         topBar = {
             TopAppBar(
                 title = {
@@ -215,13 +215,13 @@ fun AdminAppUpdateScreen(navController: NavController) {
                             modifier = Modifier
                                 .size(8.dp)
                                 .clip(CircleShape)
-                                .background(Color(0xFF00E5FF))
+                                .background(Color(0xFF00E676))
                         )
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
                             "APP UPDATE & LIVE PATCH",
                             fontWeight = FontWeight.Black,
-                            color = AppColors.TextPrimary,
+                            color = Color.White,
                             fontSize = 16.sp,
                             letterSpacing = 0.5.sp
                         )
@@ -232,7 +232,7 @@ fun AdminAppUpdateScreen(navController: NavController) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF9FAFB))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF0D0F14))
             )
         }
     ) { padding ->
@@ -243,7 +243,7 @@ fun AdminAppUpdateScreen(navController: NavController) {
                     .padding(padding),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator(color = Color(0xFF00E5FF))
+                CircularProgressIndicator(color = Color(0xFF00E676))
             }
         } else {
             Column(
@@ -252,7 +252,7 @@ fun AdminAppUpdateScreen(navController: NavController) {
                     .padding(padding)
                     .verticalScroll(rememberScrollState())
                     .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(20.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 // VIP Admin Safety Banner
                 Box(
@@ -261,10 +261,10 @@ fun AdminAppUpdateScreen(navController: NavController) {
                         .clip(RoundedCornerShape(16.dp))
                         .background(
                             Brush.horizontalGradient(
-                                listOf(Color(0xFF1E3A8A).copy(alpha = 0.4f), Color(0xFF0F172A))
+                                listOf(Color(0xFF141F1A), Color(0xFF0F141A))
                             )
                         )
-                        .border(1.dp, Color(0xFF3B82F6).copy(alpha = 0.4f), RoundedCornerShape(16.dp))
+                        .border(1.dp, Color(0xFF00E676).copy(alpha = 0.4f), RoundedCornerShape(16.dp))
                         .padding(16.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -272,16 +272,16 @@ fun AdminAppUpdateScreen(navController: NavController) {
                             modifier = Modifier
                                 .size(38.dp)
                                 .clip(CircleShape)
-                                .background(Color(0xFF3B82F6).copy(alpha = 0.2f)),
+                                .background(Color(0xFF00E676).copy(alpha = 0.15f)),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.Default.VerifiedUser, contentDescription = null, tint = Color(0xFF60A5FA))
+                            Icon(Icons.Default.VerifiedUser, contentDescription = null, tint = Color(0xFF00E676))
                         }
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             Text(
                                 "ADMIN VIP PROTECTION ACTIVE",
-                                color = Color(0xFF93C5FD),
+                                color = Color(0xFF00E676),
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Black,
                                 letterSpacing = 1.sp
@@ -289,24 +289,13 @@ fun AdminAppUpdateScreen(navController: NavController) {
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
                                 "Maintenance mode and Force Update never lock the Admin. You retain 100% control.",
-                                color = Color(0xFFCBD5E1),
+                                color = Color(0xFF94A3B8),
                                 fontSize = 12.sp,
                                 lineHeight = 16.sp
                             )
                         }
                     }
                 }
-
-                // ==========================================
-                // SECTION 1: 📦 FULL APK UPDATE CONTROLLER
-                // ==========================================
-                Text(
-                    "📦 1. FULL APK UPDATE CONTROLLER",
-                    color = Color(0xFF00E5FF),
-                    fontWeight = FontWeight.Black,
-                    fontSize = 13.sp,
-                    letterSpacing = 1.sp
-                )
 
                 // Diagnostics & Version Status Card
                 val serverCodeInt = latestVersionCode.toIntOrNull() ?: 3
@@ -316,12 +305,12 @@ fun AdminAppUpdateScreen(navController: NavController) {
 
                 Card(
                     colors = CardDefaults.cardColors(
-                        containerColor = if (isOutdatedActive) Color(0xFF2E1218) else Color(0xFF0E2218)
+                        containerColor = if (isOutdatedActive) Color(0xFF241418) else Color(0xFF141D18)
                     ),
                     shape = RoundedCornerShape(16.dp),
                     border = BorderStroke(
                         1.dp,
-                        if (isOutdatedActive) Color(0xFFFF5252).copy(alpha = 0.5f) else Color(0xFF00E676).copy(alpha = 0.5f)
+                        if (isOutdatedActive) Color(0xFFFF5252).copy(alpha = 0.5f) else Color(0xFF00E676).copy(alpha = 0.4f)
                     ),
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -336,44 +325,44 @@ fun AdminAppUpdateScreen(navController: NavController) {
                         ) {
                             Column {
                                 Text(
-                                    "📱 Installed App Version",
+                                    "Installed App Version",
                                     fontSize = 11.sp,
-                                    color = Color(0xFF8E92A4)
+                                    color = Color(0xFF64748B)
                                 )
                                 Text(
                                     "$currentAppName (Build $currentAppCode)",
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = AppColors.TextPrimary
+                                    color = Color.White
                                 )
                             }
                             Column(horizontalAlignment = Alignment.End) {
                                 Text(
-                                    "🔥 Firebase Live Setting",
+                                    "Firebase Live Setting",
                                     fontSize = 11.sp,
-                                    color = Color(0xFF8E92A4)
+                                    color = Color(0xFF64748B)
                                 )
                                 Text(
                                     "$latestVersionName (Build $latestVersionCode)",
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF00E5FF)
+                                    color = Color(0xFF00E676)
                                 )
                             }
                         }
 
-                        HorizontalDivider(color = AppColors.TextPrimary.copy(alpha = 0.1f))
+                        HorizontalDivider(color = Color(0xFF23293A))
 
                         Text(
                             text = when {
                                 serverCodeInt >= currentAppCode ->
-                                    "✅ TARGET BUILD: $serverCodeInt ($latestVersionName). Purane users (Build 1 & Build 2) ko Build 3 ka update prompt dikhega. Jo user naya Build 3 install kar chuke hain unhe koi popup nahi aayega."
+                                    "TARGET BUILD: $serverCodeInt ($latestVersionName). Purane users ko update prompt dikhega. Jo user naya build install kar chuke hain unhe koi popup nahi aayega."
                                 else ->
-                                    "ℹ️ Update prompts band hain. Kisi bhi user ko koi popup nahi aayega."
+                                    "Update prompts are currently turned off. No user will see update popups."
                             },
                             fontSize = 12.sp,
                             lineHeight = 16.sp,
-                            color = Color(0xFF00E5FF)
+                            color = Color(0xFF00E676)
                         )
 
                         Row(
@@ -388,15 +377,15 @@ fun AdminAppUpdateScreen(navController: NavController) {
                                     saveConfiguration()
                                 },
                                 modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00C853)),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E676)),
                                 shape = RoundedCornerShape(10.dp),
                                 contentPadding = PaddingValues(horizontal = 10.dp, vertical = 8.dp)
                             ) {
                                 Text(
-                                    "⚡ Push Update: Build $currentAppCode",
+                                    "Push Update: Build $currentAppCode",
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = AppColors.TextPrimary
+                                    color = Color.Black
                                 )
                             }
 
@@ -408,12 +397,12 @@ fun AdminAppUpdateScreen(navController: NavController) {
                                     saveConfiguration()
                                 },
                                 modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF262C3A)),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E2330)),
                                 shape = RoundedCornerShape(10.dp),
                                 contentPadding = PaddingValues(horizontal = 10.dp, vertical = 8.dp)
                             ) {
                                 Text(
-                                    "🛑 Turn Off Updates",
+                                    "Turn Off Updates",
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color(0xFFFFD54F)
@@ -423,26 +412,24 @@ fun AdminAppUpdateScreen(navController: NavController) {
                     }
                 }
 
-                // ==========================================
-                // CARD 1: 📦 APK VERSION & RELEASE BUILDS
-                // ==========================================
+                // CARD 1: APK VERSION & RELEASE BUILDS
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(18.dp))
-                        .background(Color.White)
-                        .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(18.dp))
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Color(0xFF141722))
+                        .border(1.dp, Color(0xFF23293A), RoundedCornerShape(16.dp))
                         .padding(16.dp)
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                         AdminCardHeader(
                             icon = Icons.Default.SystemUpdate,
-                            iconTint = Color(0xFF00E5FF),
-                            title = "1. 📦 APK VERSION & RELEASE BUILDS",
+                            iconTint = Color(0xFF00E676),
+                            title = "1. APK VERSION & RELEASE BUILDS",
                             subtitle = "Target version numbers & direct APK download link for players"
                         )
 
-                        HorizontalDivider(color = Color(0xFFE5E7EB))
+                        HorizontalDivider(color = Color(0xFF23293A))
 
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -472,21 +459,21 @@ fun AdminAppUpdateScreen(navController: NavController) {
                             value = apkDownloadUrl,
                             onValueChange = { apkDownloadUrl = it },
                             label = { Text("APK Download / Website Link") },
-                            placeholder = { Text("https://yourwebsite.com/app.apk or Drive link") },
+                            placeholder = { Text("https://website-scrim-x-pro.vercel.app/") },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
                             colors = adminTextFieldColors(),
-                            leadingIcon = { Icon(Icons.Default.Link, contentDescription = null, tint = Color.Gray) },
+                            leadingIcon = { Icon(Icons.Default.Link, contentDescription = null, tint = Color(0xFF64748B)) },
                             trailingIcon = {
                                 if (apkDownloadUrl.isNotBlank()) {
                                     IconButton(onClick = {
                                         try {
                                             val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
                                             clipboard.setPrimaryClip(android.content.ClipData.newPlainText("APK Link", apkDownloadUrl.trim()))
-                                            Toast.makeText(context, "📋 APK Link Copied to Clipboard!", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(context, "APK Link Copied to Clipboard!", Toast.LENGTH_SHORT).show()
                                         } catch (e: Exception) {}
                                     }) {
-                                        Icon(Icons.Default.ContentCopy, contentDescription = "Copy Link", tint = Color(0xFF00E5FF))
+                                        Icon(Icons.Default.ContentCopy, contentDescription = "Copy Link", tint = Color(0xFF00E676))
                                     }
                                 }
                             }
@@ -503,30 +490,27 @@ fun AdminAppUpdateScreen(navController: NavController) {
                     }
                 }
 
-                // ==========================================
-                // CARD 2: 🚨 UPDATE POLICY & USER RESTRICTIONS
-                // ==========================================
+                // CARD 2: UPDATE POLICY & ENFORCEMENT
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(18.dp))
-                        .background(Color.White)
-                        .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(18.dp))
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Color(0xFF141722))
+                        .border(1.dp, Color(0xFF23293A), RoundedCornerShape(16.dp))
                         .padding(16.dp)
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                         AdminCardHeader(
                             icon = Icons.Default.Security,
                             iconTint = Color(0xFFFF5252),
-                            title = "2. 🚨 UPDATE POLICY & ENFORCEMENT",
+                            title = "2. UPDATE POLICY & ENFORCEMENT",
                             subtitle = "Manage mandatory blockers, skip permissions and cheat protection"
                         )
 
-                        HorizontalDivider(color = Color(0xFFE5E7EB))
+                        HorizontalDivider(color = Color(0xFF23293A))
 
-                        // Force Update Toggle
                         AdminSwitchRow(
-                            title = if (isForceUpdate) "🚨 Force Update (Mandatory)" else "Optional Update Mode",
+                            title = if (isForceUpdate) "Force Update (Mandatory)" else "Optional Update Mode",
                             subtitle = if (isForceUpdate) "Users CANNOT enter app without downloading update." else "Standard non-blocking update dialog.",
                             checked = isForceUpdate,
                             onCheckedChange = { isForceUpdate = it },
@@ -534,7 +518,6 @@ fun AdminAppUpdateScreen(navController: NavController) {
                             activeContainerColor = Color(0xFF2E1014)
                         )
 
-                        // Allow Later Button Switch
                         AdminSwitchRow(
                             title = "Show 'Later / Skip' Button",
                             subtitle = if (allowLaterButton) "Allowed: Users see 'Later' button and can skip update." else "Hidden: Users get NO skip button.",
@@ -544,38 +527,35 @@ fun AdminAppUpdateScreen(navController: NavController) {
                             activeContainerColor = Color(0xFF0D2818)
                         )
 
-                        // Auto-Ban Outdated APK Users Switch
                         AdminSwitchRow(
-                            title = "⚡ Auto-Ban Outdated APK Bypassers",
-                            subtitle = if (autoBanOutdatedUsers) "Active: Anyone bypassing update with old APK gets auto temporary ban (24h)." else "Disabled: Just shows update blocker without ban.",
+                            title = "Auto-Ban Outdated APK Bypassers",
+                            subtitle = if (autoBanOutdatedUsers) "Active: Anyone bypassing update with old APK gets auto temporary suspension." else "Disabled: Just shows update blocker without ban.",
                             checked = autoBanOutdatedUsers,
                             onCheckedChange = { autoBanOutdatedUsers = it },
-                            activeColor = Color(0xFFA855F7),
-                            activeContainerColor = Color(0xFF3B0764).copy(alpha = 0.4f)
+                            activeColor = Color(0xFF00E676),
+                            activeContainerColor = Color(0xFF0D2818)
                         )
                     }
                 }
 
-                // ==========================================
-                // CARD 3: ⚡ LIVE PATCH & HOTFIX SYSTEM (NEW SYSTEM!)
-                // ==========================================
+                // CARD 3: LIVE PATCH & HOTFIX SYSTEM
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(18.dp))
-                        .background(Color.White)
-                        .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(18.dp))
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Color(0xFF141722))
+                        .border(1.dp, Color(0xFF23293A), RoundedCornerShape(16.dp))
                         .padding(16.dp)
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                         AdminCardHeader(
                             icon = Icons.Default.Bolt,
-                            iconTint = Color(0xFFFFD700),
-                            title = "3. ⚡ LIVE PATCH & HOTFIX SYSTEM",
+                            iconTint = Color(0xFF00E676),
+                            title = "3. LIVE PATCH & HOTFIX SYSTEM",
                             subtitle = "Instant over-the-air hotfix deployment with 0 seconds download required"
                         )
 
-                        HorizontalDivider(color = Color(0xFFE5E7EB))
+                        HorizontalDivider(color = Color(0xFF23293A))
 
                         OutlinedTextField(
                             value = patchTag,
@@ -585,7 +565,7 @@ fun AdminAppUpdateScreen(navController: NavController) {
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
                             colors = adminTextFieldColors(),
-                            leadingIcon = { Icon(Icons.Default.Tag, contentDescription = null, tint = Color(0xFFFFD700)) }
+                            leadingIcon = { Icon(Icons.Default.Tag, contentDescription = null, tint = Color(0xFF00E676)) }
                         )
 
                         OutlinedTextField(
@@ -603,54 +583,52 @@ fun AdminAppUpdateScreen(navController: NavController) {
                             subtitle = if (isLivePatchActive) "Active: Displays green live patch status badge on player screen." else "Hidden: Patch banner is hidden.",
                             checked = isLivePatchActive,
                             onCheckedChange = { isLivePatchActive = it },
-                            activeColor = Color(0xFFFFD700),
-                            activeContainerColor = Color(0xFF2E2408)
+                            activeColor = Color(0xFF00E676),
+                            activeContainerColor = Color(0xFF0D2818)
                         )
 
                         Button(
                             onClick = {
                                 cacheBustTimestamp = System.currentTimeMillis()
-                                Toast.makeText(context, "🔄 Cache-Bust timestamp refreshed! Click SAVE to broadcast.", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Cache-Bust timestamp refreshed! Click SAVE to broadcast.", Toast.LENGTH_SHORT).show()
                             },
                             modifier = Modifier.fillMaxWidth().height(42.dp),
                             shape = RoundedCornerShape(10.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF252A38))
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1A2230))
                         ) {
-                            Icon(Icons.Default.Sync, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(16.dp))
+                            Icon(Icons.Default.Sync, contentDescription = null, tint = Color(0xFF00E676), modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("🔄 FORCE RE-SYNC ALL CLIENT CACHES", color = Color(0xFFFFD700), fontWeight = FontWeight.Bold, fontSize = 11.5.sp)
+                            Text("FORCE RE-SYNC ALL CLIENT CACHES", color = Color(0xFF00E676), fontWeight = FontWeight.Bold, fontSize = 11.5.sp)
                         }
                     }
                 }
 
-                // ==========================================
-                // CARD 4: 🎛️ REMOTE FEATURE KILL-SWITCHES (NEW SYSTEM!)
-                // ==========================================
+                // CARD 4: REMOTE FEATURE TOGGLES
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(18.dp))
-                        .background(Color.White)
-                        .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(18.dp))
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Color(0xFF141722))
+                        .border(1.dp, Color(0xFF23293A), RoundedCornerShape(16.dp))
                         .padding(16.dp)
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                         AdminCardHeader(
                             icon = Icons.Default.ToggleOn,
-                            iconTint = Color(0xFF00E5FF),
-                            title = "4. 🎛️ REMOTE FEATURE TOGGLES",
+                            iconTint = Color(0xFF00E676),
+                            title = "4. REMOTE FEATURE TOGGLES",
                             subtitle = "Instantly enable or disable individual app features without restarting"
                         )
 
-                        HorizontalDivider(color = Color(0xFFE5E7EB))
+                        HorizontalDivider(color = Color(0xFF23293A))
 
                         AdminSwitchRow(
                             title = "Tournament Registrations",
                             subtitle = if (isRegistrationEnabled) "Active: Players can join Free Fire & BGMI matches." else "Paused: Registrations temporarily locked.",
                             checked = isRegistrationEnabled,
                             onCheckedChange = { isRegistrationEnabled = it },
-                            activeColor = Color(0xFF00E5FF),
-                            activeContainerColor = Color(0xFF08262E)
+                            activeColor = Color(0xFF00E676),
+                            activeContainerColor = Color(0xFF0D2818)
                         )
 
                         AdminSwitchRow(
@@ -667,8 +645,8 @@ fun AdminAppUpdateScreen(navController: NavController) {
                             subtitle = if (isSpinWheelEnabled) "Active: Daily spin wheel is open for all players." else "Paused: Spin wheel temporarily disabled.",
                             checked = isSpinWheelEnabled,
                             onCheckedChange = { isSpinWheelEnabled = it },
-                            activeColor = Color(0xFFFFD700),
-                            activeContainerColor = Color(0xFF2E2408)
+                            activeColor = Color(0xFF00E676),
+                            activeContainerColor = Color(0xFF0D2818)
                         )
 
                         AdminSwitchRow(
@@ -676,35 +654,33 @@ fun AdminAppUpdateScreen(navController: NavController) {
                             subtitle = if (isWatchAdsEnabled) "Active: Players earn coins for watching rewarded ads." else "Paused: Video ads reward is paused.",
                             checked = isWatchAdsEnabled,
                             onCheckedChange = { isWatchAdsEnabled = it },
-                            activeColor = Color(0xFFA855F7),
-                            activeContainerColor = Color(0xFF3B0764).copy(alpha = 0.4f)
+                            activeColor = Color(0xFF00E676),
+                            activeContainerColor = Color(0xFF0D2818)
                         )
                     }
                 }
 
-                // ==========================================
-                // CARD 5: 🚧 SERVER MAINTENANCE MODE
-                // ==========================================
+                // CARD 5: SERVER MAINTENANCE LOCK
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(18.dp))
-                        .background(Color.White)
-                        .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(18.dp))
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Color(0xFF141722))
+                        .border(1.dp, Color(0xFF23293A), RoundedCornerShape(16.dp))
                         .padding(16.dp)
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                         AdminCardHeader(
                             icon = Icons.Default.Build,
                             iconTint = Color(0xFFFF9800),
-                            title = "5. 🚧 SERVER MAINTENANCE LOCK",
+                            title = "5. SERVER MAINTENANCE LOCK",
                             subtitle = "Full-screen maintenance screen displayed to all regular players"
                         )
 
-                        HorizontalDivider(color = Color(0xFFE5E7EB))
+                        HorizontalDivider(color = Color(0xFF23293A))
 
                         AdminSwitchRow(
-                            title = if (isMaintenanceMode) "🚧 Server Maintenance ON" else "Server Live (Normal)",
+                            title = if (isMaintenanceMode) "Server Maintenance ON" else "Server Live (Normal)",
                             subtitle = if (isMaintenanceMode) "All regular players are locked on the maintenance screen." else "App running smoothly for everyone.",
                             checked = isMaintenanceMode,
                             onCheckedChange = { isMaintenanceMode = it },
@@ -725,34 +701,32 @@ fun AdminAppUpdateScreen(navController: NavController) {
                     }
                 }
 
-                // ==========================================
-                // CARD 6: 📢 LIVE HOME SCREEN ANNOUNCEMENT TICKER
-                // ==========================================
+                // CARD 6: LIVE ANNOUNCEMENT TICKER
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(18.dp))
-                        .background(Color.White)
-                        .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(18.dp))
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Color(0xFF141722))
+                        .border(1.dp, Color(0xFF23293A), RoundedCornerShape(16.dp))
                         .padding(16.dp)
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                         AdminCardHeader(
                             icon = Icons.Default.Campaign,
-                            iconTint = Color(0xFFF43F5E),
-                            title = "6. 📢 LIVE ANNOUNCEMENT TICKER",
+                            iconTint = Color(0xFF00E676),
+                            title = "6. LIVE ANNOUNCEMENT TICKER",
                             subtitle = "Broadcast high-priority announcement on top of the Home Screen"
                         )
 
-                        HorizontalDivider(color = Color(0xFFE5E7EB))
+                        HorizontalDivider(color = Color(0xFF23293A))
 
                         AdminSwitchRow(
                             title = "Live Announcement Ticker",
                             subtitle = if (isAnnouncementActive) "Active: Displays scrolling alert bar on Home Screen." else "Hidden: Alert bar is turned off.",
                             checked = isAnnouncementActive,
                             onCheckedChange = { isAnnouncementActive = it },
-                            activeColor = Color(0xFFF43F5E),
-                            activeContainerColor = Color(0xFF330E18)
+                            activeColor = Color(0xFF00E676),
+                            activeContainerColor = Color(0xFF0D2818)
                         )
 
                         if (isAnnouncementActive) {
@@ -768,30 +742,27 @@ fun AdminAppUpdateScreen(navController: NavController) {
                     }
                 }
 
-                // ==========================================
-                // CARD 7: 🪙 SIGNUP BONUSES & REWARD ECONOMY
-                // ==========================================
+                // CARD 7: SIGNUP BONUSES & REWARD ECONOMY
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(18.dp))
-                        .background(Color.White)
-                        .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(18.dp))
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Color(0xFF141722))
+                        .border(1.dp, Color(0xFF23293A), RoundedCornerShape(16.dp))
                         .padding(16.dp)
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                         AdminCardHeader(
                             icon = Icons.Default.MonetizationOn,
                             iconTint = Color(0xFF00E676),
-                            title = "7. 🪙 SIGNUP BONUSES & ECONOMY",
+                            title = "7. SIGNUP BONUSES & ECONOMY",
                             subtitle = "New player joining bonus (Real Cash & Coins), spin jackpot, and ad rewards"
                         )
 
-                        HorizontalDivider(color = Color(0xFFE5E7EB))
+                        HorizontalDivider(color = Color(0xFF23293A))
 
-                        // Section 1: New User Joining Bonus (Real Cash & Coins)
                         Text(
-                            "🎁 NEW USER SIGNUP / JOINING BONUS",
+                            "NEW USER SIGNUP / JOINING BONUS",
                             fontWeight = FontWeight.Black,
                             fontSize = 12.sp,
                             color = Color(0xFF00E676),
@@ -823,20 +794,19 @@ fun AdminAppUpdateScreen(navController: NavController) {
                         }
 
                         Text(
-                            "💡 Pehle ₹100 tha jisse loss ho sakta tha. Ab default ₹5 Real Cash aur 50 Coins hai. Aap ise kabhi bhi badal sakte hain!",
+                            "Default ₹5 Real Cash and 50 Coins configured for new registrations.",
                             fontSize = 11.sp,
-                            color = Color(0xFF9CA3AF),
+                            color = Color(0xFF94A3B8),
                             lineHeight = 15.sp
                         )
 
-                        HorizontalDivider(color = Color(0xFFE5E7EB))
+                        HorizontalDivider(color = Color(0xFF23293A))
 
-                        // Section 2: Daily Rewards & Ad Coins
                         Text(
-                            "🎰 IN-GAME EARNING & JACKPOT",
+                            "IN-GAME EARNING & JACKPOT",
                             fontWeight = FontWeight.Black,
                             fontSize = 12.sp,
-                            color = AppColors.TextPrimary,
+                            color = Color.White,
                             letterSpacing = 0.5.sp
                         )
 
@@ -890,46 +860,44 @@ fun AdminAppUpdateScreen(navController: NavController) {
                     }
                 }
 
-                // ==========================================
-                // CARD 8: 💳 TOURNAMENT UPI & SUPPORT CONTACTS
-                // ==========================================
+                // CARD 8: TOURNAMENT UPI & SUPPORT CONTACTS
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(18.dp))
-                        .background(Color.White)
-                        .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(18.dp))
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Color(0xFF141722))
+                        .border(1.dp, Color(0xFF23293A), RoundedCornerShape(16.dp))
                         .padding(16.dp)
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                         AdminCardHeader(
                             icon = Icons.Default.AccountBalance,
-                            iconTint = Color(0xFF60A5FA),
-                            title = "8. 💳 TOURNAMENT UPI & SUPPORT",
+                            iconTint = Color(0xFF00E676),
+                            title = "8. TOURNAMENT UPI & SUPPORT",
                             subtitle = "Official deposit payment receiver and player support links"
                         )
 
-                        HorizontalDivider(color = Color(0xFFE5E7EB))
+                        HorizontalDivider(color = Color(0xFF23293A))
 
                         OutlinedTextField(
                             value = adminUpiId,
                             onValueChange = { adminUpiId = it },
-                            label = { Text("Admin UPI ID (Used for player QR & UPI deposits)") },
+                            label = { Text("Admin UPI ID (Player QR & Deposits)") },
                             placeholder = { Text("yourupi@oksbi") },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
                             colors = adminTextFieldColors(),
-                            leadingIcon = { Icon(Icons.Default.AccountBalance, contentDescription = null, tint = Color(0xFF60A5FA)) },
+                            leadingIcon = { Icon(Icons.Default.AccountBalance, contentDescription = null, tint = Color(0xFF00E676)) },
                             trailingIcon = {
                                 if (adminUpiId.isNotBlank()) {
                                     IconButton(onClick = {
                                         try {
                                             val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
                                             clipboard.setPrimaryClip(android.content.ClipData.newPlainText("Admin UPI ID", adminUpiId.trim()))
-                                            Toast.makeText(context, "📋 UPI ID Copied!", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(context, "UPI ID Copied!", Toast.LENGTH_SHORT).show()
                                         } catch (e: Exception) {}
                                     }) {
-                                        Icon(Icons.Default.ContentCopy, contentDescription = "Copy UPI", tint = Color(0xFF60A5FA))
+                                        Icon(Icons.Default.ContentCopy, contentDescription = "Copy UPI", tint = Color(0xFF00E676))
                                     }
                                 }
                             }
@@ -959,26 +927,24 @@ fun AdminAppUpdateScreen(navController: NavController) {
                     }
                 }
 
-                // ==========================================
                 // SAVE & PUSH BUTTON
-                // ==========================================
                 Button(
                     onClick = { saveConfiguration() },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(54.dp),
-                    shape = RoundedCornerShape(14.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E5FF)),
+                        .height(52.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E676)),
                     enabled = !isSaving
                 ) {
                     if (isSaving) {
                         CircularProgressIndicator(color = Color.Black, modifier = Modifier.size(22.dp))
                         Spacer(modifier = Modifier.width(10.dp))
-                        Text("SAVING & PUSHING...", color = Color.Black, fontWeight = FontWeight.Black)
+                        Text("SAVING...", color = Color.Black, fontWeight = FontWeight.Black)
                     } else {
                         Icon(Icons.Default.CloudUpload, contentDescription = null, tint = Color.Black)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("SAVE & PUSH LIVE UPDATE TO ALL USERS", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 14.sp)
+                        Text("SAVE & PUSH LIVE UPDATE TO ALL PLAYERS", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 13.5.sp)
                     }
                 }
 
@@ -990,15 +956,15 @@ fun AdminAppUpdateScreen(navController: NavController) {
 
 @Composable
 private fun adminTextFieldColors() = OutlinedTextFieldDefaults.colors(
-    focusedBorderColor = Color(0xFF00E5FF),
-    unfocusedBorderColor = Color(0xFF2C3042),
-    focusedLabelColor = Color(0xFF00E5FF),
-    unfocusedLabelColor = Color(0xFF8E92A4),
+    focusedBorderColor = Color(0xFF00E676),
+    unfocusedBorderColor = Color(0xFF23293A),
+    focusedLabelColor = Color(0xFF00E676),
+    unfocusedLabelColor = Color(0xFF64748B),
     focusedTextColor = Color.White,
     unfocusedTextColor = Color.White,
-    cursorColor = Color(0xFF00E5FF),
-    focusedContainerColor = Color(0xFF0E1017),
-    unfocusedContainerColor = Color(0xFF0E1017)
+    cursorColor = Color(0xFF00E676),
+    focusedContainerColor = Color(0xFF0D0F14),
+    unfocusedContainerColor = Color(0xFF0D0F14)
 )
 
 @Composable
@@ -1026,14 +992,14 @@ private fun AdminCardHeader(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 title,
-                color = AppColors.TextPrimary,
+                color = Color.White,
                 fontWeight = FontWeight.Bold,
                 fontSize = 13.sp,
                 letterSpacing = 0.5.sp
             )
             Text(
                 subtitle,
-                color = Color(0xFF8E92A4),
+                color = Color(0xFF94A3B8),
                 fontSize = 10.5.sp,
                 lineHeight = 14.sp
             )
@@ -1054,10 +1020,10 @@ private fun AdminSwitchRow(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(if (checked) activeContainerColor else Color(0xFF191B24))
+            .background(if (checked) activeContainerColor else Color(0xFF10131B))
             .border(
                 1.dp,
-                if (checked) activeColor.copy(alpha = 0.5f) else Color(0xFF2B2E3D),
+                if (checked) activeColor.copy(alpha = 0.5f) else Color(0xFF23293A),
                 RoundedCornerShape(12.dp)
             )
             .padding(12.dp),
@@ -1073,7 +1039,7 @@ private fun AdminSwitchRow(
             )
             Text(
                 subtitle,
-                color = Color(0xFF8E92A4),
+                color = Color(0xFF94A3B8),
                 fontSize = 10.5.sp
             )
         }
@@ -1081,7 +1047,7 @@ private fun AdminSwitchRow(
             checked = checked,
             onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(
-                checkedThumbColor = Color.White,
+                checkedThumbColor = Color.Black,
                 checkedTrackColor = activeColor
             )
         )

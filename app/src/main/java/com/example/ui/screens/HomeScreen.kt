@@ -189,7 +189,8 @@ fun HomeScreen(
     // 1. Watch Video & Live Stream Dialog
     if (showWatchDialog) {
         AlertDialog(
-            containerColor = Color.White,
+            containerColor = Color(0xFF111319),
+            shape = RoundedCornerShape(24.dp),
             onDismissRequest = { 
                 if (!isAdLoading) showWatchDialog = false 
             },
@@ -205,7 +206,7 @@ fun HomeScreen(
                     Text(
                         "WATCH & EARN / LIVE",
                         fontWeight = FontWeight.Black,
-                        color = AppColors.TextPrimary,
+                        color = Color.White,
                         fontSize = 16.sp,
                         letterSpacing = 0.5.sp
                     )
@@ -219,7 +220,7 @@ fun HomeScreen(
                 ) {
                     Text(
                         "Watch short sponsor videos to earn Coins for entry fees, or tune into live tournament scrims!",
-                        color = Color(0xFF4B5563),
+                        color = Color(0xFFCBD5E1),
                         fontSize = 13.sp,
                         lineHeight = 18.sp
                     )
@@ -269,32 +270,22 @@ fun HomeScreen(
                     }
 
                     // Option 2: Watch Live Scrims (YouTube)
-                        OutlinedButton(
-                            onClick = {
-                                showWatchDialog = false
-                                if (db != null) {
-                                    db.collection("settings").document("live_stream").get().addOnSuccessListener { doc ->
-                                        val streamUrl = doc.getString("url")
-                                        val targetUrl = if (!streamUrl.isNullOrBlank()) streamUrl else "https://www.youtube.com/results?search_query=Free+Fire+Tournament+Live"
-                                        try {
-                                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(targetUrl)).apply {
-                                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                            }
-                                            context.startActivity(intent)
-                                        } catch (e: Exception) {
-                                            Toast.makeText(context, "Opening YouTube in browser...", Toast.LENGTH_SHORT).show()
+                    OutlinedButton(
+                        onClick = {
+                            showWatchDialog = false
+                            if (db != null) {
+                                db.collection("settings").document("live_stream").get().addOnSuccessListener { doc ->
+                                    val streamUrl = doc.getString("url")
+                                    val targetUrl = if (!streamUrl.isNullOrBlank()) streamUrl else "https://www.youtube.com/results?search_query=Free+Fire+Tournament+Live"
+                                    try {
+                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(targetUrl)).apply {
+                                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                                         }
-                                    }.addOnFailureListener {
-                                        try {
-                                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/results?search_query=Free+Fire+Tournament+Live")).apply {
-                                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                            }
-                                            context.startActivity(intent)
-                                        } catch (e: Exception) {
-                                            Toast.makeText(context, "Could not open stream", Toast.LENGTH_SHORT).show()
-                                        }
+                                        context.startActivity(intent)
+                                    } catch (e: Exception) {
+                                        Toast.makeText(context, "Opening YouTube in browser...", Toast.LENGTH_SHORT).show()
                                     }
-                                } else {
+                                }.addOnFailureListener {
                                     try {
                                         val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/results?search_query=Free+Fire+Tournament+Live")).apply {
                                             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -304,22 +295,32 @@ fun HomeScreen(
                                         Toast.makeText(context, "Could not open stream", Toast.LENGTH_SHORT).show()
                                     }
                                 }
-                            },
-                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF2C3042)),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = AppColors.TextPrimary),
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier.fillMaxWidth().height(48.dp)
-                        ) {
-                            Icon(Icons.Default.LiveTv, contentDescription = null, tint = Color(0xFFFF5252), modifier = Modifier.size(18.dp))
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("WATCH TOURNAMENT LIVE (YT)", color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                        }
+                            } else {
+                                try {
+                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/results?search_query=Free+Fire+Tournament+Live")).apply {
+                                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    }
+                                    context.startActivity(intent)
+                                } catch (e: Exception) {
+                                    Toast.makeText(context, "Could not open stream", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        },
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF2E3348)),
+                        colors = ButtonDefaults.outlinedButtonColors(containerColor = Color(0xFF1E212D), contentColor = Color.White),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth().height(48.dp)
+                    ) {
+                        Icon(Icons.Default.LiveTv, contentDescription = null, tint = Color(0xFFFF5252), modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("WATCH TOURNAMENT LIVE (YT)", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                    }
                 }
             },
             confirmButton = {
                 if (!isAdLoading) {
                     TextButton(onClick = { showWatchDialog = false }) {
-                        Text("Close", color = Color(0xFF8E92A4), fontWeight = FontWeight.Bold)
+                        Text("Close", color = Color(0xFF94A3B8), fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -329,16 +330,18 @@ fun HomeScreen(
     // 2. Daily Check-in Dialog
     if (showDailyDialog) {
         AlertDialog(
-            containerColor = Color.White,
+            containerColor = Color(0xFF111319),
+            shape = RoundedCornerShape(24.dp),
             onDismissRequest = { showDailyDialog = false },
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("DAILY REWARD 🎁", fontWeight = FontWeight.Black, color = AppColors.TextPrimary, fontSize = 16.sp)
+                    Text("DAILY REWARD 🎁", fontWeight = FontWeight.Black, color = Color.White, fontSize = 16.sp)
                     Spacer(modifier = Modifier.weight(1f))
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
                             .background(Color(0xFF00E676).copy(alpha = 0.15f))
+                            .border(1.dp, Color(0xFF00E676).copy(alpha = 0.4f), RoundedCornerShape(8.dp))
                             .padding(horizontal = 8.dp, vertical = 3.dp)
                     ) {
                         Text(
@@ -358,7 +361,7 @@ fun HomeScreen(
                 ) {
                     Text(
                         if (dailyClaimed) "Already claimed today! Come back tomorrow for Day ${if (currentStreak >= 7) 1 else currentStreak + 1}." else "Claim your free +${appConfig.dailyRewardCoins} coins today!",
-                        color = Color(0xFF4B5563),
+                        color = Color(0xFFCBD5E1),
                         fontSize = 13.sp,
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
@@ -379,7 +382,7 @@ fun HomeScreen(
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text(
                                     "D$day",
-                                    color = if (status == "today") Color(0xFFFFD700) else Color(0xFF8E92A4),
+                                    color = if (status == "today") Color(0xFFFFD700) else Color(0xFF94A3B8),
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -392,7 +395,7 @@ fun HomeScreen(
                                             when (status) {
                                                 "claimed" -> Color(0xFF00E676).copy(alpha = 0.2f)
                                                 "today" -> Color(0xFFFFD700)
-                                                else -> Color(0xFFF9FAFB)
+                                                else -> Color(0xFF1E212D)
                                             }
                                         )
                                         .border(
@@ -400,7 +403,7 @@ fun HomeScreen(
                                             when (status) {
                                                 "claimed" -> Color(0xFF00E676)
                                                 "today" -> Color(0xFFFFD700)
-                                                else -> AppColors.BorderColor
+                                                else -> Color(0xFF2E3348)
                                             },
                                             CircleShape
                                         ),
@@ -412,7 +415,7 @@ fun HomeScreen(
                                         Text(
                                             "$day",
                                             fontWeight = FontWeight.Black,
-                                            color = if (status == "today") Color.Black else Color(0xFF9CA3AF),
+                                            color = if (status == "today") Color.Black else Color.White,
                                             fontSize = 12.sp
                                         )
                                     }
@@ -441,19 +444,19 @@ fun HomeScreen(
                             showDailyDialog = false
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = if (dailyClaimed) AppColors.BorderColor else Color(0xFFFFD700)),
+                    colors = ButtonDefaults.buttonColors(containerColor = if (dailyClaimed) Color(0xFF2E3348) else Color(0xFFFFD700)),
                     shape = RoundedCornerShape(10.dp)
                 ) {
                     Text(
                         if (dailyClaimed) "CLAIMED TODAY" else "CLAIM +${appConfig.dailyRewardCoins} COINS",
-                        color = Color.Black,
+                        color = if (dailyClaimed) Color(0xFF94A3B8) else Color.Black,
                         fontWeight = FontWeight.Black
                     )
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDailyDialog = false }) {
-                    Text("Close", color = Color(0xFF8E92A4))
+                    Text("Close", color = Color(0xFF94A3B8))
                 }
             }
         )
@@ -462,7 +465,8 @@ fun HomeScreen(
     // 3. Spin Wheel Dialog
     if (showSpinDialog) {
         AlertDialog(
-            containerColor = Color.White,
+            containerColor = Color(0xFF111319),
+            shape = RoundedCornerShape(24.dp),
             onDismissRequest = { if (!isSpinning) showSpinDialog = false },
             title = {
                 Row(
@@ -470,7 +474,7 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("LUCKY SPIN WHEEL 🎰", fontWeight = FontWeight.Black, color = AppColors.TextPrimary, fontSize = 16.sp)
+                    Text("LUCKY SPIN WHEEL 🎰", fontWeight = FontWeight.Black, color = Color.White, fontSize = 16.sp)
                     Surface(
                         color = if (spinsRemaining > 0) Color(0xFF10B981).copy(alpha = 0.2f) else Color(0xFFEF4444).copy(alpha = 0.2f),
                         shape = RoundedCornerShape(12.dp)
@@ -496,7 +500,7 @@ fun HomeScreen(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier.padding(top = 14.dp, bottom = 4.dp)
                     ) {
-                        val textPrimaryColor = AppColors.TextPrimary
+                        val textPrimaryColor = Color.White
                         Canvas(
                             modifier = Modifier.size(200.dp)
                         ) {
@@ -621,9 +625,9 @@ fun HomeScreen(
 
                     if (spinReward != null) {
                         Surface(
-                            color = Color(0xFFFFD700).copy(alpha = 0.15f),
+                            color = Color(0xFF282210),
                             shape = RoundedCornerShape(12.dp),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFFFD700).copy(alpha = 0.5f))
+                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFFFD700).copy(alpha = 0.7f))
                         ) {
                             Text(
                                 "🎉 Congratulations! Won +$spinReward Coins!",
@@ -643,7 +647,7 @@ fun HomeScreen(
                     } else {
                         Text(
                             "Spin the wheel to win up to 200 coins!",
-                            color = Color(0xFF9CA3AF),
+                            color = Color(0xFF94A3B8),
                             fontSize = 13.sp
                         )
                     }
@@ -684,8 +688,8 @@ fun HomeScreen(
                             }
                         },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = if (spinsRemaining > 0) AppColors.ButtonContainer else AppColors.BorderColor,
-                            disabledContainerColor = AppColors.BorderColor
+                            containerColor = if (spinsRemaining > 0) Color(0xFFFFD700) else Color(0xFF2E3348),
+                            disabledContainerColor = Color(0xFF2E3348)
                         ),
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.fillMaxWidth().height(48.dp),
@@ -694,7 +698,7 @@ fun HomeScreen(
                         if (isSpinning) {
                             Text("SPINNING WHEEL...", color = Color.Black, fontWeight = FontWeight.Black)
                         } else if (spinsRemaining == 0) {
-                            Text("NO SPINS LEFT TODAY", color = Color(0xFF9CA3AF), fontWeight = FontWeight.Bold)
+                            Text("NO SPINS LEFT TODAY", color = Color(0xFF94A3B8), fontWeight = FontWeight.Bold)
                         } else {
                             Text("SPIN NOW ($spinsRemaining LEFT)", color = Color.Black, fontWeight = FontWeight.Black)
                         }
@@ -704,7 +708,7 @@ fun HomeScreen(
             confirmButton = {
                 if (!isSpinning) {
                     TextButton(onClick = { showSpinDialog = false }) {
-                        Text("Close", color = Color(0xFF8E92A4))
+                        Text("Close", color = Color(0xFF94A3B8))
                     }
                 }
             }

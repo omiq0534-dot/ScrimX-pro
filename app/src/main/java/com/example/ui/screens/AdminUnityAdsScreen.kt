@@ -18,7 +18,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -51,7 +50,6 @@ fun AdminUnityAdsScreen(navController: NavController) {
 
     var isLoading by remember { mutableStateOf(true) }
     var isSaving by remember { mutableStateOf(false) }
-    var statusMessage by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
         if (!isOwner) {
@@ -68,7 +66,7 @@ fun AdminUnityAdsScreen(navController: NavController) {
                 val r = doc.getString("rewardedPlacement") ?: "Rewarded_Android1"
                 val i = doc.getString("interstitialPlacement") ?: "Interstitial_Android2"
                 val b = doc.getString("bannerPlacement") ?: "Banner_Android3"
-                
+
                 rewardedPlacement = if (r == "rewardedVideo" || r == "Rewarded_Android") "Rewarded_Android1" else r
                 interstitialPlacement = if (i == "video" || i == "Interstitial_Android") "Interstitial_Android2" else i
                 bannerPlacement = if (b == "banner" || b == "Banner_Android") "Banner_Android3" else b
@@ -87,7 +85,7 @@ fun AdminUnityAdsScreen(navController: NavController) {
     }
 
     Scaffold(
-        containerColor = Color(0xFFF9FAFB),
+        containerColor = Color(0xFF0D0F14),
         topBar = {
             TopAppBar(
                 title = {
@@ -96,14 +94,14 @@ fun AdminUnityAdsScreen(navController: NavController) {
                             modifier = Modifier
                                 .size(8.dp)
                                 .clip(CircleShape)
-                                .background(Color(0xFF00E5FF))
+                                .background(Color(0xFF00E676))
                         )
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
-                            "UNITY ADS CONTROL",
+                            "UNITY ADS CONFIG",
                             fontWeight = FontWeight.Black,
-                            color = AppColors.TextPrimary,
-                            fontSize = 17.sp,
+                            color = Color.White,
+                            fontSize = 15.sp,
                             letterSpacing = 1.sp
                         )
                     }
@@ -113,7 +111,7 @@ fun AdminUnityAdsScreen(navController: NavController) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF9FAFB))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF0D0F14))
             )
         }
     ) { padding ->
@@ -122,31 +120,27 @@ fun AdminUnityAdsScreen(navController: NavController) {
                 .fillMaxSize()
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
-                .padding(20.dp),
+                .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Header Card
+            // Header Info Card
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(
-                        Brush.linearGradient(
-                            listOf(Color(0xFF0F2027), Color(0xFF203A43), Color(0xFF2C5364))
-                        )
-                    )
-                    .border(1.dp, Color(0xFF00E5FF).copy(alpha = 0.4f), RoundedCornerShape(20.dp))
-                    .padding(18.dp)
+                    .clip(RoundedCornerShape(18.dp))
+                    .background(Color(0xFF141722))
+                    .border(1.dp, Color(0xFF23293A), RoundedCornerShape(18.dp))
+                    .padding(16.dp)
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.MonetizationOn, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(24.dp))
+                        Icon(Icons.Default.MonetizationOn, contentDescription = null, tint = Color(0xFF00E676), modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("UNITY ADS ENGINE", color = Color(0xFF00E5FF), fontSize = 12.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
+                        Text("ADS REVENUE SYSTEM", color = Color(0xFF00E676), fontSize = 11.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
                     }
                     Text(
-                        "Manage in-app ads, rewarded coin payouts & live placement IDs with your Unity Game ID.",
-                        color = AppColors.TextPrimary.copy(alpha = 0.9f),
+                        "Manage in-app ads, rewarded coin payouts, and live placement IDs with your Unity Game ID.",
+                        color = Color(0xFF8E92A4),
                         fontSize = 12.sp,
                         lineHeight = 17.sp
                     )
@@ -155,16 +149,16 @@ fun AdminUnityAdsScreen(navController: NavController) {
 
             if (isLoading) {
                 Box(modifier = Modifier.fillMaxWidth().height(100.dp), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = Color(0xFF00E5FF))
+                    CircularProgressIndicator(color = Color(0xFF00E676))
                 }
             } else {
                 // Live Status Badge
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(if (UnityAds.isInitialized) Color(0xFF00E676).copy(alpha = 0.12f) else Color(0xFFFF5252).copy(alpha = 0.12f))
-                        .border(1.dp, if (UnityAds.isInitialized) Color(0xFF00E676).copy(alpha = 0.4f) else Color(0xFFFF5252).copy(alpha = 0.4f), RoundedCornerShape(12.dp))
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(Color(0xFF141722))
+                        .border(1.dp, if (UnityAds.isInitialized) Color(0xFF00E676).copy(alpha = 0.5f) else Color(0xFFFF5252).copy(alpha = 0.5f), RoundedCornerShape(14.dp))
                         .padding(14.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -185,10 +179,10 @@ fun AdminUnityAdsScreen(navController: NavController) {
                         val errorInfo = UnityAdsManager.lastInitErrorMessage
                         Text(
                             if (UnityAds.isInitialized) "SDK Initialized with Game ID: ${UnityAdsManager.gameId}"
-                            else if (!errorInfo.isNullOrBlank()) "Status: $errorInfo (Make sure to enter Android Game ID, not iOS)"
+                            else if (!errorInfo.isNullOrBlank()) "Status: $errorInfo"
                             else "Ready to initialize with Android Game ID",
-                            color = AppColors.TextPrimary.copy(alpha = 0.8f),
-                            fontSize = 10.5.sp
+                            color = Color(0xFF8E92A4),
+                            fontSize = 11.sp
                         )
                     }
                 }
@@ -201,34 +195,30 @@ fun AdminUnityAdsScreen(navController: NavController) {
                     placeholder = "e.g. 6183190 / 6183191",
                     leadingIcon = Icons.Default.Tag
                 )
-                Text(
-                    "Note: Unity Dashboard me 'Monetization' -> 'Android' ka specific Game ID dalein (iOS Game ID dalne par mismatched platform error aayega).",
-                    color = Color(0xFF00E5FF).copy(alpha = 0.8f),
-                    fontSize = 11.sp,
-                    lineHeight = 15.sp
-                )
 
                 // Master Toggle
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(14.dp))
-                        .background(Color.White)
-                        .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(14.dp))
+                        .background(Color(0xFF141722))
+                        .border(1.dp, Color(0xFF23293A), RoundedCornerShape(14.dp))
                         .padding(16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Enable Unity Ads in App", color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                        Text("Toggle ads on/off across all user screens", color = Color(0xFF8E92A4), fontSize = 11.sp)
+                        Text("Enable Unity Ads in App", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text("Toggle ads on or off across all user screens", color = Color(0xFF8E92A4), fontSize = 11.sp)
                     }
                     Switch(
                         checked = adsEnabled,
                         onCheckedChange = { adsEnabled = it },
                         colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color.White,
-                            checkedTrackColor = Color(0xFF00E676)
+                            checkedThumbColor = Color.Black,
+                            checkedTrackColor = Color(0xFF00E676),
+                            uncheckedThumbColor = Color(0xFF8E92A4),
+                            uncheckedTrackColor = Color(0xFF1A1D2B)
                         )
                     )
                 }
@@ -238,27 +228,29 @@ fun AdminUnityAdsScreen(navController: NavController) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(14.dp))
-                        .background(Color.White)
-                        .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(14.dp))
+                        .background(Color(0xFF141722))
+                        .border(1.dp, Color(0xFF23293A), RoundedCornerShape(14.dp))
                         .padding(16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Unity Test Mode", color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                        Text("Turn OFF when publishing real APK to earn actual revenue", color = Color(0xFFFFD700), fontSize = 11.sp)
+                        Text("Unity Test Mode", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text("Turn OFF when publishing real APK to earn live revenue", color = Color(0xFFFF9800), fontSize = 11.sp)
                     }
                     Switch(
                         checked = testMode,
                         onCheckedChange = { testMode = it },
                         colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color.White,
-                            checkedTrackColor = Color(0xFFFF9800)
+                            checkedThumbColor = Color.Black,
+                            checkedTrackColor = Color(0xFFFF9800),
+                            uncheckedThumbColor = Color(0xFF8E92A4),
+                            uncheckedTrackColor = Color(0xFF1A1D2B)
                         )
                     )
                 }
 
-                // Placement IDs
+                // Placement IDs Section Header
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -272,11 +264,11 @@ fun AdminUnityAdsScreen(navController: NavController) {
                                 interstitialPlacement = "Interstitial_Android2"
                                 bannerPlacement = "Banner_Android3"
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E2230)),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1A1D2B)),
                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
                             shape = RoundedCornerShape(6.dp)
                         ) {
-                            Text("My Units", fontSize = 10.sp, color = Color(0xFF00E5FF))
+                            Text("My Units", fontSize = 10.sp, color = Color(0xFF00E676))
                         }
                         Button(
                             onClick = {
@@ -284,7 +276,7 @@ fun AdminUnityAdsScreen(navController: NavController) {
                                 interstitialPlacement = "Interstitial_Android"
                                 bannerPlacement = "Banner_Android"
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E2230)),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1A1D2B)),
                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
                             shape = RoundedCornerShape(6.dp)
                         ) {
@@ -320,7 +312,7 @@ fun AdminUnityAdsScreen(navController: NavController) {
                 ClassyDarkField(
                     value = rewardCoinsPerAd,
                     onValueChange = { rewardCoinsPerAd = it },
-                    label = "Coins Given to User per Video",
+                    label = "Coins Awarded Per Video",
                     placeholder = "15",
                     leadingIcon = Icons.Default.Stars
                 )
@@ -330,7 +322,6 @@ fun AdminUnityAdsScreen(navController: NavController) {
                     Button(
                         onClick = {
                             isSaving = true
-                            statusMessage = null
                             val data = hashMapOf<String, Any>(
                                 "gameId" to gameId.trim(),
                                 "testMode" to testMode,
@@ -353,18 +344,18 @@ fun AdminUnityAdsScreen(navController: NavController) {
                                     isTest = testMode,
                                     forceReinit = true,
                                     onComplete = {
-                                        Toast.makeText(context, "Unity Ads Saved & Re-Initialized Successfully!", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, "Unity Ads Config Saved", Toast.LENGTH_SHORT).show()
                                     },
                                     onFailed = { err ->
-                                        Toast.makeText(context, "Saved, but Unity Init Notice: $err", Toast.LENGTH_LONG).show()
+                                        Toast.makeText(context, "Saved, Unity Init: $err", Toast.LENGTH_LONG).show()
                                     }
                                 )
                             }?.addOnFailureListener { e ->
                                 isSaving = false
-                                Toast.makeText(context, "Failed to save: ${e.message}", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Failed: ${e.message}", Toast.LENGTH_SHORT).show()
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E5FF)),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E676)),
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.weight(1f).height(50.dp),
                         enabled = !isSaving
@@ -387,20 +378,20 @@ fun AdminUnityAdsScreen(navController: NavController) {
                                 isTest = testMode,
                                 forceReinit = true,
                                 onComplete = {
-                                    Toast.makeText(context, "Connected! Unity Ads Initialized.", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "Unity Ads Initialized", Toast.LENGTH_SHORT).show()
                                 },
                                 onFailed = { err ->
                                     Toast.makeText(context, "Init Failed: $err", Toast.LENGTH_LONG).show()
                                 }
                             )
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E2230)),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1A1D2B)),
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.height(50.dp)
                     ) {
-                        Icon(Icons.Default.Refresh, contentDescription = null, tint = Color(0xFF00E5FF))
+                        Icon(Icons.Default.Refresh, contentDescription = null, tint = Color(0xFF00E676))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("RE-INIT", color = Color(0xFF00E5FF), fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                        Text("RE-INIT", color = Color(0xFF00E676), fontWeight = FontWeight.Bold, fontSize = 11.sp)
                     }
                 }
 
@@ -416,23 +407,21 @@ fun AdminUnityAdsScreen(navController: NavController) {
                     Button(
                         onClick = {
                             if (activity != null) {
-                                Toast.makeText(context, "Loading Rewarded Video Ad...", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Loading Rewarded Video...", Toast.LENGTH_SHORT).show()
                                 UnityAdsManager.showRewardedAd(
                                     activity = activity,
                                     placementId = rewardedPlacement.trim(),
                                     onRewardEarned = {
-                                        Toast.makeText(context, "Rewarded Ad Completed! (+Coins credited)", Toast.LENGTH_LONG).show()
+                                        Toast.makeText(context, "Rewarded Ad Completed", Toast.LENGTH_SHORT).show()
                                     },
-                                    onAdClosed = {
-                                        Toast.makeText(context, "Rewarded Ad Closed", Toast.LENGTH_SHORT).show()
-                                    },
+                                    onAdClosed = {},
                                     onAdFailed = { err ->
-                                        Toast.makeText(context, "Ad show failed: $err", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, "Ad Failed: $err", Toast.LENGTH_SHORT).show()
                                     }
                                 )
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700)),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E676)),
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.weight(1f).height(46.dp)
                     ) {
@@ -444,26 +433,24 @@ fun AdminUnityAdsScreen(navController: NavController) {
                     Button(
                         onClick = {
                             if (activity != null) {
-                                Toast.makeText(context, "Loading Interstitial Ad...", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Loading Interstitial...", Toast.LENGTH_SHORT).show()
                                 UnityAdsManager.showInterstitialAd(
                                     activity = activity,
                                     placementId = interstitialPlacement.trim(),
-                                    onAdClosed = {
-                                        Toast.makeText(context, "Interstitial Closed", Toast.LENGTH_SHORT).show()
-                                    },
+                                    onAdClosed = {},
                                     onAdFailed = { err ->
-                                        Toast.makeText(context, "Interstitial failed: $err", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, "Interstitial Failed: $err", Toast.LENGTH_SHORT).show()
                                     }
                                 )
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6366F1)),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1A1D2B)),
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.weight(1f).height(46.dp)
                     ) {
                         Icon(Icons.Default.Fullscreen, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Interstitial", color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                        Text("Interstitial", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                     }
                 }
 
@@ -475,8 +462,8 @@ fun AdminUnityAdsScreen(navController: NavController) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
-                        .background(Color.White)
-                        .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(12.dp))
+                        .background(Color(0xFF141722))
+                        .border(1.dp, Color(0xFF23293A), RoundedCornerShape(12.dp))
                         .padding(8.dp)
                 ) {
                     UnityBannerAd(
@@ -500,19 +487,19 @@ private fun ClassyDarkField(
     leadingIcon: androidx.compose.ui.graphics.vector.ImageVector
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Text(label, color = Color(0xFF4B5563), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        Text(label, color = Color(0xFF8E92A4), fontSize = 12.sp, fontWeight = FontWeight.Bold)
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            placeholder = { Text(placeholder, color = Color(0xFF64748B), fontSize = 13.sp) },
-            leadingIcon = { Icon(leadingIcon, contentDescription = null, tint = Color(0xFF00E5FF), modifier = Modifier.size(20.dp)) },
+            placeholder = { Text(placeholder, color = Color(0xFF75798E), fontSize = 13.sp) },
+            leadingIcon = { Icon(leadingIcon, contentDescription = null, tint = Color(0xFF00E676), modifier = Modifier.size(20.dp)) },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White,
-                focusedBorderColor = Color(0xFF00E5FF),
-                unfocusedBorderColor = Color(0xFFE5E7EB),
+                focusedContainerColor = Color(0xFF141722),
+                unfocusedContainerColor = Color(0xFF141722),
+                focusedBorderColor = Color(0xFF00E676),
+                unfocusedBorderColor = Color(0xFF23293A),
                 focusedTextColor = Color.White,
                 unfocusedTextColor = Color.White
             ),

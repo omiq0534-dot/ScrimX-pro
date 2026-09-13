@@ -49,56 +49,94 @@ fun PremiumMatchCard(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
+            .clip(RoundedCornerShape(22.dp))
             .clickable { onClick() }
-            .glassCard() // Deep Obsidian Black
-            .border(1.2.dp, AppColors.BorderColor, RoundedCornerShape(20.dp))
+            .background(
+                brush = Brush.linearGradient(
+                    colors = listOf(
+                        Color(0x28FFFFFF), // Frosted glass top-left highlight
+                        Color(0x12FFFFFF), // Translucent dark glass core
+                        Color(0x1800E676)  // Bottom-left subtle green ambient reflection
+                    ),
+                    start = Offset(0f, 0f),
+                    end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
+                ),
+                shape = RoundedCornerShape(22.dp)
+            )
+            .border(
+                brush = Brush.linearGradient(
+                    colors = listOf(
+                        Color(0x4DFFFFFF), // Crisp glass specular top rim
+                        Color(0x1AFFFFFF), // Mid frosted edge
+                        Color(0xFF00E676).copy(alpha = 0.65f) // Vibrant neon green accent border at bottom-left
+                    ),
+                    start = Offset(0f, 0f),
+                    end = Offset(0f, Float.POSITIVE_INFINITY)
+                ),
+                width = 1.2.dp,
+                shape = RoundedCornerShape(22.dp)
+            )
     ) {
-        // Enhanced 3D Glassmorphic Depth (Pure White/Silver Accents)
-        val textPrimaryColor = AppColors.TextPrimary
+        // High-End Glassmorphic Canvas with Bottom-Left Neon Green Cyber Glow
         Canvas(modifier = Modifier.matchParentSize()) {
             val w = size.width
             val h = size.height
 
-            // 1. Soft Bottom Light Glow (Amplified 3D Depth)
-            drawRect(
-                brush = Brush.verticalGradient(
+            // 1. Radial Light Green Neon Glow at Bottom-Left Corner (Vibrant & prominent)
+            drawCircle(
+                brush = Brush.radialGradient(
                     colors = listOf(
-                        Color.Transparent,
-                        textPrimaryColor.copy(alpha = 0.02f),
-                        textPrimaryColor.copy(alpha = 0.08f)
+                        Color(0xFF00E676).copy(alpha = 0.32f), // Bright neon green core
+                        Color(0xFF00E676).copy(alpha = 0.16f),
+                        Color(0xFF00E676).copy(alpha = 0.05f),
+                        Color.Transparent
                     ),
-                    startY = h * 0.35f,
-                    endY = h
+                    center = Offset(0f, h),
+                    radius = (w.coerceAtLeast(h)) * 0.75f
+                ),
+                center = Offset(0f, h),
+                radius = (w.coerceAtLeast(h)) * 0.75f
+            )
+
+            // 2. Translucent Frosted Glass Diagonal Sheen / Light Streak
+            drawRect(
+                brush = Brush.linearGradient(
+                    colors = listOf(
+                        Color.White.copy(alpha = 0.08f),
+                        Color.White.copy(alpha = 0.02f),
+                        Color.Transparent
+                    ),
+                    start = Offset(0f, 0f),
+                    end = Offset(w * 0.8f, h * 0.6f)
                 )
             )
 
-            // 2. Crisp 3D Top Rim Highlight
+            // 3. Crisp Frosted Top Glass Edge Highlight
             drawLine(
                 brush = Brush.horizontalGradient(
                     colors = listOf(
-                        Color.Transparent,
-                        textPrimaryColor.copy(alpha = 0.25f),
-                        textPrimaryColor.copy(alpha = 0.05f)
-                    )
-                ),
-                start = Offset(0f, 0f),
-                end = Offset(w, 0f),
-                strokeWidth = 3.5f
-            )
-
-            // 3. Subtle Bottom Reflection Edge
-            drawLine(
-                brush = Brush.horizontalGradient(
-                    colors = listOf(
-                        textPrimaryColor.copy(alpha = 0.05f),
-                        textPrimaryColor.copy(alpha = 0.15f),
+                        Color.White.copy(alpha = 0.45f),
+                        Color.White.copy(alpha = 0.15f),
                         Color.Transparent
                     )
                 ),
-                start = Offset(0f, h),
-                end = Offset(w, h),
-                strokeWidth = 2f
+                start = Offset(0f, 1f),
+                end = Offset(w * 0.7f, 1f),
+                strokeWidth = 2.5f
+            )
+
+            // 4. Laser Green Accent Line along bottom-left border
+            drawLine(
+                brush = Brush.horizontalGradient(
+                    colors = listOf(
+                        Color(0xFF00E676).copy(alpha = 0.9f),
+                        Color(0xFF00E676).copy(alpha = 0.4f),
+                        Color.Transparent
+                    )
+                ),
+                start = Offset(0f, h - 1f),
+                end = Offset(w * 0.5f, h - 1f),
+                strokeWidth = 3f
             )
         }
 
@@ -144,13 +182,14 @@ fun PremiumMatchCard(
                 // Map & Mode Badge
                 Box(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(6.dp))
-                        .glassCard()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color(0x2EFFFFFF))
+                        .border(1.dp, Color(0x4DFFFFFF), RoundedCornerShape(8.dp))
                         .padding(horizontal = 10.dp, vertical = 6.dp)
                 ) {
                     Text(
                         text = "$map • $badge",
-                        color = AppColors.TextPrimary,
+                        color = Color.White,
                         fontSize = 10.5.sp,
                         fontWeight = FontWeight.Black,
                         letterSpacing = 0.5.sp
@@ -174,18 +213,18 @@ fun PremiumMatchCard(
                     Column {
                         Text(
                             "PRIZE POOL",
-                            color = Color(0xFF7A7A85),
+                            color = Color(0xFF94A3B8),
                             fontSize = 9.sp,
                             fontWeight = FontWeight.Black,
                             letterSpacing = 1.sp
                         )
                         Spacer(modifier = Modifier.height(3.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.EmojiEvents, contentDescription = null, tint = AppColors.TextPrimary, modifier = Modifier.size(15.dp))
+                            Icon(Icons.Default.EmojiEvents, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 cleanPrize,
-                                color = AppColors.TextPrimary,
+                                color = Color.White,
                                 fontSize = 16.5.sp,
                                 fontWeight = FontWeight.Black
                             )
@@ -196,18 +235,18 @@ fun PremiumMatchCard(
                     Column {
                         Text(
                             "ENTRY FEE",
-                            color = Color(0xFF7A7A85),
+                            color = Color(0xFF94A3B8),
                             fontSize = 9.sp,
                             fontWeight = FontWeight.Black,
                             letterSpacing = 1.sp
                         )
                         Spacer(modifier = Modifier.height(3.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.Bolt, contentDescription = null, tint = AppColors.TextPrimary, modifier = Modifier.size(15.dp))
+                            Icon(Icons.Default.Bolt, contentDescription = null, tint = Color(0xFF00E676), modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 cleanEntry,
-                                color = AppColors.TextPrimary,
+                                color = Color.White,
                                 fontSize = 16.5.sp,
                                 fontWeight = FontWeight.Black
                             )
@@ -215,17 +254,17 @@ fun PremiumMatchCard(
                     }
                 }
 
-                // Call to Action (White Button, Black Text)
+                // Call to Action (Vibrant Button)
                 Button(
                     onClick = onClick,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isLive || isCompleted) AppColors.SubCardBackground else AppColors.ButtonContainer,
-                        contentColor = if (isLive || isCompleted) AppColors.TextPrimary else AppColors.ButtonContent
+                        containerColor = if (isLive || isCompleted) Color(0xFF2E3348) else Color.White,
+                        contentColor = if (isLive || isCompleted) Color.White else Color.Black
                     ),
                     shape = RoundedCornerShape(12.dp),
                     contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp),
                     elevation = ButtonDefaults.buttonElevation(
-                        defaultElevation = if (isLive || isCompleted) 0.dp else 5.dp
+                        defaultElevation = if (isLive || isCompleted) 0.dp else 4.dp
                     )
                 ) {
                     Text(
@@ -242,7 +281,7 @@ fun PremiumMatchCard(
                 }
             }
 
-            // Progress Bar (Black and White)
+            // Progress Bar (Neon Green Accent matching bottom-left corner)
             Spacer(modifier = Modifier.height(16.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -253,14 +292,14 @@ fun PremiumMatchCard(
                     progress = { if (totalSlots > 0) slotsBooked.toFloat() / totalSlots else 0f },
                     modifier = Modifier
                         .weight(1f)
-                        .height(4.5.dp)
+                        .height(5.dp)
                         .clip(RoundedCornerShape(3.dp)),
-                    color = AppColors.PrimaryAccent,
-                    trackColor = AppColors.SubCardBackground,
+                    color = Color(0xFF00E676),
+                    trackColor = Color(0x33FFFFFF),
                 )
                 Text(
                     "$slotsBooked/$totalSlots",
-                    color = Color(0xFF9E9EA8),
+                    color = Color(0xFFCBD5E1),
                     fontSize = 11.5.sp,
                     fontWeight = FontWeight.Bold
                 )

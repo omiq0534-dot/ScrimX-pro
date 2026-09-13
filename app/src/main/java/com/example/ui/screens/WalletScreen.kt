@@ -1216,8 +1216,8 @@ fun TransactionHistoryV2(transactions: List<TransactionRecord>) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(16.dp))
-                            .background(Color.White)
-                            .border(1.dp, AppColors.BorderColor, RoundedCornerShape(16.dp))
+                            .background(Color(0xFF161922))
+                            .border(1.dp, Color(0xFF2A2E3D), RoundedCornerShape(16.dp))
                             .padding(14.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
@@ -1229,9 +1229,9 @@ fun TransactionHistoryV2(transactions: List<TransactionRecord>) {
                                     .clip(CircleShape)
                                     .background(
                                         when (tx.status) {
-                                            "PENDING" -> Color(0xFFFFF8E1)
-                                            "REJECTED" -> Color(0xFFFFEBEE)
-                                            else -> if (isPositive) Color(0xFFE8F5E9) else Color(0xFFF2F2F7)
+                                            "PENDING" -> Color(0xFF332710)
+                                            "REJECTED" -> Color(0xFF331418)
+                                            else -> if (isPositive) Color(0xFF143020) else Color(0xFF222634)
                                         }
                                     ),
                                 contentAlignment = Alignment.Center
@@ -1245,9 +1245,9 @@ fun TransactionHistoryV2(transactions: List<TransactionRecord>) {
                                     },
                                     contentDescription = null,
                                     tint = when (tx.status) {
-                                        "PENDING" -> Color(0xFFFFA000)
-                                        "REJECTED" -> Color(0xFFD32F2F)
-                                        else -> if (isPositive) Color(0xFF2E7D32) else Color.Black
+                                        "PENDING" -> Color(0xFFFFB300)
+                                        "REJECTED" -> Color(0xFFFF5252)
+                                        else -> if (isPositive) Color(0xFF00E676) else Color.White
                                     },
                                     modifier = Modifier.size(18.dp)
                                 )
@@ -1265,11 +1265,11 @@ fun TransactionHistoryV2(transactions: List<TransactionRecord>) {
                                     },
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 14.sp,
-                                    color = AppColors.TextPrimary
+                                    color = Color.White
                                 )
-                                Text(dateStr, fontSize = 11.sp, color = Color(0xFF9CA3AF))
+                                Text(dateStr, fontSize = 11.sp, color = Color(0xFF94A3B8))
                                 if (tx.utrOrUpi.isNotBlank()) {
-                                    Text("Ref: ${tx.utrOrUpi}", fontSize = 10.sp, color = Color(0xFF666677))
+                                    Text("Ref: ${tx.utrOrUpi}", fontSize = 10.sp, color = Color(0xFF64748B))
                                 }
                             }
                         }
@@ -1279,12 +1279,12 @@ fun TransactionHistoryV2(transactions: List<TransactionRecord>) {
                                 displayAmt,
                                 fontWeight = FontWeight.Black,
                                 fontSize = 15.sp,
-                                color = if (isPositive) Color(0xFF2E7D32) else Color.Black
+                                color = if (isPositive) Color(0xFF00E676) else Color.White
                             )
                             if (tx.status == "PENDING") {
-                                Text("PENDING", color = Color(0xFFFFA000), fontSize = 9.sp, fontWeight = FontWeight.Black)
+                                Text("PENDING", color = Color(0xFFFFB300), fontSize = 9.sp, fontWeight = FontWeight.Black)
                             } else if (tx.status == "REJECTED") {
-                                Text("REJECTED", color = Color(0xFFD32F2F), fontSize = 9.sp, fontWeight = FontWeight.Black)
+                                Text("REJECTED", color = Color(0xFFFF5252), fontSize = 9.sp, fontWeight = FontWeight.Black)
                             }
                         }
                     }

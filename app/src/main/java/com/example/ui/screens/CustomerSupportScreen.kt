@@ -54,6 +54,13 @@ data class UserSupportTicket(
     val answeredAt: Long = 0L
 )
 
+data class CustomFaqItem(
+    val id: String = "",
+    val question: String = "",
+    val answer: String = "",
+    val timestamp: Long = 0L
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomerSupportScreen(navController: NavController) {

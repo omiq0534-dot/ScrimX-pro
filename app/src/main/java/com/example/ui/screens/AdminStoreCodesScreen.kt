@@ -18,7 +18,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
@@ -28,7 +27,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.FirebaseHelper
 import com.example.security.AppSecurityGuard
-
 
 data class RestockRequest(
     val id: String = "",
@@ -40,7 +38,6 @@ data class RestockRequest(
 )
 
 data class AdminStoreStockItem(
-
     val itemId: String = "",
     val title: String = "",
     val denominationRupees: Int = 0,
@@ -50,13 +47,12 @@ data class AdminStoreStockItem(
     val customCodesPool: List<String> = emptyList()
 )
 
-
 @Composable
 fun RestockRequestCard(request: RestockRequest, onDismiss: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E070B)),
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE11D48).copy(alpha = 0.5f))
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF141722)),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF23293A))
     ) {
         Row(
             modifier = Modifier.padding(12.dp).fillMaxWidth(),
@@ -64,11 +60,11 @@ fun RestockRequestCard(request: RestockRequest, onDismiss: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(request.itemTitle, color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                Text(request.userEmail, color = Color(0xFFB0BEC5), fontSize = 11.sp)
+                Text(request.itemTitle, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                Text(request.userEmail, color = Color(0xFF8E92A4), fontSize = 11.sp)
             }
             IconButton(onClick = onDismiss, modifier = Modifier.size(32.dp)) {
-                Icon(Icons.Default.Check, contentDescription = "Done", tint = Color(0xFFE11D48))
+                Icon(Icons.Default.Check, contentDescription = "Done", tint = Color(0xFF00E676))
             }
         }
     }
@@ -125,7 +121,6 @@ fun AdminStoreCodesScreen(navController: NavController) {
 
         db?.collection("store_settings")?.addSnapshotListener { snapshot, error ->
             if (error != null) {
-                android.util.Log.e("AdminStoreCodes", "Error listening to store settings: ${error.message}")
                 return@addSnapshotListener
             }
             if (snapshot != null) {
@@ -148,18 +143,20 @@ fun AdminStoreCodesScreen(navController: NavController) {
         topBar = {
             TopAppBar(
                 title = {
-                    Column {
-                        Text(
-                            "Store Codes & Stock Manager",
-                            color = AppColors.TextPrimary,
-                            fontWeight = FontWeight.Black,
-                            fontSize = 17.sp
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFF00E676))
                         )
+                        Spacer(modifier = Modifier.width(10.dp))
                         Text(
-                            "Add Real Google Play Codes & Set Limits",
-                            color = Color(0xFF00E676),
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold
+                            "STORE CODES & STOCK",
+                            fontWeight = FontWeight.Black,
+                            color = Color.White,
+                            fontSize = 15.sp,
+                            letterSpacing = 1.sp
                         )
                     }
                 },
@@ -168,10 +165,10 @@ fun AdminStoreCodesScreen(navController: NavController) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF0B0D14))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF0D0F14))
             )
         },
-        containerColor = Color(0xFF07090E)
+        containerColor = Color(0xFF0D0F14)
     ) { padding ->
         LazyColumn(
             modifier = Modifier
@@ -184,40 +181,36 @@ fun AdminStoreCodesScreen(navController: NavController) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(
-                            Brush.linearGradient(
-                                listOf(Color(0xFF0A2B3D), Color(0xFF061520), Color(0xFF0D1E2C))
-                            )
-                        )
-                        .border(1.dp, Color(0xFF00E5FF).copy(alpha = 0.5f), RoundedCornerShape(16.dp))
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(Color(0xFF141722))
+                        .border(1.dp, Color(0xFF23293A), RoundedCornerShape(18.dp))
                         .padding(16.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(
                             modifier = Modifier
-                                .size(44.dp)
+                                .size(40.dp)
                                 .clip(CircleShape)
-                                .background(Color(0xFF00E5FF).copy(alpha = 0.2f)),
+                                .background(Color(0xFF1A1D2B)),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.Default.CardGiftcard, contentDescription = null, tint = Color(0xFF00E5FF), modifier = Modifier.size(24.dp))
+                            Icon(Icons.Default.CardGiftcard, contentDescription = null, tint = Color(0xFF00E676), modifier = Modifier.size(20.dp))
                         }
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             Text(
-                                "AUTOMATIC CODE DISPATCH ENGINE",
-                                color = AppColors.TextPrimary,
+                                "CODE DISPATCH ENGINE",
+                                color = Color.White,
                                 fontWeight = FontWeight.Black,
                                 fontSize = 13.sp,
                                 letterSpacing = 0.5.sp
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                "Add batch Google Play codes. When players redeem, the system instantly delivers available codes from your pool!",
-                                color = Color(0xFFB0BEC5),
+                                "Add batch Google Play codes. When players redeem, the system delivers available codes automatically.",
+                                color = Color(0xFF8E92A4),
                                 fontSize = 11.sp,
-                                lineHeight = 14.5.sp
+                                lineHeight = 15.sp
                             )
                         }
                     }
@@ -228,10 +221,10 @@ fun AdminStoreCodesScreen(navController: NavController) {
                 item {
                     Text(
                         "RESTOCK REQUESTS",
-                        color = Color(0xFFE11D48),
+                        color = Color(0xFFFF9800),
                         fontWeight = FontWeight.Black,
                         fontSize = 11.5.sp,
-                        letterSpacing = 1.2.sp
+                        letterSpacing = 1.sp
                     )
                 }
                 items(restockRequests) { req ->
@@ -242,16 +235,16 @@ fun AdminStoreCodesScreen(navController: NavController) {
                         }
                     )
                 }
-                item { Spacer(modifier = Modifier.height(16.dp)) }
+                item { Spacer(modifier = Modifier.height(10.dp)) }
             }
 
             item {
                 Text(
                     "GOOGLE PLAY GIFT CARDS",
-                    color = Color(0xFF75798E),
+                    color = Color(0xFF8E92A4),
                     fontWeight = FontWeight.Black,
                     fontSize = 11.5.sp,
-                    letterSpacing = 1.2.sp
+                    letterSpacing = 1.sp
                 )
             }
 
@@ -286,11 +279,11 @@ fun AdminStoreCodesScreen(navController: NavController) {
             item {
                 Spacer(modifier = Modifier.height(10.dp))
                 Text(
-                    "TOURNAMENT VIP DISCOUNT PASSES",
-                    color = Color(0xFF75798E),
+                    "VIP DISCOUNT PASSES",
+                    color = Color(0xFF8E92A4),
                     fontWeight = FontWeight.Black,
                     fontSize = 11.5.sp,
-                    letterSpacing = 1.2.sp
+                    letterSpacing = 1.sp
                 )
             }
 
@@ -322,7 +315,7 @@ fun AdminStoreCodesScreen(navController: NavController) {
                 )
             }
 
-            item { Spacer(modifier = Modifier.height(40.dp)) }
+            item { Spacer(modifier = Modifier.height(30.dp)) }
         }
     }
 
@@ -334,16 +327,16 @@ fun AdminStoreCodesScreen(navController: NavController) {
             onDismissRequest = { if (!isSaving) selectedItemForCodeEntry = null },
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Edit, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(20.dp))
+                    Icon(Icons.Default.Edit, contentDescription = null, tint = Color(0xFF00E676), modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Configure ${targetItem.title}", color = AppColors.TextPrimary, fontWeight = FontWeight.Black, fontSize = 16.sp)
+                    Text("Configure ${targetItem.title}", color = Color.White, fontWeight = FontWeight.Black, fontSize = 16.sp)
                 }
             },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(
-                        "Enter Custom Redeem Codes (1 code per line):",
-                        color = Color(0xFFB0B5C9),
+                        "Enter Custom Codes (1 code per line):",
+                        color = Color(0xFF8E92A4),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -357,14 +350,16 @@ fun AdminStoreCodesScreen(navController: NavController) {
                         placeholder = {
                             Text(
                                 "GPLY-87FA-29HK-0012\nGPLY-3341-99AA-7761",
-                                color = Color(0xFF555B6E),
+                                color = Color(0xFF75798E),
                                 fontFamily = FontFamily.Monospace,
                                 fontSize = 11.sp
                             )
                         },
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFF00E5FF),
-                            unfocusedBorderColor = Color(0xFF262C3D),
+                            focusedBorderColor = Color(0xFF00E676),
+                            unfocusedBorderColor = Color(0xFF23293A),
+                            focusedContainerColor = Color(0xFF1A1D2B),
+                            unfocusedContainerColor = Color(0xFF1A1D2B),
                             focusedTextColor = Color.White,
                             unfocusedTextColor = Color.White
                         ),
@@ -378,11 +373,13 @@ fun AdminStoreCodesScreen(navController: NavController) {
                         OutlinedTextField(
                             value = coinPriceInput,
                             onValueChange = { coinPriceInput = it },
-                            label = { Text("Coin Price", color = Color(0xFF8E93A6), fontSize = 11.sp) },
+                            label = { Text("Coin Price", color = Color(0xFF8E92A4), fontSize = 11.sp) },
                             modifier = Modifier.weight(1f),
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = Color(0xFFFFD700),
-                                unfocusedBorderColor = Color(0xFF262C3D),
+                                focusedBorderColor = Color(0xFF00E676),
+                                unfocusedBorderColor = Color(0xFF23293A),
+                                focusedContainerColor = Color(0xFF1A1D2B),
+                                unfocusedContainerColor = Color(0xFF1A1D2B),
                                 focusedTextColor = Color.White,
                                 unfocusedTextColor = Color.White
                             )
@@ -391,11 +388,13 @@ fun AdminStoreCodesScreen(navController: NavController) {
                         OutlinedTextField(
                             value = dailyLimitInput,
                             onValueChange = { dailyLimitInput = it },
-                            label = { Text("Daily Limit / User", color = Color(0xFF8E93A6), fontSize = 11.sp) },
+                            label = { Text("Daily Limit", color = Color(0xFF8E92A4), fontSize = 11.sp) },
                             modifier = Modifier.weight(1f),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = Color(0xFF00E676),
-                                unfocusedBorderColor = Color(0xFF262C3D),
+                                unfocusedBorderColor = Color(0xFF23293A),
+                                focusedContainerColor = Color(0xFF1A1D2B),
+                                unfocusedContainerColor = Color(0xFF1A1D2B),
                                 focusedTextColor = Color.White,
                                 unfocusedTextColor = Color.White
                             )
@@ -423,30 +422,30 @@ fun AdminStoreCodesScreen(navController: NavController) {
                             ?.set(data, com.google.firebase.firestore.SetOptions.merge())
                             ?.addOnSuccessListener {
                                 isSaving = false
-                                Toast.makeText(context, "✅ Saved settings for ${targetItem.title}", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Saved settings for ${targetItem.title}", Toast.LENGTH_SHORT).show()
                                 selectedItemForCodeEntry = null
                             }
                             ?.addOnFailureListener { e ->
                                 isSaving = false
-                                Toast.makeText(context, "Failed to save: ${e.message}", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Failed: ${e.message}", Toast.LENGTH_SHORT).show()
                             }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E676)),
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(10.dp)
                 ) {
                     if (isSaving) {
                         CircularProgressIndicator(modifier = Modifier.size(16.dp), color = Color.Black, strokeWidth = 2.dp)
                     } else {
-                        Text("SAVE CODES & LIMITS", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 12.sp)
+                        Text("SAVE CONFIG", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 12.sp)
                     }
                 }
             },
             dismissButton = {
                 TextButton(onClick = { selectedItemForCodeEntry = null }) {
-                    Text("CANCEL", color = Color(0xFF8E93A6), fontWeight = FontWeight.Bold)
+                    Text("CANCEL", color = Color(0xFF8E92A4), fontWeight = FontWeight.Bold)
                 }
             },
-            containerColor = Color(0xFF121520),
+            containerColor = Color(0xFF141722),
             shape = RoundedCornerShape(20.dp)
         )
     }
@@ -465,9 +464,9 @@ private fun AdminStoreItemRow(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
-            .background(Color(0xFF10131D))
-            .border(1.dp, if (isEnabled) Color(0xFF1E2335) else Color(0xFF381B22), RoundedCornerShape(14.dp))
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color(0xFF141722))
+            .border(1.dp, if (isEnabled) Color(0xFF23293A) else Color(0xFFFF5252).copy(alpha = 0.4f), RoundedCornerShape(16.dp))
             .padding(14.dp)
     ) {
         Row(
@@ -479,7 +478,7 @@ private fun AdminStoreItemRow(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         item.title,
-                        color = if (isEnabled) Color.White else Color(0xFF75798E),
+                        color = if (isEnabled) Color.White else Color(0xFF8E92A4),
                         fontWeight = FontWeight.Black,
                         fontSize = 14.sp
                     )
@@ -488,18 +487,19 @@ private fun AdminStoreItemRow(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(4.dp))
-                                .background(Color(0xFFFF0055).copy(alpha = 0.2f))
+                                .background(Color(0xFF2A1515))
+                                .border(1.dp, Color(0xFFFF5252), RoundedCornerShape(4.dp))
                                 .padding(horizontal = 5.dp, vertical = 1.dp)
                         ) {
-                            Text("DISABLED", color = Color(0xFFFF0055), fontSize = 8.sp, fontWeight = FontWeight.Black)
+                            Text("DISABLED", color = Color(0xFFFF5252), fontSize = 8.sp, fontWeight = FontWeight.Black)
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(3.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    "Price: $coinPrice Coins • Limit: $dailyLimit/day • Custom Codes in Pool: $customCodesCount",
-                    color = Color(0xFF8E93A6),
+                    "Price: $coinPrice Coins • Limit: $dailyLimit/day • Custom Codes: $customCodesCount",
+                    color = Color(0xFF8E92A4),
                     fontSize = 11.sp
                 )
             }
@@ -509,10 +509,11 @@ private fun AdminStoreItemRow(
                     onClick = onManageClick,
                     modifier = Modifier
                         .size(36.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFF1D2235))
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color(0xFF1A1D2B))
+                        .border(1.dp, Color(0xFF23293A), RoundedCornerShape(8.dp))
                 ) {
-                    Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color(0xFFFFD700), modifier = Modifier.size(16.dp))
+                    Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color(0xFF00E676), modifier = Modifier.size(16.dp))
                 }
 
                 Spacer(modifier = Modifier.width(6.dp))
@@ -521,13 +522,14 @@ private fun AdminStoreItemRow(
                     onClick = onToggleEnabled,
                     modifier = Modifier
                         .size(36.dp)
-                        .clip(CircleShape)
-                        .background(if (isEnabled) Color(0xFF00E676).copy(alpha = 0.15f) else Color(0xFFFF0055).copy(alpha = 0.15f))
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(if (isEnabled) Color(0xFF0D2517) else Color(0xFF2A1515))
+                        .border(1.dp, if (isEnabled) Color(0xFF00E676).copy(alpha = 0.5f) else Color(0xFFFF5252).copy(alpha = 0.5f), RoundedCornerShape(8.dp))
                 ) {
                     Icon(
                         if (isEnabled) Icons.Default.CheckCircle else Icons.Default.Block,
                         contentDescription = "Toggle",
-                        tint = if (isEnabled) Color(0xFF00E676) else Color(0xFFFF0055),
+                        tint = if (isEnabled) Color(0xFF00E676) else Color(0xFFFF5252),
                         modifier = Modifier.size(16.dp)
                     )
                 }

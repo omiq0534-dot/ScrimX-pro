@@ -18,7 +18,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -107,7 +106,7 @@ fun AdminStaffManagementScreen(navController: NavController) {
                 )
             )
             .addOnSuccessListener {
-                Toast.makeText(context, "🎉 ${targetUser.name} is now a Tournament Moderator!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "${targetUser.name} promoted to Moderator", Toast.LENGTH_SHORT).show()
                 userToPromote = null
                 showManualAddDialog = false
                 manualEmailInput = ""
@@ -140,32 +139,35 @@ fun AdminStaffManagementScreen(navController: NavController) {
         val u = userToPromote!!
         AlertDialog(
             onDismissRequest = { userToPromote = null },
-            containerColor = Color(0xFF10131E),
+            containerColor = Color(0xFF141722),
+            shape = RoundedCornerShape(20.dp),
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("🛡️ ASSIGN MODERATOR", color = Color(0xFF8B5CF6), fontWeight = FontWeight.Black, fontSize = 16.sp)
+                    Icon(Icons.Default.Security, contentDescription = null, tint = Color(0xFF00E676), modifier = Modifier.size(20.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("ASSIGN MODERATOR", color = Color.White, fontWeight = FontWeight.Black, fontSize = 16.sp)
                 }
             },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(
-                        "Are you sure you want to promote ${u.name} (${u.email}) as a Tournament Moderator?",
-                        color = AppColors.TextPrimary,
+                        "Promote ${u.name} (${u.email}) to Tournament Moderator?",
+                        color = Color.White,
                         fontSize = 13.sp
                     )
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(10.dp))
-                            .background(Color(0xFF191D2C))
+                            .background(Color(0xFF1A1D2B))
+                            .border(1.dp, Color(0xFF23293A), RoundedCornerShape(10.dp))
                             .padding(10.dp)
                     ) {
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Text("🛡️ New Permissions Given:", color = Color(0xFF00E5FF), fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                            Text("• Create matches for BGMI / Free Fire", color = Color(0xFFCBD5E1), fontSize = 11.sp)
-                            Text("• Enter & release Room ID and Passwords", color = Color(0xFFCBD5E1), fontSize = 11.sp)
-                            Text("• Answer customer support tickets", color = Color(0xFFCBD5E1), fontSize = 11.sp)
-                            Text("🔒 No access to wallet adjustments or ban system", color = Color(0xFFFFD700), fontSize = 11.sp)
+                            Text("Permissions Given:", color = Color(0xFF00E676), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                            Text("• Create and manage match schedules", color = Color(0xFF8E92A4), fontSize = 11.sp)
+                            Text("• Enter & release Room ID and Passwords", color = Color(0xFF8E92A4), fontSize = 11.sp)
+                            Text("• Answer user support queries", color = Color(0xFF8E92A4), fontSize = 11.sp)
                         }
                     }
                 }
@@ -173,14 +175,15 @@ fun AdminStaffManagementScreen(navController: NavController) {
             confirmButton = {
                 Button(
                     onClick = { makeModerator(u) },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8B5CF6))
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E676)),
+                    shape = RoundedCornerShape(10.dp)
                 ) {
-                    Text("GRANT ROLE", color = AppColors.TextPrimary, fontWeight = FontWeight.Black)
+                    Text("GRANT ROLE", color = Color.Black, fontWeight = FontWeight.Black)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { userToPromote = null }) {
-                    Text("Cancel", color = Color(0xFF94A3B8))
+                    Text("Cancel", color = Color(0xFF8E92A4))
                 }
             }
         )
@@ -191,28 +194,30 @@ fun AdminStaffManagementScreen(navController: NavController) {
         val u = userToRevoke!!
         AlertDialog(
             onDismissRequest = { userToRevoke = null },
-            containerColor = Color(0xFF10131E),
+            containerColor = Color(0xFF141722),
+            shape = RoundedCornerShape(20.dp),
             title = {
-                Text("REVOKE MODERATOR ROLE", color = Color(0xFFFF3366), fontWeight = FontWeight.Black, fontSize = 16.sp)
+                Text("REVOKE MODERATOR", color = Color(0xFFFF5252), fontWeight = FontWeight.Black, fontSize = 16.sp)
             },
             text = {
                 Text(
-                    "Remove moderator privileges for ${u.name} (${u.email})? They will become a standard player immediately.",
-                    color = AppColors.TextPrimary,
+                    "Remove moderator privileges for ${u.name} (${u.email})? They will become a standard player.",
+                    color = Color.White,
                     fontSize = 13.sp
                 )
             },
             confirmButton = {
                 Button(
                     onClick = { revokeModerator(u) },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF3366))
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5252)),
+                    shape = RoundedCornerShape(10.dp)
                 ) {
-                    Text("REVOKE ACCESS", color = AppColors.TextPrimary, fontWeight = FontWeight.Black)
+                    Text("REVOKE", color = Color.White, fontWeight = FontWeight.Black)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { userToRevoke = null }) {
-                    Text("Cancel", color = Color(0xFF94A3B8))
+                    Text("Cancel", color = Color(0xFF8E92A4))
                 }
             }
         )
@@ -222,27 +227,35 @@ fun AdminStaffManagementScreen(navController: NavController) {
     if (showManualAddDialog) {
         AlertDialog(
             onDismissRequest = { showManualAddDialog = false },
-            containerColor = Color(0xFF10131E),
+            containerColor = Color(0xFF141722),
+            shape = RoundedCornerShape(20.dp),
             title = {
-                Text("ADD MODERATOR BY EMAIL", color = Color(0xFF00E5FF), fontWeight = FontWeight.Black, fontSize = 16.sp)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.PersonAdd, contentDescription = null, tint = Color(0xFF00E676), modifier = Modifier.size(20.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("ADD MODERATOR BY EMAIL", color = Color.White, fontWeight = FontWeight.Black, fontSize = 16.sp)
+                }
             },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(
-                        "Enter the exact email address of your trusted helper/moderator:",
-                        color = Color(0xFF94A3B8),
+                        "Enter the email address of the moderator:",
+                        color = Color(0xFF8E92A4),
                         fontSize = 12.sp
                     )
                     OutlinedTextField(
                         value = manualEmailInput,
                         onValueChange = { manualEmailInput = it },
-                        placeholder = { Text("helper@gmail.com", color = Color(0xFF64748B)) },
+                        placeholder = { Text("helper@gmail.com", color = Color(0xFF75798E)) },
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFF00E5FF),
-                            unfocusedBorderColor = Color(0xFF334155),
                             focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White
+                            unfocusedTextColor = Color.White,
+                            focusedBorderColor = Color(0xFF00E676),
+                            unfocusedBorderColor = Color(0xFF23293A),
+                            focusedContainerColor = Color(0xFF1A1D2B),
+                            unfocusedContainerColor = Color(0xFF1A1D2B)
                         ),
+                        shape = RoundedCornerShape(12.dp),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -256,7 +269,6 @@ fun AdminStaffManagementScreen(navController: NavController) {
                         if (matched != null) {
                             makeModerator(matched)
                         } else if (trimmed.isNotBlank()) {
-                            // Find by email in firestore
                             db?.collection("users")?.whereEqualTo("email", trimmed)?.get()
                                 ?.addOnSuccessListener { snap ->
                                     if (!snap.isEmpty) {
@@ -264,49 +276,57 @@ fun AdminStaffManagementScreen(navController: NavController) {
                                         db.collection("users").document(doc.id).update(
                                             mapOf("role" to "moderator", "isModerator" to true)
                                         ).addOnSuccessListener {
-                                            Toast.makeText(context, "🎉 Added moderator successfully!", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(context, "Added moderator successfully", Toast.LENGTH_SHORT).show()
                                             showManualAddDialog = false
                                             manualEmailInput = ""
                                         }
                                     } else {
-                                        Toast.makeText(context, "No user found with this email! Ask them to open the app once.", Toast.LENGTH_LONG).show()
+                                        Toast.makeText(context, "No user found with this email", Toast.LENGTH_LONG).show()
                                     }
                                 }
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E5FF))
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E676)),
+                    shape = RoundedCornerShape(10.dp)
                 ) {
-                    Text("ADD AS MOD", color = Color.Black, fontWeight = FontWeight.Black)
+                    Text("ADD MOD", color = Color.Black, fontWeight = FontWeight.Black)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showManualAddDialog = false }) {
-                    Text("Cancel", color = Color(0xFF94A3B8))
+                    Text("Cancel", color = Color(0xFF8E92A4))
                 }
             }
         )
     }
 
     Scaffold(
-        containerColor = Color(0xFFFAFAFA),
+        containerColor = Color(0xFF0D0F14),
         topBar = {
             TopAppBar(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("🛡️ STAFF & MODERATORS", fontWeight = FontWeight.Black, color = Color(0xFF111827), fontSize = 16.sp)
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFF00E676))
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text("STAFF & MODERATORS", fontWeight = FontWeight.Black, color = Color.White, fontSize = 15.sp, letterSpacing = 1.sp)
                     }
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color(0xFF111827))
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 },
                 actions = {
                     IconButton(onClick = { showManualAddDialog = true }) {
-                        Icon(Icons.Default.PersonAdd, contentDescription = "Add Mod", tint = Color(0xFF8B5CF6))
+                        Icon(Icons.Default.PersonAdd, contentDescription = "Add Mod", tint = Color(0xFF00E676))
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFFAFAFA))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF0D0F14))
             )
         }
     ) { padding ->
@@ -314,10 +334,10 @@ fun AdminStaffManagementScreen(navController: NavController) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = 18.dp),
+                .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            item { Spacer(modifier = Modifier.height(4.dp)) }
+            item { Spacer(modifier = Modifier.height(2.dp)) }
 
             // Owner Banner
             item {
@@ -325,31 +345,31 @@ fun AdminStaffManagementScreen(navController: NavController) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(18.dp))
-                        .background(Color(0xFF111319))
-                        .border(1.dp, Color(0xFFFF0055).copy(alpha = 0.5f), RoundedCornerShape(18.dp))
+                        .background(Color(0xFF141722))
+                        .border(1.dp, Color(0xFF23293A), RoundedCornerShape(18.dp))
                         .padding(16.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(
                             modifier = Modifier
-                                .size(44.dp)
+                                .size(40.dp)
                                 .clip(CircleShape)
-                                .background(Color(0xFFFF0055).copy(alpha = 0.2f))
-                                .border(1.dp, Color(0xFFFFD700), CircleShape),
+                                .background(Color(0xFF1A1D2B))
+                                .border(1.dp, Color(0xFF00E676), CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("👑", fontSize = 20.sp)
+                            Icon(Icons.Default.Shield, contentDescription = null, tint = Color(0xFF00E676), modifier = Modifier.size(20.dp))
                         }
                         Spacer(modifier = Modifier.width(12.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("Supreme App Owner", color = Color.White, fontWeight = FontWeight.Black, fontSize = 15.sp)
+                                Text("Owner Account", color = Color.White, fontWeight = FontWeight.Black, fontSize = 14.sp)
                                 Spacer(modifier = Modifier.width(6.dp))
                                 AdminMasterBadge(isOwner = true, showClickInfo = false)
                             }
                             Spacer(modifier = Modifier.height(2.dp))
-                            Text("omiq0534@gmail.com", color = Color(0xFFFFD700), fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                            Text("Master authority: only you can promote or demote staff.", color = Color(0xFF94A3B8), fontSize = 11.sp)
+                            Text("omiq0534@gmail.com", color = Color(0xFF00E676), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            Text("Full administrative authority to manage staff.", color = Color(0xFF8E92A4), fontSize = 11.sp)
                         }
                     }
                 }
@@ -360,22 +380,22 @@ fun AdminStaffManagementScreen(navController: NavController) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(Color(0xFF111319))
-                        .border(1.dp, Color(0xFF262A38), RoundedCornerShape(14.dp))
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Color(0xFF141722))
+                        .border(1.dp, Color(0xFF23293A), RoundedCornerShape(16.dp))
                         .padding(14.dp)
                 ) {
-                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.Info, contentDescription = null, tint = Color(0xFF00E5FF), modifier = Modifier.size(16.dp))
+                            Icon(Icons.Default.Info, contentDescription = null, tint = Color(0xFF00E676), modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("HOW MODERATORS HELP YOU", color = Color(0xFF00E5FF), fontWeight = FontWeight.Black, fontSize = 12.sp)
+                            Text("MODERATOR CAPABILITIES", color = Color(0xFF00E676), fontWeight = FontWeight.Black, fontSize = 12.sp)
                         }
                         Text(
-                            "Moderators can create tournaments, paste Room ID & Passwords before matches start, and answer user questions — freeing up your time while keeping full wallet & app control in your hands!",
-                            color = Color(0xFF94A3B8),
+                            "Moderators can create tournaments, update Room ID & Passwords before matches start, and answer user queries.",
+                            color = Color(0xFF8E92A4),
                             fontSize = 11.sp,
-                            lineHeight = 16.sp
+                            lineHeight = 15.sp
                         )
                     }
                 }
@@ -384,27 +404,27 @@ fun AdminStaffManagementScreen(navController: NavController) {
             // Search & Assign New Moderator Section
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("ADD / SEARCH NEW MODERATOR", color = Color(0xFF4B5563), fontSize = 11.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
+                    Text("SEARCH USERS", color = Color(0xFF8E92A4), fontSize = 11.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
                     OutlinedTextField(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
-                        placeholder = { Text("Search player name, email, or UID...", color = Color(0xFF64748B), fontSize = 13.sp) },
-                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color(0xFF8B5CF6)) },
+                        placeholder = { Text("Search player name, email, or UID...", color = Color(0xFF75798E), fontSize = 13.sp) },
+                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color(0xFF00E676)) },
                         trailingIcon = {
                             if (searchQuery.isNotEmpty()) {
                                 IconButton(onClick = { searchQuery = "" }) {
-                                    Icon(Icons.Default.Clear, contentDescription = "Clear", tint = Color(0xFF94A3B8))
+                                    Icon(Icons.Default.Clear, contentDescription = "Clear", tint = Color(0xFF8E92A4))
                                 }
                             }
                         },
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFF8B5CF6),
-                            unfocusedBorderColor = Color(0xFF262A38),
-                            focusedContainerColor = Color(0xFF111319),
-                            unfocusedContainerColor = Color(0xFF111319),
+                            focusedBorderColor = Color(0xFF00E676),
+                            unfocusedBorderColor = Color(0xFF23293A),
+                            focusedContainerColor = Color(0xFF1A1D2B),
+                            unfocusedContainerColor = Color(0xFF1A1D2B),
                             focusedTextColor = Color.White,
                             unfocusedTextColor = Color.White,
-                            cursorColor = Color(0xFF8B5CF6)
+                            cursorColor = Color(0xFF00E676)
                         ),
                         shape = RoundedCornerShape(14.dp),
                         singleLine = true,
@@ -417,7 +437,7 @@ fun AdminStaffManagementScreen(navController: NavController) {
             if (searchQuery.isNotBlank()) {
                 if (searchedUsers.isEmpty()) {
                     item {
-                        Text("No matching players found.", color = Color(0xFF64748B), fontSize = 12.sp, modifier = Modifier.padding(vertical = 8.dp))
+                        Text("No matching players found.", color = Color(0xFF8E92A4), fontSize = 12.sp, modifier = Modifier.padding(vertical = 8.dp))
                     }
                 } else {
                     items(searchedUsers) { user ->
@@ -426,8 +446,8 @@ fun AdminStaffManagementScreen(navController: NavController) {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(Color(0xFF111319))
-                                .border(1.dp, if (isAlreadyMod) Color(0xFF8B5CF6) else Color(0xFF262A38), RoundedCornerShape(12.dp))
+                                .background(Color(0xFF141722))
+                                .border(1.dp, if (isAlreadyMod) Color(0xFF00E676) else Color(0xFF23293A), RoundedCornerShape(12.dp))
                                 .padding(12.dp)
                         ) {
                             Row(
@@ -443,13 +463,13 @@ fun AdminStaffManagementScreen(navController: NavController) {
                                             AdminMasterBadge(isOwner = false, showClickInfo = false)
                                         }
                                     }
-                                    Text(user.email, color = Color(0xFF94A3B8), fontSize = 11.sp)
+                                    Text(user.email, color = Color(0xFF8E92A4), fontSize = 11.sp)
                                 }
 
                                 if (isAlreadyMod) {
                                     Button(
                                         onClick = { userToRevoke = user },
-                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2A151A)),
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2A1515)),
                                         shape = RoundedCornerShape(8.dp),
                                         contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
                                     ) {
@@ -458,11 +478,11 @@ fun AdminStaffManagementScreen(navController: NavController) {
                                 } else {
                                     Button(
                                         onClick = { userToPromote = user },
-                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8B5CF6)),
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E676)),
                                         shape = RoundedCornerShape(8.dp),
                                         contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
                                     ) {
-                                        Text("+ Make Mod", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Black)
+                                        Text("+ Make Mod", color = Color.Black, fontSize = 11.sp, fontWeight = FontWeight.Black)
                                     }
                                 }
                             }
@@ -480,7 +500,7 @@ fun AdminStaffManagementScreen(navController: NavController) {
                 ) {
                     Text(
                         "ACTIVE MODERATORS (${activeModerators.size})",
-                        color = Color(0xFF4B5563),
+                        color = Color(0xFF8E92A4),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Black,
                         letterSpacing = 1.sp
@@ -491,7 +511,7 @@ fun AdminStaffManagementScreen(navController: NavController) {
             if (isLoading) {
                 item {
                     Box(modifier = Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = Color(0xFF8B5CF6))
+                        CircularProgressIndicator(color = Color(0xFF00E676))
                     }
                 }
             } else if (activeModerators.isEmpty()) {
@@ -500,15 +520,15 @@ fun AdminStaffManagementScreen(navController: NavController) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(14.dp))
-                            .background(Color(0xFF111319))
-                            .border(1.dp, Color(0xFF262A38), RoundedCornerShape(14.dp))
+                            .background(Color(0xFF141722))
+                            .border(1.dp, Color(0xFF23293A), RoundedCornerShape(14.dp))
                             .padding(24.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Icon(Icons.Default.GroupAdd, contentDescription = null, tint = Color(0xFF64748B), modifier = Modifier.size(36.dp))
-                            Text("No Active Moderators Yet", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                            Text("Search above or tap '+' to add your trusted helpers!", color = Color(0xFF94A3B8), fontSize = 11.sp)
+                            Icon(Icons.Default.GroupAdd, contentDescription = null, tint = Color(0xFF8E92A4), modifier = Modifier.size(36.dp))
+                            Text("No Active Moderators", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text("Search above or tap '+' to add moderators", color = Color(0xFF8E92A4), fontSize = 11.sp)
                         }
                     }
                 }
@@ -518,8 +538,8 @@ fun AdminStaffManagementScreen(navController: NavController) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(16.dp))
-                            .background(Color(0xFF111319))
-                            .border(1.dp, Color(0xFF8B5CF6).copy(alpha = 0.5f), RoundedCornerShape(16.dp))
+                            .background(Color(0xFF141722))
+                            .border(1.dp, Color(0xFF23293A), RoundedCornerShape(16.dp))
                             .padding(16.dp)
                     ) {
                         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -531,13 +551,13 @@ fun AdminStaffManagementScreen(navController: NavController) {
                                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
                                     Box(
                                         modifier = Modifier
-                                            .size(40.dp)
+                                            .size(38.dp)
                                             .clip(CircleShape)
-                                            .background(Color(0xFF8B5CF6).copy(alpha = 0.2f))
-                                            .border(1.dp, Color(0xFF8B5CF6), CircleShape),
+                                            .background(Color(0xFF1A1D2B))
+                                            .border(1.dp, Color(0xFF00E676), CircleShape),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        Text("🛡️", fontSize = 16.sp)
+                                        Icon(Icons.Default.Shield, contentDescription = null, tint = Color(0xFF00E676), modifier = Modifier.size(18.dp))
                                     }
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Column {
@@ -546,7 +566,7 @@ fun AdminStaffManagementScreen(navController: NavController) {
                                             Spacer(modifier = Modifier.width(6.dp))
                                             AdminMasterBadge(isOwner = false, showClickInfo = true)
                                         }
-                                        Text(mod.email, color = Color(0xFF94A3B8), fontSize = 11.sp)
+                                        Text(mod.email, color = Color(0xFF8E92A4), fontSize = 11.sp)
                                     }
                                 }
 
@@ -555,22 +575,22 @@ fun AdminStaffManagementScreen(navController: NavController) {
                                 }
                             }
 
-                            HorizontalDivider(color = Color(0xFF262A38))
+                            HorizontalDivider(color = Color(0xFF23293A))
 
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text("Permissions: Match Rooms & Queries", color = Color(0xFF00E5FF), fontSize = 11.sp, fontWeight = FontWeight.Medium)
-                                Text("Matches: ${mod.totalMatches}", color = Color(0xFFFFD700), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                Text("Permissions: Match Rooms & Queries", color = Color(0xFF00E676), fontSize = 11.sp, fontWeight = FontWeight.Medium)
+                                Text("Matches: ${mod.totalMatches}", color = Color(0xFF8E92A4), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
                 }
             }
 
-            item { Spacer(modifier = Modifier.height(30.dp)) }
+            item { Spacer(modifier = Modifier.height(20.dp)) }
         }
     }
 }
