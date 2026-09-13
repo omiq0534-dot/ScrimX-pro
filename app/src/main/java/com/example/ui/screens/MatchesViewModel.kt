@@ -18,6 +18,13 @@ data class MatchData(
     val id: String = "",
     val title: String = "",
     val time: String = "",
+    val joinTime: String = "",               // e.g. "07:30 PM" - time when registration opens
+    val resultTime: String = "",             // e.g. "08:45 PM" - time when results / points table declare
+    val isResultDeclared: Boolean = false,   // Admin toggle to declare results
+    val pointsTableImageUrl: String = "",    // Admin screenshot URL or image
+    val pointsTableNotes: String = "",       // Admin summary or MVP notes
+    val pointsTableRanks: String = "",       // Formatted standings: "1 | Team Toxic | 14 Kills | ₹300\n2 | ..."
+    val resultPublicDelayMinutes: Int = 10,  // Delay for non-joined players
     val prize: String = "",
     val entry: String = "",
     val entryType: String = "PAID", // "FREE", "AD", "PAID"

@@ -1065,6 +1065,39 @@ fun EarnCard(
 @Composable
 fun UpcomingMatches(navController: NavController, viewModel: MatchesViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
     val matches by viewModel.matches.collectAsState()
+    var selectedFilter by remember { mutableStateOf("ALL") }
+
+    // Dynamic Filter Counts
+    val soloCount = remember(matches) { matches.count { it.mode.equals("Solo", true) || it.badge.contains("Solo", true) || it.title.contains("Solo", true) } }
+    val duoCount = remember(matches) { matches.count { it.mode.equals("Duo", true) || it.badge.contains("Duo", true) || it.title.contains("Duo", true) } }
+    val squadCount = remember(matches) { matches.count { it.mode.equals("Squad", true) || it.badge.contains("Squad", true) || it.title.contains("Squad", true) } }
+    val freeCount = remember(matches) { matches.count { it.entry.contains("FREE", true) || it.entry.replace("₹", "").trim() == "0" } }
+    val liveCount = remember(matches) { matches.count { it.status.equals("Live", true) || it.status.equals("Ongoing", true) } }
+
+    val filterList = remember(matches.size, soloCount, duoCount, squadCount, freeCount, liveCount) {
+        val list = mutableListOf(
+            com.example.ui.components.FilterItem(id = "ALL", label = "ALL", icon = Icons.Default.SportsEsports, count = matches.size),
+            com.example.ui.components.FilterItem(id = "SOLO", label = "SOLO", icon = Icons.Default.Person, count = soloCount),
+            com.example.ui.components.FilterItem(id = "DUO", label = "DUO", icon = Icons.Default.Group, count = duoCount),
+            com.example.ui.components.FilterItem(id = "SQUAD", label = "SQUAD", icon = Icons.Default.Groups, count = squadCount),
+            com.example.ui.components.FilterItem(id = "FREE", label = "FREE", icon = Icons.Default.Bolt, count = freeCount)
+        )
+        if (liveCount > 0) {
+            list.add(com.example.ui.components.FilterItem(id = "LIVE", label = "LIVE", isLiveBadge = true, count = liveCount))
+        }
+        list
+    }
+
+    val filteredMatches = remember(matches, selectedFilter) {
+        when (selectedFilter) {
+            "SOLO" -> matches.filter { it.mode.equals("Solo", true) || it.badge.contains("Solo", true) || it.title.contains("Solo", true) }
+            "DUO" -> matches.filter { it.mode.equals("Duo", true) || it.badge.contains("Duo", true) || it.title.contains("Duo", true) }
+            "SQUAD" -> matches.filter { it.mode.equals("Squad", true) || it.badge.contains("Squad", true) || it.title.contains("Squad", true) }
+            "FREE" -> matches.filter { it.entry.contains("FREE", true) || it.entry.replace("₹", "").trim() == "0" }
+            "LIVE" -> matches.filter { it.status.equals("Live", true) || it.status.equals("Ongoing", true) }
+            else -> matches
+        }
+    }
 
     Column {
         Row(
@@ -1073,9 +1106,27 @@ fun UpcomingMatches(navController: NavController, viewModel: MatchesViewModel = 
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text("Upcoming Scrims", fontSize = 22.sp, fontWeight = FontWeight.Black, color = Color.Black)
-            Text("See All", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+            Text(
+                "See All",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF00E676),
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable { navController.navigate("matches_tab") }
+                    .padding(horizontal = 6.dp, vertical = 2.dp)
+            )
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(10.dp))
+
+        if (matches.isNotEmpty()) {
+            com.example.ui.components.GlassFilterPills(
+                filters = filterList,
+                selectedFilterId = selectedFilter,
+                onFilterSelected = { selectedFilter = it }
+            )
+            Spacer(modifier = Modifier.height(14.dp))
+        }
         
         if (matches.isEmpty()) {
             Box(
@@ -1095,9 +1146,28 @@ fun UpcomingMatches(navController: NavController, viewModel: MatchesViewModel = 
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center
                 )
             }
+        } else if (filteredMatches.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(Color(0xFF141A24))
+                    .border(1.dp, Color(0x33FFFFFF), RoundedCornerShape(20.dp))
+                    .padding(24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    "No $selectedFilter matches available right now.\nTap 'ALL' to see all matches!",
+                    color = Color(0xFFCBD5E1),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+            }
         } else {
-            matches.forEach { match ->
+            filteredMatches.forEach { match ->
                 val totalSlots = if (match.totalSlots > 0) match.totalSlots else if (match.mode == "Solo") 48 else if (match.mode == "Duo") 24 else 12
+                val isResultReady = com.example.utils.TournamentTimeHelper.isResultReady(match.resultTime, match.isResultDeclared, match.status)
                 com.example.ui.components.PremiumMatchCard(
                     title = match.title,
                     time = match.time,
@@ -1109,7 +1179,16 @@ fun UpcomingMatches(navController: NavController, viewModel: MatchesViewModel = 
                     slotsBooked = match.bookedSlots.size,
                     totalSlots = totalSlots,
                     liveUrl = match.liveUrl,
-                    onClick = { navController.navigate("match_details/${android.net.Uri.encode(match.id)}") }
+                    joinTime = match.joinTime,
+                    resultTime = match.resultTime,
+                    isResultDeclared = match.isResultDeclared,
+                    onClick = {
+                        if (isResultReady) {
+                            navController.navigate("points_table/${android.net.Uri.encode(match.id)}")
+                        } else {
+                            navController.navigate("match_details/${android.net.Uri.encode(match.id)}")
+                        }
+                    }
                 )
                 Spacer(modifier = Modifier.height(16.dp))
             }

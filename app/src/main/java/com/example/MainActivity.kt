@@ -96,6 +96,14 @@ class MainActivity : ComponentActivity() {
             composable("admin_store_codes") {
               com.example.ui.screens.AdminStoreCodesScreen(navController)
             }
+            composable("points_table/{matchId}") { backStackEntry ->
+              val matchId = backStackEntry.arguments?.getString("matchId") ?: ""
+              com.example.ui.screens.PointsTableScreen(matchId, navController)
+            }
+            composable("admin_points_table/{matchId}") { backStackEntry ->
+              val matchId = backStackEntry.arguments?.getString("matchId") ?: ""
+              com.example.ui.screens.AdminPointsTableScreen(matchId, navController)
+            }
           }
           }
         }

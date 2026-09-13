@@ -147,6 +147,7 @@ service cloud.firestore {
       allow write: if isStaff() || isOwner();
     }
 
+    // Store settings (Codes Pool, Coin Price, Limits & Stock Availability)
     match /store_settings/{itemId} {
       allow read: if isAuthenticated();
       allow create, delete: if isStaff() || isOwner();

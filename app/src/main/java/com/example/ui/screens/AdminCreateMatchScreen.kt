@@ -48,6 +48,8 @@ fun AdminCreateMatchScreen(navController: NavController) {
     var roomId by remember { mutableStateOf("") }
     var roomPass by remember { mutableStateOf("") }
     var liveUrl by remember { mutableStateOf("") }
+    var joinTime by remember { mutableStateOf("") }
+    var resultTime by remember { mutableStateOf("") }
     var customRules by remember { mutableStateOf("") }
 
     var isLoading by remember { mutableStateOf(false) }
@@ -271,8 +273,8 @@ fun AdminCreateMatchScreen(navController: NavController) {
                     ClassyDarkInput(
                         value = time,
                         onValueChange = { time = it },
-                        label = "Time & Date",
-                        placeholder = "e.g. Today 08:30 PM"
+                        label = "Match Start Time",
+                        placeholder = "e.g. 08:30 PM"
                     )
                 }
                 Box(modifier = Modifier.weight(1f)) {
@@ -281,6 +283,29 @@ fun AdminCreateMatchScreen(navController: NavController) {
                         onValueChange = { customSlots = it },
                         label = "Total Slots / Players",
                         placeholder = "2, 8, 12, 48"
+                    )
+                }
+            }
+
+            // Join Time & Result Time Controls
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Box(modifier = Modifier.weight(1f)) {
+                    ClassyDarkInput(
+                        value = joinTime,
+                        onValueChange = { joinTime = it },
+                        label = "Join Start Time (Timer)",
+                        placeholder = "e.g. 08:00 PM"
+                    )
+                }
+                Box(modifier = Modifier.weight(1f)) {
+                    ClassyDarkInput(
+                        value = resultTime,
+                        onValueChange = { resultTime = it },
+                        label = "Result Time (Switch)",
+                        placeholder = "e.g. 09:30 PM"
                     )
                 }
             }
@@ -563,7 +588,9 @@ fun AdminCreateMatchScreen(navController: NavController) {
                             totalSlots = calculatedSlots,
                             bookedSlots = emptyMap(),
                             slotNames = emptyMap(),
-                            slotUids = emptyMap()
+                            slotUids = emptyMap(),
+                            joinTime = joinTime.trim(),
+                            resultTime = resultTime.trim()
                         )
 
                         if (db == null) {

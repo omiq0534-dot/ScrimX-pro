@@ -60,6 +60,8 @@ fun AdminManageMatchesScreen(
     var status by remember { mutableStateOf("") }
     var liveUrl by remember { mutableStateOf("") }
     var editRules by remember { mutableStateOf("") }
+    var editJoinTime by remember { mutableStateOf("") }
+    var editResultTime by remember { mutableStateOf("") }
 
     // View Bookings Dialog
     var showBookingsDialog by remember { mutableStateOf(false) }
@@ -180,6 +182,20 @@ fun AdminManageMatchesScreen(
                         placeholder = "https://youtube.com/live/..."
                     )
 
+                    ClassyDarkInput(
+                        value = editJoinTime,
+                        onValueChange = { editJoinTime = it },
+                        label = "Join Start Time (Auto-Countdown)",
+                        placeholder = "e.g. 08:00 PM or 2026-09-13 20:00"
+                    )
+
+                    ClassyDarkInput(
+                        value = editResultTime,
+                        onValueChange = { editResultTime = it },
+                        label = "Result Time (Switch to Results)",
+                        placeholder = "e.g. 09:30 PM or 2026-09-13 21:30"
+                    )
+
                     OutlinedTextField(
                         value = editRules,
                         onValueChange = { editRules = it },
@@ -259,7 +275,9 @@ fun AdminManageMatchesScreen(
                                     "roomPass", roomPass.trim(),
                                     "status", status,
                                     "liveUrl", liveUrl.trim(),
-                                    "rules", editRules.trim()
+                                    "rules", editRules.trim(),
+                                    "joinTime", editJoinTime.trim(),
+                                    "resultTime", editResultTime.trim()
                                 )
                             showEditDialog = false
                         }
@@ -629,6 +647,8 @@ fun AdminManageMatchesScreen(
                                     status = match.status
                                     liveUrl = match.liveUrl
                                     editRules = match.rules
+                                    editJoinTime = match.joinTime
+                                    editResultTime = match.resultTime
                                     showEditDialog = true
                                 },
                                 colors = ButtonDefaults.buttonColors(containerColor = surfaceSubtle),
@@ -638,6 +658,22 @@ fun AdminManageMatchesScreen(
                                 Icon(Icons.Default.Edit, contentDescription = null, tint = neonGreen, modifier = Modifier.size(15.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text("Edit / IDP", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            }
+
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            // Points Table & Upload Results Button
+                            Button(
+                                onClick = {
+                                    navController.navigate("admin_points_table/${Uri.encode(match.id)}")
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF332906)),
+                                shape = RoundedCornerShape(10.dp),
+                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                            ) {
+                                Icon(Icons.Default.EmojiEvents, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(15.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("Points Table", color = Color(0xFFFFD700), fontSize = 12.sp, fontWeight = FontWeight.Bold)
                             }
 
                             Spacer(modifier = Modifier.width(8.dp))
