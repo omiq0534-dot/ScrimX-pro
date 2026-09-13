@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.utils.TournamentTimeHelper
@@ -64,11 +65,9 @@ fun PremiumMatchCard(
     val cleanPrize = prize.replace("₹", "").replace(" Coins", "").trim()
     val prizeValue = cleanPrize.toIntOrNull() ?: 0
 
-    // Check if Mega / Special High-Prize Tournament
-    val isMegaTournament = prizeValue >= 50 ||
-            badge.contains("Mega", ignoreCase = true) ||
-            badge.contains("Special", ignoreCase = true) ||
-            badge.contains("Grand", ignoreCase = true) ||
+    // Check if Mega / Special High-Prize Tournament (Explicit tag or title only)
+    val isMegaTournament = badge.equals("Mega", ignoreCase = true) ||
+            badge.equals("Special", ignoreCase = true) ||
             title.contains("Mega", ignoreCase = true)
 
     // Card 3D Physical Press & Push-Down States (Uniform Top-Down 3D Elevation)
@@ -284,6 +283,7 @@ fun PremiumMatchCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
+                    modifier = Modifier.weight(1f, fill = false),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
@@ -366,7 +366,9 @@ fun PremiumMatchCard(
                                 },
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Black,
-                                letterSpacing = 0.6.sp
+                                letterSpacing = 0.6.sp,
+                                maxLines = 1,
+                                softWrap = false
                             )
                         }
                     }
@@ -390,17 +392,21 @@ fun PremiumMatchCard(
                             .padding(horizontal = 9.dp, vertical = 4.dp)
                     ) {
                         Text(
-                            text = "$map • $badge",
+                            text = if (badge.isNotBlank() && !badge.equals("NONE", ignoreCase = true)) "$map • $badge" else map,
                             color = Color(0xFFE2E8F0),
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
-                            letterSpacing = 0.3.sp
+                            letterSpacing = 0.3.sp,
+                            maxLines = 1,
+                            softWrap = false,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 }
 
-                // Mega Tournament Shimmer Badge
+                // Mega Tournament Shimmer Badge (Only if genuinely a Mega Tournament)
                 if (isMegaTournament) {
+                    Spacer(modifier = Modifier.width(6.dp))
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
@@ -416,7 +422,9 @@ fun PremiumMatchCard(
                             color = Color.Black,
                             fontSize = 9.5.sp,
                             fontWeight = FontWeight.Black,
-                            letterSpacing = 0.8.sp
+                            letterSpacing = 0.8.sp,
+                            maxLines = 1,
+                            softWrap = false
                         )
                     }
                 }
@@ -444,19 +452,21 @@ fun PremiumMatchCard(
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    modifier = Modifier.weight(1f, fill = false)
                 ) {
                     Icon(
                         Icons.Default.AccessTime,
                         contentDescription = "Time",
                         tint = if (countdownText != null) Color(0xFF00E676) else Color(0xFF94A3B8),
-                        modifier = Modifier.size(13.5.dp)
+                        modifier = Modifier.size(13.dp)
                     )
                     Text(
                         text = time,
                         color = Color(0xFFCBD5E1),
-                        fontSize = 12.5.sp,
-                        fontWeight = FontWeight.SemiBold
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1
                     )
 
                     if (countdownText != null) {
@@ -464,13 +474,14 @@ fun PremiumMatchCard(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(6.dp))
                                 .background(Color(0xFF00E676).copy(alpha = 0.15f))
-                                .padding(horizontal = 6.dp, vertical = 1.5.dp)
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
                             Text(
                                 text = countdownText,
                                 color = Color(0xFF00E676),
-                                fontSize = 10.5.sp,
-                                fontWeight = FontWeight.Black
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Black,
+                                maxLines = 1
                             )
                         }
                     }
@@ -478,27 +489,29 @@ fun PremiumMatchCard(
 
                 // Result Time / Countdown Tag
                 if (resultTime.isNotBlank() && !isResultReady) {
+                    Spacer(modifier = Modifier.width(6.dp))
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        horizontalArrangement = Arrangement.spacedBy(3.dp)
                     ) {
                         Icon(
                             Icons.Default.Assessment,
                             contentDescription = null,
                             tint = Color(0xFF00E676),
-                            modifier = Modifier.size(12.dp)
+                            modifier = Modifier.size(11.5.dp)
                         )
                         Text(
                             if (resultCountdown != null) "Res: $resultCountdown" else "Res: $resultTime",
                             color = Color(0xFF00E676),
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold
+                            fontSize = 10.5.sp,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             // Main Info Box: Prize, Entry & 3D Raised Glass Join Button
             Row(
@@ -507,29 +520,33 @@ fun PremiumMatchCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Metrics: Prize Pool & Entry Fee
-                Row(horizontalArrangement = Arrangement.spacedBy(22.dp)) {
+                Row(
+                    modifier = Modifier.weight(1f, fill = false),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     // Prize Pool Column
                     Column {
                         Text(
                             "PRIZE POOL",
                             color = Color(0xFF8E92A4),
-                            fontSize = 9.sp,
+                            fontSize = 8.5.sp,
                             fontWeight = FontWeight.Black,
-                            letterSpacing = 1.2.sp
+                            letterSpacing = 1.1.sp
                         )
-                        Spacer(modifier = Modifier.height(3.dp))
+                        Spacer(modifier = Modifier.height(2.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 Icons.Default.EmojiEvents,
                                 contentDescription = null,
                                 tint = Color(0xFFFFD700),
-                                modifier = Modifier.size(16.dp)
+                                modifier = Modifier.size(15.dp)
                             )
-                            Spacer(modifier = Modifier.width(4.dp))
+                            Spacer(modifier = Modifier.width(3.dp))
                             Text(
                                 if (cleanPrize.startsWith("₹")) cleanPrize else "₹$cleanPrize",
                                 color = Color.White,
-                                fontSize = 16.5.sp,
+                                fontSize = 15.5.sp,
                                 fontWeight = FontWeight.Black
                             )
                         }
@@ -540,28 +557,30 @@ fun PremiumMatchCard(
                         Text(
                             "ENTRY FEE",
                             color = Color(0xFF8E92A4),
-                            fontSize = 9.sp,
+                            fontSize = 8.5.sp,
                             fontWeight = FontWeight.Black,
-                            letterSpacing = 1.2.sp
+                            letterSpacing = 1.1.sp
                         )
-                        Spacer(modifier = Modifier.height(3.dp))
+                        Spacer(modifier = Modifier.height(2.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 Icons.Default.Bolt,
                                 contentDescription = null,
                                 tint = Color(0xFF00E676),
-                                modifier = Modifier.size(16.dp)
+                                modifier = Modifier.size(15.dp)
                             )
-                            Spacer(modifier = Modifier.width(4.dp))
+                            Spacer(modifier = Modifier.width(3.dp))
                             Text(
                                 if (cleanEntry.equals("FREE", ignoreCase = true)) "FREE" else if (cleanEntry.startsWith("₹")) cleanEntry else "₹$cleanEntry",
                                 color = if (cleanEntry.equals("FREE", ignoreCase = true)) Color(0xFF00E676) else Color.White,
-                                fontSize = 16.5.sp,
+                                fontSize = 15.5.sp,
                                 fontWeight = FontWeight.Black
                             )
                         }
                     }
                 }
+
+                Spacer(modifier = Modifier.width(8.dp))
 
                 // 3D Raised Glass Button with Dynamic Auto-Switching State
                 val buttonText = when {
@@ -569,21 +588,22 @@ fun PremiumMatchCard(
                     isLive -> "WATCH"
                     isCompleted -> "RESULTS"
                     isFull -> "FULL"
-                    isJoinPending -> if (joinCountdown != null) "JOIN IN $joinCountdown" else "OPENS ${joinTime.ifBlank { "SOON" }}"
+                    isJoinPending -> if (joinCountdown != null) "OPENS $joinCountdown" else "OPENS ${joinTime.ifBlank { "SOON" }}"
                     else -> "JOIN"
                 }
 
                 Box(
                     modifier = Modifier
                         .scale(btnScale)
+                        .defaultMinSize(minHeight = 36.dp)
                         .shadow(
-                            elevation = if (isBtnPressed) 2.dp else 8.dp,
-                            shape = RoundedCornerShape(13.dp),
+                            elevation = if (isBtnPressed) 2.dp else 7.dp,
+                            shape = RoundedCornerShape(12.dp),
                             spotColor = if (isResultReady) Color(0xFFFFD700).copy(alpha = if (isBtnPressed) 0.25f else 0.55f)
                                         else Color(0xFF00E676).copy(alpha = if (isBtnPressed) 0.20f else 0.50f),
                             ambientColor = Color(0xFF000000).copy(alpha = 0.85f)
                         )
-                        .clip(RoundedCornerShape(13.dp))
+                        .clip(RoundedCornerShape(12.dp))
                         .pointerInput(Unit) {
                             detectTapGestures(
                                 onPress = {
@@ -622,7 +642,7 @@ fun PremiumMatchCard(
                                     )
                                 )
                             },
-                            shape = RoundedCornerShape(13.dp)
+                            shape = RoundedCornerShape(12.dp)
                         )
                         .border(
                             brush = when {
@@ -649,15 +669,15 @@ fun PremiumMatchCard(
                                     )
                                 )
                             },
-                            width = 1.3.dp,
-                            shape = RoundedCornerShape(13.dp)
+                            width = 1.2.dp,
+                            shape = RoundedCornerShape(12.dp)
                         )
-                        .padding(horizontal = if (isJoinPending) 14.dp else 20.dp, vertical = 11.dp),
+                        .padding(horizontal = if (isJoinPending) 12.dp else 16.dp, vertical = 8.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(5.dp)
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Text(
                             text = buttonText,
@@ -669,8 +689,10 @@ fun PremiumMatchCard(
                                 else -> Color(0xFF00E676)
                             },
                             fontWeight = FontWeight.Black,
-                            fontSize = if (isJoinPending) 11.5.sp else 13.sp,
-                            letterSpacing = 1.sp
+                            fontSize = if (isJoinPending) 11.5.sp else 12.5.sp,
+                            letterSpacing = 0.5.sp,
+                            maxLines = 1,
+                            softWrap = false
                         )
 
                         Icon(
@@ -689,7 +711,7 @@ fun PremiumMatchCard(
                                 isCompleted || isFull -> Color(0xFF8E92A4)
                                 else -> Color(0xFF00E676)
                             },
-                            modifier = Modifier.size(13.5.dp)
+                            modifier = Modifier.size(13.dp)
                         )
                     }
                 }
@@ -769,7 +791,7 @@ private fun rememberLiveCountdown(timeStr: String, isLive: Boolean, isCompleted:
     var countdown by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(timeStr) {
-        val targetMillis = parseTimeToMillis(timeStr) ?: return@LaunchedEffect
+        val targetMillis = TournamentTimeHelper.parseTimeToMillis(timeStr) ?: return@LaunchedEffect
         while (true) {
             val now = System.currentTimeMillis()
             val diff = targetMillis - now
@@ -780,9 +802,9 @@ private fun rememberLiveCountdown(timeStr: String, isLive: Boolean, isCompleted:
                 val seconds = (diff / 1000) % 60
 
                 countdown = if (hours > 0) {
-                    String.format(Locale.ENGLISH, "Starts in %02dh %02dm %02ds", hours, minutes, seconds)
+                    String.format(Locale.ENGLISH, "In %02dh %02dm", hours, minutes)
                 } else {
-                    String.format(Locale.ENGLISH, "Starts in %02dm %02ds", minutes, seconds)
+                    String.format(Locale.ENGLISH, "In %02dm %02ds", minutes, seconds)
                 }
             } else {
                 countdown = null
@@ -799,35 +821,5 @@ private fun rememberLiveCountdown(timeStr: String, isLive: Boolean, isCompleted:
  * Smart Time Parser
  */
 private fun parseTimeToMillis(timeStr: String): Long? {
-    val formats = listOf(
-        "hh:mm a",
-        "h:mm a",
-        "HH:mm",
-        "yyyy-MM-dd HH:mm",
-        "dd MMM yyyy hh:mm a",
-        "dd MMM hh:mm a"
-    )
-
-    for (pattern in formats) {
-        try {
-            val sdf = SimpleDateFormat(pattern, Locale.ENGLISH)
-            val date = sdf.parse(timeStr.trim()) ?: continue
-
-            val calParsed = Calendar.getInstance().apply { time = date }
-            val calNow = Calendar.getInstance()
-
-            if (calParsed.get(Calendar.YEAR) <= 1970) {
-                val finalCal = Calendar.getInstance().apply {
-                    set(Calendar.HOUR_OF_DAY, calParsed.get(Calendar.HOUR_OF_DAY))
-                    set(Calendar.MINUTE, calParsed.get(Calendar.MINUTE))
-                    set(Calendar.SECOND, 0)
-                    set(Calendar.MILLISECOND, 0)
-                }
-                return finalCal.timeInMillis
-            } else {
-                return date.time
-            }
-        } catch (_: Exception) { }
-    }
-    return null
+    return TournamentTimeHelper.parseTimeToMillis(timeStr)
 }

@@ -11,19 +11,42 @@ object TournamentTimeHelper {
         if (timeStr.isNullOrBlank()) return null
         val clean = timeStr.trim()
 
-        val formats = listOf(
+        val fullDateFormats = listOf(
+            "yyyy-MM-dd HH:mm",
+            "yyyy-MM-dd hh:mm a",
+            "yyyy-MM-dd h:mm a",
+            "dd MMM yyyy hh:mm a",
+            "dd MMM yyyy h:mm a",
+            "dd MMM hh:mm a",
+            "dd MMM h:mm a",
+            "dd/MM/yyyy HH:mm",
+            "dd/MM/yyyy hh:mm a",
+            "dd/MM/yyyy h:mm a"
+        )
+
+        for (pattern in fullDateFormats) {
+            try {
+                val sdf = SimpleDateFormat(pattern, Locale.ENGLISH)
+                sdf.isLenient = true
+                val date = sdf.parse(clean) ?: continue
+                val calParsed = Calendar.getInstance().apply { time = date }
+                if (calParsed.get(Calendar.YEAR) > 1970) {
+                    return date.time
+                }
+            } catch (_: Exception) { }
+        }
+
+        // Time-only formats (e.g. 08:39 AM, 8:39 PM, 20:30)
+        val timeOnlyFormats = listOf(
             "hh:mm a",
             "h:mm a",
             "HH:mm",
-            "yyyy-MM-dd HH:mm",
-            "yyyy-MM-dd hh:mm a",
-            "dd MMM yyyy hh:mm a",
-            "dd MMM hh:mm a",
-            "dd/MM/yyyy HH:mm",
-            "dd/MM/yyyy hh:mm a"
+            "H:mm",
+            "hh:mma",
+            "h:mma"
         )
 
-        for (pattern in formats) {
+        for (pattern in timeOnlyFormats) {
             try {
                 val sdf = SimpleDateFormat(pattern, Locale.ENGLISH)
                 sdf.isLenient = true
@@ -32,18 +55,20 @@ object TournamentTimeHelper {
                 val calParsed = Calendar.getInstance().apply { time = date }
                 val now = Calendar.getInstance()
 
-                // If only time was parsed (year is near 1970)
-                if (calParsed.get(Calendar.YEAR) <= 1970) {
-                    val finalCal = Calendar.getInstance().apply {
-                        set(Calendar.HOUR_OF_DAY, calParsed.get(Calendar.HOUR_OF_DAY))
-                        set(Calendar.MINUTE, calParsed.get(Calendar.MINUTE))
-                        set(Calendar.SECOND, 0)
-                        set(Calendar.MILLISECOND, 0)
-                    }
-                    return finalCal.timeInMillis
-                } else {
-                    return date.time
+                val targetToday = Calendar.getInstance().apply {
+                    set(Calendar.HOUR_OF_DAY, calParsed.get(Calendar.HOUR_OF_DAY))
+                    set(Calendar.MINUTE, calParsed.get(Calendar.MINUTE))
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
                 }
+
+                // If target time today is in the past by more than 15 minutes, assume it's scheduled for tomorrow!
+                // (This avoids premature triggering when admin sets e.g. 8:39 AM for next morning or 8:39 PM)
+                if (targetToday.timeInMillis < now.timeInMillis - (15 * 60 * 1000L)) {
+                    targetToday.add(Calendar.DAY_OF_YEAR, 1)
+                }
+
+                return targetToday.timeInMillis
             } catch (_: Exception) { }
         }
         return null
@@ -92,9 +117,23 @@ object TournamentTimeHelper {
     }
 
     /**
-     * Format milliseconds delta into MM:SS or HH:MM:SS
+     * Format milliseconds delta into concise MM:SS or HH:MM:SS
      */
     fun formatDuration(diffMillis: Long): String {
+        if (diffMillis <= 0) return "00:00"
+        val totalSecs = diffMillis / 1000
+        val hours = totalSecs / 3600
+        val mins = (totalSecs % 3600) / 60
+        val secs = totalSecs % 60
+
+        return if (hours > 0) {
+            String.format(Locale.ENGLISH, "%02dh %02dm", hours, mins)
+        } else {
+            String.format(Locale.ENGLISH, "%02dm %02ds", mins, secs)
+        }
+    }
+
+    fun formatDurationWithSecs(diffMillis: Long): String {
         if (diffMillis <= 0) return "00:00"
         val totalSecs = diffMillis / 1000
         val hours = totalSecs / 3600

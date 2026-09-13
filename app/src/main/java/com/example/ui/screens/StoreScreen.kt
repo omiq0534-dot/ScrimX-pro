@@ -658,6 +658,17 @@ fun FamPayGooglePlayCard(
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 // Top Row: Logo & Price
+                val cleanDenom = when {
+                    item.denominationRupees > 0 -> "₹${item.denominationRupees}"
+                    item.title.contains("₹") -> {
+                        val num = item.title.filter { it.isDigit() }
+                        if (num.isNotBlank()) "₹$num" else item.title
+                    }
+                    else -> {
+                        val num = item.title.filter { it.isDigit() }
+                        if (num.isNotBlank()) "₹$num" else item.title
+                    }
+                }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         GooglePlayLogoIcon(modifier = Modifier.size(24.dp))
@@ -671,7 +682,7 @@ fun FamPayGooglePlayCard(
                         )
                     }
                     Text(
-                        "₹${item.title.replace("Google Play ", "").replace(" Gift Card", "")}",
+                        cleanDenom,
                         color = Color.White,
                         fontWeight = FontWeight.Black,
                         fontSize = 20.sp,

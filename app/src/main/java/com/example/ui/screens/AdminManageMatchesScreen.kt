@@ -1,7 +1,10 @@
 package com.example.ui.screens
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Environment
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -29,6 +32,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 import com.example.FirebaseHelper
+import java.io.File
+import java.io.FileOutputStream
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,6 +71,9 @@ fun AdminManageMatchesScreen(
     // View Bookings Dialog
     var showBookingsDialog by remember { mutableStateOf(false) }
     var selectedMatchForBookings by remember { mutableStateOf<MatchData?>(null) }
+
+    // Delete Confirmation Dialog
+    var matchToDelete by remember { mutableStateOf<MatchData?>(null) }
 
     // 1. Edit Dialog
     if (showEditDialog && selectedMatchForEdit != null) {
@@ -410,8 +418,88 @@ fun AdminManageMatchesScreen(
                 }
             },
             confirmButton = {
-                TextButton(onClick = { showBookingsDialog = false }) {
-                    Text("Close", color = neonGreen, fontWeight = FontWeight.Bold)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (registeredPlayers.isNotEmpty()) {
+                        Button(
+                            onClick = {
+                                exportPlayerListToStorage(context, targetMatch, registeredPlayers)
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = surfaceSubtle),
+                            shape = RoundedCornerShape(10.dp),
+                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
+                        ) {
+                            Icon(Icons.Default.Download, contentDescription = null, tint = neonGreen, modifier = Modifier.size(15.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Download List", color = neonGreen, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        }
+                    } else {
+                        Spacer(modifier = Modifier.width(1.dp))
+                    }
+
+                    TextButton(onClick = { showBookingsDialog = false }) {
+                        Text("Close", color = Color.White, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        )
+    }
+
+    // 3. Delete Match Confirmation Dialog
+    if (matchToDelete != null) {
+        val target = matchToDelete!!
+        AlertDialog(
+            containerColor = cardBg,
+            onDismissRequest = { matchToDelete = null },
+            shape = RoundedCornerShape(20.dp),
+            icon = {
+                Icon(
+                    Icons.Default.DeleteForever,
+                    contentDescription = null,
+                    tint = Color(0xFFFF5252),
+                    modifier = Modifier.size(34.dp)
+                )
+            },
+            title = {
+                Text(
+                    "Delete Tournament?",
+                    color = Color.White,
+                    fontWeight = FontWeight.Black,
+                    fontSize = 17.sp
+                )
+            },
+            text = {
+                Text(
+                    "Are you sure you want to permanently delete '${target.title}'? All registered slots and points data will be removed.",
+                    color = Color(0xFFCBD5E1),
+                    fontSize = 13.sp
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        scope.launch {
+                            try {
+                                db?.collection("matches")?.document(target.id)?.delete()
+                                Toast.makeText(context, "Tournament deleted successfully", Toast.LENGTH_SHORT).show()
+                            } catch (e: Exception) {
+                                Toast.makeText(context, "Delete failed: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                            }
+                            matchToDelete = null
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5252)),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text("Delete Match", color = Color.White, fontWeight = FontWeight.Black)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { matchToDelete = null }) {
+                    Text("Cancel", color = Color(0xFF94A3B8))
                 }
             }
         )
@@ -609,87 +697,100 @@ fun AdminManageMatchesScreen(
                             }
                         }
 
-                        // Actions Area
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                            // View Bookings Button
-                            Button(
-                                onClick = {
-                                    selectedMatchForBookings = match
-                                    showBookingsDialog = true
-                                },
-                                colors = ButtonDefaults.buttonColors(containerColor = surfaceSubtle),
-                                shape = RoundedCornerShape(10.dp),
-                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                        // Actions Area (Clean 2-Row Grid for Mobile & Tablets)
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            // Row 1: Players List & Edit ID/Pass
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Icon(Icons.Default.PeopleOutline, contentDescription = null, tint = Color.White, modifier = Modifier.size(15.dp))
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text("Players List", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                // View Bookings Button
+                                Button(
+                                    onClick = {
+                                        selectedMatchForBookings = match
+                                        showBookingsDialog = true
+                                    },
+                                    colors = ButtonDefaults.buttonColors(containerColor = surfaceSubtle),
+                                    shape = RoundedCornerShape(10.dp),
+                                    modifier = Modifier.weight(1f),
+                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 7.dp)
+                                ) {
+                                    Icon(Icons.Default.PeopleOutline, contentDescription = null, tint = Color.White, modifier = Modifier.size(15.dp))
+                                    Spacer(modifier = Modifier.width(5.dp))
+                                    Text("Players (${match.bookedSlots.size})", color = Color.White, fontSize = 11.5.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+                                }
+
+                                // Edit ID/Pass Button
+                                Button(
+                                    onClick = {
+                                        selectedMatchForEdit = match
+                                        editMap = match.map
+                                        editPrize = match.prize
+                                        editEntryType = when {
+                                            match.entryType.isNotBlank() -> match.entryType
+                                            match.entry.contains("Ad", ignoreCase = true) -> "AD"
+                                            match.entry.equals("Free", ignoreCase = true) -> "FREE"
+                                            else -> "PAID"
+                                        }
+                                        editPaidEntryFee = match.entry.filter { it.isDigit() }.ifBlank { "10" }
+                                        editRequiredAds = (if (match.requiredAds > 0) match.requiredAds else (match.entry.filter { it.isDigit() }.toIntOrNull() ?: 1)).toString()
+                                        roomId = match.roomId
+                                        roomPass = match.roomPass
+                                        status = match.status
+                                        liveUrl = match.liveUrl
+                                        editRules = match.rules
+                                        editJoinTime = match.joinTime
+                                        editResultTime = match.resultTime
+                                        showEditDialog = true
+                                    },
+                                    colors = ButtonDefaults.buttonColors(containerColor = surfaceSubtle),
+                                    shape = RoundedCornerShape(10.dp),
+                                    modifier = Modifier.weight(1f),
+                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 7.dp)
+                                ) {
+                                    Icon(Icons.Default.Edit, contentDescription = null, tint = neonGreen, modifier = Modifier.size(15.dp))
+                                    Spacer(modifier = Modifier.width(5.dp))
+                                    Text("Edit / IDP", color = Color.White, fontSize = 11.5.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+                                }
                             }
 
-                            Spacer(modifier = Modifier.width(8.dp))
-
-                            // Edit ID/Pass Button
-                            Button(
-                                onClick = {
-                                    selectedMatchForEdit = match
-                                    editMap = match.map
-                                    editPrize = match.prize
-                                    editEntryType = when {
-                                        match.entryType.isNotBlank() -> match.entryType
-                                        match.entry.contains("Ad", ignoreCase = true) -> "AD"
-                                        match.entry.equals("Free", ignoreCase = true) -> "FREE"
-                                        else -> "PAID"
-                                    }
-                                    editPaidEntryFee = match.entry.filter { it.isDigit() }.ifBlank { "10" }
-                                    editRequiredAds = (if (match.requiredAds > 0) match.requiredAds else (match.entry.filter { it.isDigit() }.toIntOrNull() ?: 1)).toString()
-                                    roomId = match.roomId
-                                    roomPass = match.roomPass
-                                    status = match.status
-                                    liveUrl = match.liveUrl
-                                    editRules = match.rules
-                                    editJoinTime = match.joinTime
-                                    editResultTime = match.resultTime
-                                    showEditDialog = true
-                                },
-                                colors = ButtonDefaults.buttonColors(containerColor = surfaceSubtle),
-                                shape = RoundedCornerShape(10.dp),
-                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                            // Row 2: Points Table & Delete Match
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Icon(Icons.Default.Edit, contentDescription = null, tint = neonGreen, modifier = Modifier.size(15.dp))
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text("Edit / IDP", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                            }
+                                // Points Table & Upload Results Button
+                                Button(
+                                    onClick = {
+                                        navController.navigate("admin_points_table/${Uri.encode(match.id)}")
+                                    },
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF332906)),
+                                    shape = RoundedCornerShape(10.dp),
+                                    modifier = Modifier.weight(1.3f),
+                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 7.dp)
+                                ) {
+                                    Icon(Icons.Default.EmojiEvents, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(15.dp))
+                                    Spacer(modifier = Modifier.width(5.dp))
+                                    Text("Points Table", color = Color(0xFFFFD700), fontSize = 11.5.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+                                }
 
-                            Spacer(modifier = Modifier.width(8.dp))
-
-                            // Points Table & Upload Results Button
-                            Button(
-                                onClick = {
-                                    navController.navigate("admin_points_table/${Uri.encode(match.id)}")
-                                },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF332906)),
-                                shape = RoundedCornerShape(10.dp),
-                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
-                            ) {
-                                Icon(Icons.Default.EmojiEvents, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(15.dp))
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text("Points Table", color = Color(0xFFFFD700), fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                            }
-
-                            Spacer(modifier = Modifier.width(8.dp))
-
-                            // Delete Match Button
-                            IconButton(
-                                onClick = {
-                                    scope.launch {
-                                        db?.collection("matches")?.document(match.id)?.delete()
-                                    }
-                                },
-                                modifier = Modifier
-                                    .size(34.dp)
-                                    .background(Color(0xFF2B1418), RoundedCornerShape(10.dp))
-                            ) {
-                                Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color(0xFFFF5252), modifier = Modifier.size(16.dp))
+                                // Delete Match Button with confirmation modal
+                                Button(
+                                    onClick = {
+                                        matchToDelete = match
+                                    },
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3B1218)),
+                                    shape = RoundedCornerShape(10.dp),
+                                    modifier = Modifier.weight(0.9f),
+                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 7.dp)
+                                ) {
+                                    Icon(Icons.Default.DeleteForever, contentDescription = "Delete", tint = Color(0xFFFF5252), modifier = Modifier.size(15.dp))
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text("Delete", color = Color(0xFFFF5252), fontSize = 11.5.sp, fontWeight = FontWeight.Black, maxLines = 1)
+                                }
                             }
                         }
                     }
@@ -698,5 +799,56 @@ fun AdminManageMatchesScreen(
 
             item { Spacer(modifier = Modifier.height(30.dp)) }
         }
+    }
+}
+
+/**
+ * Export registered players list to storage or share sheet
+ */
+private fun exportPlayerListToStorage(
+    context: Context,
+    match: MatchData,
+    players: List<Map<String, Any>>
+) {
+    try {
+        val fileName = "Players_${match.title.replace(" ", "_")}_${System.currentTimeMillis()}.txt"
+        val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+        val file = File(downloadsDir, fileName)
+
+        val sb = StringBuilder()
+        sb.append("=========================================\n")
+        sb.append("   REGISTERED PLAYERS & TEAMS LIST\n")
+        sb.append("=========================================\n")
+        sb.append("Tournament : ${match.title}\n")
+        sb.append("Map        : ${match.map} | Mode: ${match.mode}\n")
+        sb.append("Total Slots: ${match.bookedSlots.size}/${match.totalSlots}\n\n")
+        sb.append("--- REGISTERED SLOTS ---\n")
+        players.forEach { reg ->
+            val slot = reg["slotNumber"]?.toString() ?: "?"
+            val name = reg["userName"]?.toString() ?: reg["inGameName"]?.toString() ?: "Player"
+            val uid = reg["inGameUid"]?.toString() ?: reg["inGameName"]?.toString() ?: "N/A"
+            val email = reg["userEmail"]?.toString() ?: "N/A"
+            sb.append("Slot #$slot | Name: $name | UID: $uid | Email: $email\n")
+        }
+        sb.append("=========================================\n")
+
+        FileOutputStream(file).use { it.write(sb.toString().toByteArray()) }
+        Toast.makeText(context, "📥 Player list saved to Downloads: $fileName", Toast.LENGTH_LONG).show()
+    } catch (e: Exception) {
+        // Fallback to share intent
+        val sb = StringBuilder()
+        sb.append("📋 Registered Players for ${match.title}:\n")
+        players.forEach { reg ->
+            val slot = reg["slotNumber"]?.toString() ?: "?"
+            val name = reg["userName"]?.toString() ?: "Player"
+            val uid = reg["inGameUid"]?.toString() ?: "N/A"
+            sb.append("Slot #$slot: $name (UID: $uid)\n")
+        }
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_SUBJECT, "Player List - ${match.title}")
+            putExtra(Intent.EXTRA_TEXT, sb.toString())
+        }
+        context.startActivity(Intent.createChooser(intent, "Share Players List"))
     }
 }

@@ -1,6 +1,15 @@
 package com.example.ui.screens
 
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
+import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
+import android.util.Base64
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -19,14 +28,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.example.FirebaseHelper
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,6 +88,53 @@ fun AdminPointsTableScreen(
     var matchStatus by remember(match) { mutableStateOf(match.status) }
 
     var isSaving by remember { mutableStateOf(false) }
+    var isUploadingImage by remember { mutableStateOf(false) }
+
+    // Photo picker launcher for picking screenshot directly from phone gallery
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            scope.launch {
+                isUploadingImage = true
+                try {
+                    val base64DataUrl = withContext(Dispatchers.IO) {
+                        val bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                            val source = ImageDecoder.createSource(context.contentResolver, uri)
+                            ImageDecoder.decodeBitmap(source) { decoder, _, _ ->
+                                decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
+                                decoder.isMutableRequired = true
+                            }
+                        } else {
+                            @Suppress("DEPRECATION")
+                            MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+                        }
+
+                        // Resize if too large to fit in Firestore safely
+                        val maxDimension = 1080
+                        val scaledBitmap = if (bitmap.width > maxDimension || bitmap.height > maxDimension) {
+                            val scale = maxDimension.toFloat() / maxOf(bitmap.width, bitmap.height)
+                            Bitmap.createScaledBitmap(bitmap, (bitmap.width * scale).toInt(), (bitmap.height * scale).toInt(), true)
+                        } else {
+                            bitmap
+                        }
+
+                        val outputStream = ByteArrayOutputStream()
+                        scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 75, outputStream)
+                        val bytes = outputStream.toByteArray()
+                        "data:image/jpeg;base64," + Base64.encodeToString(bytes, Base64.NO_WRAP)
+                    }
+
+                    pointsTableImageUrl = base64DataUrl
+                    Toast.makeText(context, "Screenshot loaded from Gallery!", Toast.LENGTH_SHORT).show()
+                } catch (e: Exception) {
+                    Toast.makeText(context, "Failed to load image: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                } finally {
+                    isUploadingImage = false
+                }
+            }
+        }
+    }
 
     Scaffold(
         containerColor = Color(0xFF080B11),
@@ -216,14 +277,96 @@ fun AdminPointsTableScreen(
                 shape = RoundedCornerShape(12.dp)
             )
 
-            // Section 2: Screenshot URL
-            Text("2. SCORECARD SCREENSHOT", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color(0xFF8E92A4), letterSpacing = 1.2.sp)
+            // Section 2: Screenshot Upload & URL
+            Text("2. SCORECARD SCREENSHOT (GALLERY OR URL)", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color(0xFF8E92A4), letterSpacing = 1.2.sp)
+
+            // Gallery Upload Button
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(Color(0xFF121722))
+                    .border(1.dp, Color(0xFF242A38), RoundedCornerShape(14.dp))
+                    .padding(14.dp)
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                "Pick from Gallery",
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp
+                            )
+                            Text(
+                                "Upload actual match end-screenshot directly from phone",
+                                color = Color(0xFF94A3B8),
+                                fontSize = 11.sp
+                            )
+                        }
+
+                        Button(
+                            onClick = {
+                                photoPickerLauncher.launch(
+                                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                )
+                            },
+                            enabled = !isUploadingImage,
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E676)),
+                            shape = RoundedCornerShape(10.dp),
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+                        ) {
+                            if (isUploadingImage) {
+                                CircularProgressIndicator(color = Color.Black, modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                            } else {
+                                Icon(Icons.Default.PhotoLibrary, contentDescription = null, tint = Color.Black, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("Select Photo", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 12.sp)
+                            }
+                        }
+                    }
+
+                    // Image preview if selected/entered
+                    if (pointsTableImageUrl.isNotBlank()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(160.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(Color(0xFF0A0D14))
+                                .border(1.dp, Color(0xFF00E676).copy(alpha = 0.5f), RoundedCornerShape(10.dp))
+                        ) {
+                            AsyncImage(
+                                model = pointsTableImageUrl,
+                                contentDescription = "Screenshot Preview",
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Fit
+                            )
+
+                            IconButton(
+                                onClick = { pointsTableImageUrl = "" },
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(6.dp)
+                                    .size(28.dp)
+                                    .background(Color.Black.copy(alpha = 0.7f), CircleShape)
+                            ) {
+                                Icon(Icons.Default.Close, contentDescription = "Remove", tint = Color.White, modifier = Modifier.size(16.dp))
+                            }
+                        }
+                    }
+                }
+            }
 
             OutlinedTextField(
                 value = pointsTableImageUrl,
                 onValueChange = { pointsTableImageUrl = it },
-                label = { Text("Scorecard Screenshot URL (Image Link)", fontSize = 11.sp) },
-                placeholder = { Text("https://i.imgur.com/example.png or Postimages link", color = Color(0xFF6B7280)) },
+                label = { Text("Or Paste Screenshot Image URL", fontSize = 11.sp) },
+                placeholder = { Text("https://i.imgur.com/example.png", color = Color(0xFF6B7280)) },
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFF00E676),
@@ -242,7 +385,7 @@ fun AdminPointsTableScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("3. STANDINGS & KILLS MATRIX", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color(0xFF8E92A4), letterSpacing = 1.2.sp)
+                Text("3. STANDINGS & POINTS MATRIX", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color(0xFF8E92A4), letterSpacing = 1.2.sp)
                 TextButton(
                     onClick = {
                         pointsTableRanks = "1 | Team Toxic | 14 Kills | ₹300\n2 | Mafia Gang | 9 Kills | ₹150\n3 | Black Shadows | 6 Kills | ₹50\n4 | Royal Esports | 4 Kills | ₹0\n5 | GodLike Clan | 3 Kills | ₹0"
@@ -255,8 +398,8 @@ fun AdminPointsTableScreen(
             OutlinedTextField(
                 value = pointsTableRanks,
                 onValueChange = { pointsTableRanks = it },
-                label = { Text("Format: Rank | Team Name | Kills | Prize", fontSize = 11.sp) },
-                placeholder = { Text("1 | Team Soul | 12 Kills | ₹250\n2 | Team GodL | 8 Kills | ₹100", color = Color(0xFF6B7280)) },
+                label = { Text("Format: Rank | Team | Kills | Prize (Points auto-calculated)", fontSize = 11.sp) },
+                placeholder = { Text("1 | Team Toxic | 14 Kills | ₹300\n2 | Mafia Gang | 9 Kills | ₹150\n(Optional with custom points: 1 | Team | 14 Kills | 26 Pts | ₹300)", color = Color(0xFF6B7280)) },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 5,
                 maxLines = 10,
@@ -313,7 +456,7 @@ fun AdminPointsTableScreen(
                     scope.launch {
                         try {
                             db?.collection("matches")?.document(matchId)?.update(updates)
-                            Toast.makeText(context, "✅ Tournament Results & Points Table Updated!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Tournament Results & Points Table Updated!", Toast.LENGTH_SHORT).show()
                             navController.popBackStack()
                         } catch (e: Exception) {
                             Toast.makeText(context, "Error updating: ${e.message}", Toast.LENGTH_SHORT).show()
