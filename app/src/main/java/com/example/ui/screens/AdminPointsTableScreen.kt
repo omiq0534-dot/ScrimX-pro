@@ -386,20 +386,29 @@ fun AdminPointsTableScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text("3. STANDINGS & POINTS MATRIX", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color(0xFF8E92A4), letterSpacing = 1.2.sp)
-                TextButton(
-                    onClick = {
-                        pointsTableRanks = "1 | Team Toxic | 2 Booyah | 14 Kills | ₹300\n2 | Mafia Gang | 1 Booyah | 9 Kills | ₹150\n3 | Black Shadows | 0 Booyah | 6 Kills | ₹50\n4 | Royal Esports | 0 Booyah | 4 Kills | ₹0\n5 | GodLike Clan | 0 Booyah | 3 Kills | ₹0"
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    TextButton(
+                        onClick = {
+                            pointsTableRanks = "1 | Team Toxic | 2 Booyah | 48 Kills | 38 Place | 86 Pts | ₹1000\n2 | Mafia Gang | 1 Booyah | 35 Kills | 28 Place | 63 Pts | ₹500\n3 | Black Shadows | 1 Booyah | 29 Kills | 22 Place | 51 Pts | ₹200\n4 | Royal Esports | 0 Booyah | 20 Kills | 15 Place | 35 Pts | ₹0"
+                        }
+                    ) {
+                        Text("+ 6-Match Overall", color = Color(0xFF00E676), fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     }
-                ) {
-                    Text("+ Insert Template", color = Color(0xFF00E676), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    TextButton(
+                        onClick = {
+                            pointsTableRanks = "1 | Team Alpha (Winner) | 1 Booyah | 15 Kills | ₹500\n2 | Team Beta | 0 Booyah | 10 Kills | ₹0"
+                        }
+                    ) {
+                        Text("+ CS / TDM", color = Color(0xFFFFD700), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    }
                 }
             }
 
             OutlinedTextField(
                 value = pointsTableRanks,
                 onValueChange = { pointsTableRanks = it },
-                label = { Text("Format: Rank | Team | Booyah | Kills | Prize", fontSize = 11.sp) },
-                placeholder = { Text("1 | Team Toxic | 2 Booyah | 14 Kills | ₹300\n2 | Mafia Gang | 1 Booyah | 9 Kills | ₹150\n(Supports Overall Tournament & Multi-Match combined results)", color = Color(0xFF6B7280)) },
+                label = { Text("Format: Rank | Team | Booyah | Kills | Place Pts | Total Pts | Prize", fontSize = 11.sp) },
+                placeholder = { Text("1 | Team Toxic | 2 Booyah | 48 Kills | 38 Place | 86 Pts | ₹1000\n(For 6 Matches Combined Overall Tournament Results)", color = Color(0xFF6B7280)) },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 5,
                 maxLines = 10,
