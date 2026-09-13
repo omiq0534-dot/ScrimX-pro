@@ -288,7 +288,10 @@ fun PointsTableScreen(
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         Icon(Icons.Default.TableChart, contentDescription = null, tint = Color(0xFF00E676), modifier = Modifier.size(15.dp))
                         Text(
-                            "OFFICIAL POINTS TABLE & STATS",
+                            if (match.mode.contains("CS", ignoreCase = true) || match.mode.contains("1v1", ignoreCase = true) || match.mode.contains("Clash", ignoreCase = true))
+                                "OFFICIAL CS / TDM MATCH SCORECARD"
+                            else
+                                "OFFICIAL POINTS TABLE & OVERALL STATS",
                             color = Color(0xFF8E92A4),
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Black,

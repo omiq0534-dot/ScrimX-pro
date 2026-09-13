@@ -129,10 +129,11 @@ fun MatchDetailsScreen(
 
     // Classy Booking Confirmation Dialog
     if (showBookingDialog && selectedSlot != null) {
-        // Rule: 3 or 4 slots = Squad / Custom Team Name required. 1 or 2 slots = Solo/Duo, no team name prompt required!
-        val isMultiSlotSquad = match.mode.contains("Squad", ignoreCase = true) || matchMode.contains("4v4", ignoreCase = true) || matchMode.contains("Squad", ignoreCase = true)
-        val nameLabel = "Player In-Game Name (IGN)"
-        val namePlaceholder = "e.g. ProSniper_99"
+        var bookedSlotCount by remember { mutableIntStateOf(1) }
+        var inputTeamName by remember { mutableStateOf("") }
+        
+        val isSquadMode = match.mode.contains("Squad", ignoreCase = true) || matchMode.contains("4v4", ignoreCase = true) || matchMode.contains("Squad", ignoreCase = true)
+        val requiresTeamName = bookedSlotCount >= 3 || (isSquadMode && bookedSlotCount > 2)
 
         val isAdMatch = match.entryType.equals("AD", ignoreCase = true) || match.entry.contains("Ad", ignoreCase = true)
         val isFreeMatch = match.entryType.equals("FREE", ignoreCase = true) || match.entry.equals("Free", ignoreCase = true)
@@ -172,28 +173,59 @@ fun MatchDetailsScreen(
                         fontWeight = FontWeight.Medium
                     )
 
-                    if (match.rules.isNotBlank()) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(Color(0xFFF3F4F6))
-                                .padding(10.dp)
-                        ) {
-                            Text(
-                                "Rules: ${match.rules}",
-                                color = Color(0xFFFFD700),
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
+                    // Multi-Slot Selection Row (1 to 4 slots)
+                    Column {
+                        Text("SELECT NUMBER OF SLOTS TO BOOK:", color = Color(0xFF334155), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            (1..4).forEach { count ->
+                                val isSelected = bookedSlotCount == count
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(if (isSelected) Color(0xFF00E676) else Color(0xFFF1F5F9))
+                                        .border(1.dp, if (isSelected) Color(0xFF00C853) else Color(0xFFCBD5E1), RoundedCornerShape(8.dp))
+                                        .clickable { bookedSlotCount = count }
+                                        .padding(vertical = 8.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        "$count Slot${if (count > 1) "s" else ""}",
+                                        color = if (isSelected) Color.Black else Color(0xFF334155),
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
                         }
+                    }
+
+                    if (requiresTeamName) {
+                        OutlinedTextField(
+                            value = inputTeamName,
+                            onValueChange = { inputTeamName = it },
+                            label = { Text("Team Name (Req. for 3-4 Slots)", color = Color(0xFF9E9EA8)) },
+                            placeholder = { Text("e.g. Team Toxic / GodLike", color = Color(0xFF555566)) },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = Color(0xFFFFD700),
+                                unfocusedBorderColor = AppColors.BorderColor,
+                                focusedContainerColor = Color(0xFFF9FAFB),
+                                unfocusedContainerColor = Color(0xFFF9FAFB),
+                                focusedTextColor = AppColors.TextPrimary,
+                                unfocusedTextColor = AppColors.TextPrimary
+                            ),
+                            singleLine = true
+                        )
                     }
 
                     OutlinedTextField(
                         value = inputPlayerOrTeamName,
                         onValueChange = { inputPlayerOrTeamName = it },
-                        label = { Text(nameLabel, color = Color(0xFF9E9EA8)) },
-                        placeholder = { Text(namePlaceholder, color = Color(0xFF555566)) },
+                        label = { Text("Leader / Player In-Game Name (IGN)", color = Color(0xFF9E9EA8)) },
+                        placeholder = { Text("e.g. ProSniper_99", color = Color(0xFF555566)) },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
