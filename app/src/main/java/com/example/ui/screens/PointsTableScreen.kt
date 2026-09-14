@@ -279,6 +279,8 @@ fun PointsTableScreen(
             }
 
             // 5. Team Standings Matrix & Interactive Table Box
+            val isCsMatch = match.mode.contains("CS", ignoreCase = true) || match.mode.contains("1v1", ignoreCase = true) || match.mode.contains("2v2", ignoreCase = true) || match.mode.contains("4v4", ignoreCase = true) || match.mode.contains("Clash", ignoreCase = true) || match.mode.contains("TDM", ignoreCase = true)
+
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -288,10 +290,7 @@ fun PointsTableScreen(
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         Icon(Icons.Default.TableChart, contentDescription = null, tint = Color(0xFF00E676), modifier = Modifier.size(15.dp))
                         Text(
-                            if (match.mode.contains("CS", ignoreCase = true) || match.mode.contains("1v1", ignoreCase = true) || match.mode.contains("Clash", ignoreCase = true))
-                                "OFFICIAL CS / TDM MATCH SCORECARD"
-                            else
-                                "OFFICIAL POINTS TABLE & OVERALL STATS",
+                            if (isCsMatch) "OFFICIAL CS / TDM MATCH SCORECARD" else "OFFICIAL POINTS TABLE & OVERALL STATS",
                             color = Color(0xFF8E92A4),
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Black,
@@ -299,7 +298,7 @@ fun PointsTableScreen(
                         )
                     }
                     Text(
-                        "PTS = KILL + PLACE",
+                        if (isCsMatch) "HEAD-TO-HEAD ROUNDS" else "PTS = KILL + PLACE",
                         color = Color(0xFF00E676),
                         fontSize = 9.5.sp,
                         fontWeight = FontWeight.Bold
@@ -341,12 +340,12 @@ fun PointsTableScreen(
             } else if (standingsList.isNotEmpty()) {
                 // Interactive Zoomable & Movable Table Container (Bounded Area)
                 item {
-                    InteractivePointsTableContainer(standings = standingsList)
+                    InteractivePointsTableContainer(standings = standingsList, isCsMode = isCsMatch)
                 }
 
                 // Individual Team Cards View
                 itemsIndexed(standingsList) { index, entry ->
-                    TeamStandingRowCard(entry = entry, isCurrentUserTeam = false)
+                    TeamStandingRowCard(entry = entry, isCurrentUserTeam = false, isCsMode = isCsMatch)
                 }
             }
 
@@ -694,7 +693,10 @@ private fun ScorecardActionButtons(
  * Interactive Points Table Viewport Box (Move / Pan & Zoom with 1 finger or pinch, horizontal scroll, dedicated BOOYAH column)
  */
 @Composable
-private fun InteractivePointsTableContainer(standings: List<TeamRankEntry>) {
+private fun InteractivePointsTableContainer(
+    standings: List<TeamRankEntry>,
+    isCsMode: Boolean = false
+) {
     var scale by remember { mutableFloatStateOf(1f) }
     var offsetX by remember { mutableFloatStateOf(0f) }
     var offsetY by remember { mutableFloatStateOf(0f) }
@@ -705,7 +707,7 @@ private fun InteractivePointsTableContainer(standings: List<TeamRankEntry>) {
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
             .background(Color(0xFF0D121D))
-            .border(1.2.dp, Color(0x4400E676), RoundedCornerShape(16.dp))
+            .border(1.2.dp, if (isCsMode) Color(0x66FFD700) else Color(0x4400E676), RoundedCornerShape(16.dp))
     ) {
         // Top Toolbar: Controls and Drag Guide
         Row(
@@ -724,11 +726,11 @@ private fun InteractivePointsTableContainer(standings: List<TeamRankEntry>) {
                 Icon(
                     Icons.Default.Swipe,
                     contentDescription = "Swipe / Pan",
-                    tint = Color(0xFF00E676),
+                    tint = if (isCsMode) Color(0xFFFFD700) else Color(0xFF00E676),
                     modifier = Modifier.size(16.dp)
                 )
                 Text(
-                    "SWIPE LEFT-RIGHT • DRAG TO MOVE",
+                    if (isCsMode) "CS / TDM SCORECARD • DRAG TO MOVE" else "SWIPE LEFT-RIGHT • DRAG TO MOVE",
                     color = Color(0xFF94A3B8),
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
@@ -764,7 +766,7 @@ private fun InteractivePointsTableContainer(standings: List<TeamRankEntry>) {
                 ) {
                     Text(
                         "${(scale * 100).toInt()}%",
-                        color = Color(0xFF00E676),
+                        color = if (isCsMode) Color(0xFFFFD700) else Color(0xFF00E676),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Black
                     )
@@ -833,9 +835,9 @@ private fun InteractivePointsTableContainer(standings: List<TeamRankEntry>) {
                     .padding(8.dp)
             ) {
                 Column(
-                    modifier = Modifier.width(620.dp)
+                    modifier = Modifier.width(if (isCsMode) 580.dp else 620.dp)
                 ) {
-                    // Table Columns Header with dedicated BOOYAH Column
+                    // Table Columns Header
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -844,13 +846,21 @@ private fun InteractivePointsTableContainer(standings: List<TeamRankEntry>) {
                             .padding(horizontal = 10.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("RANK", color = Color(0xFF94A3B8), fontSize = 10.5.sp, fontWeight = FontWeight.Black, modifier = Modifier.width(46.dp))
-                        Text("TEAM / PLAYER", color = Color(0xFF94A3B8), fontSize = 10.5.sp, fontWeight = FontWeight.Black, modifier = Modifier.width(170.dp))
-                        Text("BOOYAH", color = Color(0xFFFFD700), fontSize = 10.5.sp, fontWeight = FontWeight.Black, modifier = Modifier.width(76.dp), textAlign = TextAlign.Center)
-                        Text("KILLS", color = Color(0xFF94A3B8), fontSize = 10.5.sp, fontWeight = FontWeight.Black, modifier = Modifier.width(58.dp), textAlign = TextAlign.Center)
-                        Text("PLACE", color = Color(0xFF94A3B8), fontSize = 10.5.sp, fontWeight = FontWeight.Black, modifier = Modifier.width(58.dp), textAlign = TextAlign.Center)
-                        Text("TOTAL", color = Color(0xFF00E676), fontSize = 10.5.sp, fontWeight = FontWeight.Black, modifier = Modifier.width(68.dp), textAlign = TextAlign.Center)
-                        Text("PRIZE", color = Color(0xFFFFD700), fontSize = 10.5.sp, fontWeight = FontWeight.Black, modifier = Modifier.width(76.dp), textAlign = TextAlign.End)
+                        if (isCsMode) {
+                            Text("RESULT", color = Color(0xFF94A3B8), fontSize = 10.5.sp, fontWeight = FontWeight.Black, modifier = Modifier.width(76.dp))
+                            Text("TEAM / PLAYER", color = Color(0xFF94A3B8), fontSize = 10.5.sp, fontWeight = FontWeight.Black, modifier = Modifier.width(220.dp))
+                            Text("MATCH STATUS", color = Color(0xFFFFD700), fontSize = 10.5.sp, fontWeight = FontWeight.Black, modifier = Modifier.width(100.dp), textAlign = TextAlign.Center)
+                            Text("KILLS", color = Color(0xFF94A3B8), fontSize = 10.5.sp, fontWeight = FontWeight.Black, modifier = Modifier.width(68.dp), textAlign = TextAlign.Center)
+                            Text("PRIZE", color = Color(0xFFFFD700), fontSize = 10.5.sp, fontWeight = FontWeight.Black, modifier = Modifier.width(86.dp), textAlign = TextAlign.End)
+                        } else {
+                            Text("RANK", color = Color(0xFF94A3B8), fontSize = 10.5.sp, fontWeight = FontWeight.Black, modifier = Modifier.width(46.dp))
+                            Text("TEAM / PLAYER", color = Color(0xFF94A3B8), fontSize = 10.5.sp, fontWeight = FontWeight.Black, modifier = Modifier.width(170.dp))
+                            Text("BOOYAH", color = Color(0xFFFFD700), fontSize = 10.5.sp, fontWeight = FontWeight.Black, modifier = Modifier.width(76.dp), textAlign = TextAlign.Center)
+                            Text("KILLS", color = Color(0xFF94A3B8), fontSize = 10.5.sp, fontWeight = FontWeight.Black, modifier = Modifier.width(58.dp), textAlign = TextAlign.Center)
+                            Text("PLACE", color = Color(0xFF94A3B8), fontSize = 10.5.sp, fontWeight = FontWeight.Black, modifier = Modifier.width(58.dp), textAlign = TextAlign.Center)
+                            Text("TOTAL", color = Color(0xFF00E676), fontSize = 10.5.sp, fontWeight = FontWeight.Black, modifier = Modifier.width(68.dp), textAlign = TextAlign.Center)
+                            Text("PRIZE", color = Color(0xFFFFD700), fontSize = 10.5.sp, fontWeight = FontWeight.Black, modifier = Modifier.width(76.dp), textAlign = TextAlign.End)
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(4.dp))
@@ -858,7 +868,8 @@ private fun InteractivePointsTableContainer(standings: List<TeamRankEntry>) {
                     // Table Rows
                     standings.forEachIndexed { idx, item ->
                         val hasBooyah = item.booyahs > 0
-                        val rowBg = if (item.rank == 1) {
+                        val isWinner = item.rank == 1
+                        val rowBg = if (isWinner) {
                             Color(0xFF1A2616)
                         } else if (idx % 2 == 0) {
                             Color(0xFF111723)
@@ -880,117 +891,202 @@ private fun InteractivePointsTableContainer(standings: List<TeamRankEntry>) {
                                 .background(rowBg)
                                 .border(
                                     0.6.dp,
-                                    if (item.rank == 1) Color(0x66FFD700) else Color(0x15FFFFFF),
+                                    if (isWinner) Color(0x66FFD700) else Color(0x15FFFFFF),
                                     RoundedCornerShape(6.dp)
                                 )
                                 .padding(horizontal = 10.dp, vertical = 7.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // 1. Rank Badge
-                            Box(
-                                modifier = Modifier.width(46.dp),
-                                contentAlignment = Alignment.CenterStart
-                            ) {
-                                Text(
-                                    text = "#${item.rank}",
-                                    color = rankColor,
-                                    fontWeight = FontWeight.Black,
-                                    fontSize = 11.5.sp
-                                )
-                            }
-
-                            // 2. Team Name
-                            Text(
-                                text = item.teamName,
-                                color = Color.White,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 12.sp,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier.width(170.dp)
-                            )
-
-                            // 3. Dedicated BOOYAH Count Column
-                            Box(
-                                modifier = Modifier.width(76.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                if (hasBooyah) {
+                            if (isCsMode) {
+                                // 1. Result Badge
+                                Box(
+                                    modifier = Modifier.width(76.dp),
+                                    contentAlignment = Alignment.CenterStart
+                                ) {
                                     Box(
                                         modifier = Modifier
                                             .clip(RoundedCornerShape(4.dp))
-                                            .background(Color(0xFFFFD700).copy(alpha = 0.22f))
-                                            .border(0.8.dp, Color(0xFFFFD700), RoundedCornerShape(4.dp))
+                                            .background(if (isWinner) Color(0xFF00E676).copy(alpha = 0.2f) else Color(0xFF334155))
+                                            .border(0.6.dp, if (isWinner) Color(0xFF00E676) else Color(0xFF64748B), RoundedCornerShape(4.dp))
                                             .padding(horizontal = 6.dp, vertical = 2.dp)
                                     ) {
                                         Text(
-                                            if (item.booyahs > 1) "${item.booyahs} BOOYAH" else "1 BOOYAH",
-                                            color = Color(0xFFFFD700),
-                                            fontSize = 9.sp,
+                                            text = if (isWinner) "WINNER" else "RUNNER",
+                                            color = if (isWinner) Color(0xFF00E676) else Color(0xFFCBD5E1),
+                                            fontWeight = FontWeight.Black,
+                                            fontSize = 9.5.sp
+                                        )
+                                    }
+                                }
+
+                                // 2. Team Name
+                                Text(
+                                    text = item.teamName,
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 12.sp,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.width(220.dp)
+                                )
+
+                                // 3. Match Status
+                                Box(
+                                    modifier = Modifier.width(100.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (isWinner) {
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(4.dp))
+                                                .background(Color(0xFFFFD700).copy(alpha = 0.22f))
+                                                .border(0.8.dp, Color(0xFFFFD700), RoundedCornerShape(4.dp))
+                                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                                        ) {
+                                            Text(
+                                                "VICTORY",
+                                                color = Color(0xFFFFD700),
+                                                fontSize = 9.5.sp,
+                                                fontWeight = FontWeight.Black
+                                            )
+                                        }
+                                    } else {
+                                        Text(
+                                            "DEFEAT",
+                                            color = Color(0xFF94A3B8),
+                                            fontSize = 9.5.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
+
+                                // 4. Kills
+                                Text(
+                                    text = "${item.killPoints}",
+                                    color = Color(0xFFCBD5E1),
+                                    fontSize = 11.5.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.width(68.dp),
+                                    textAlign = TextAlign.Center
+                                )
+
+                                // 5. Prize
+                                Text(
+                                    text = item.prize.ifBlank { "-" },
+                                    color = if (item.prize.isNotBlank()) Color(0xFFFFD700) else Color(0xFF64748B),
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Black,
+                                    modifier = Modifier.width(86.dp),
+                                    textAlign = TextAlign.End,
+                                    maxLines = 1
+                                )
+                            } else {
+                                // 1. Rank Badge
+                                Box(
+                                    modifier = Modifier.width(46.dp),
+                                    contentAlignment = Alignment.CenterStart
+                                ) {
+                                    Text(
+                                        text = "#${item.rank}",
+                                        color = rankColor,
+                                        fontWeight = FontWeight.Black,
+                                        fontSize = 11.5.sp
+                                    )
+                                }
+
+                                // 2. Team Name
+                                Text(
+                                    text = item.teamName,
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 12.sp,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.width(170.dp)
+                                )
+
+                                // 3. Dedicated BOOYAH Count Column
+                                Box(
+                                    modifier = Modifier.width(76.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (hasBooyah) {
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(4.dp))
+                                                .background(Color(0xFFFFD700).copy(alpha = 0.22f))
+                                                .border(0.8.dp, Color(0xFFFFD700), RoundedCornerShape(4.dp))
+                                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                                        ) {
+                                            Text(
+                                                if (item.booyahs > 1) "${item.booyahs} BOOYAH" else "1 BOOYAH",
+                                                color = Color(0xFFFFD700),
+                                                fontSize = 9.sp,
+                                                fontWeight = FontWeight.Black
+                                            )
+                                        }
+                                    } else {
+                                        Text(
+                                            "0",
+                                            color = Color(0xFF64748B),
+                                            fontSize = 11.5.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
+
+                                // 4. Kill Points
+                                Text(
+                                    text = "${item.killPoints}",
+                                    color = Color(0xFFCBD5E1),
+                                    fontSize = 11.5.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.width(58.dp),
+                                    textAlign = TextAlign.Center
+                                )
+
+                                // 5. Place Points
+                                Text(
+                                    text = "${item.placePoints}",
+                                    color = Color(0xFFCBD5E1),
+                                    fontSize = 11.5.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.width(58.dp),
+                                    textAlign = TextAlign.Center
+                                )
+
+                                // 6. Total Points (Highlighted)
+                                Box(
+                                    modifier = Modifier.width(68.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(5.dp))
+                                            .background(Color(0xFF00E676).copy(alpha = 0.18f))
+                                            .border(0.5.dp, Color(0x6600E676), RoundedCornerShape(5.dp))
+                                            .padding(horizontal = 7.dp, vertical = 2.5.dp)
+                                    ) {
+                                        Text(
+                                            text = "${item.totalPoints}",
+                                            color = Color(0xFF00E676),
+                                            fontSize = 11.5.sp,
                                             fontWeight = FontWeight.Black
                                         )
                                     }
-                                } else {
-                                    Text(
-                                        "0",
-                                        color = Color(0xFF64748B),
-                                        fontSize = 11.5.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
                                 }
+
+                                // 7. Prize
+                                Text(
+                                    text = item.prize.ifBlank { "-" },
+                                    color = if (item.prize.isNotBlank()) Color(0xFFFFD700) else Color(0xFF64748B),
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Black,
+                                    modifier = Modifier.width(76.dp),
+                                    textAlign = TextAlign.End,
+                                    maxLines = 1
+                                )
                             }
-
-                            // 4. Kill Points
-                            Text(
-                                text = "${item.killPoints}",
-                                color = Color(0xFFCBD5E1),
-                                fontSize = 11.5.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.width(58.dp),
-                                textAlign = TextAlign.Center
-                            )
-
-                            // 5. Place Points
-                            Text(
-                                text = "${item.placePoints}",
-                                color = Color(0xFFCBD5E1),
-                                fontSize = 11.5.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.width(58.dp),
-                                textAlign = TextAlign.Center
-                            )
-
-                            // 6. Total Points (Highlighted)
-                            Box(
-                                modifier = Modifier.width(68.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(5.dp))
-                                        .background(Color(0xFF00E676).copy(alpha = 0.18f))
-                                        .border(0.5.dp, Color(0x6600E676), RoundedCornerShape(5.dp))
-                                        .padding(horizontal = 7.dp, vertical = 2.5.dp)
-                                ) {
-                                    Text(
-                                        text = "${item.totalPoints}",
-                                        color = Color(0xFF00E676),
-                                        fontSize = 11.5.sp,
-                                        fontWeight = FontWeight.Black
-                                    )
-                                }
-                            }
-
-                            // 7. Prize
-                            Text(
-                                text = item.prize.ifBlank { "-" },
-                                color = if (item.prize.isNotBlank()) Color(0xFFFFD700) else Color(0xFF64748B),
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Black,
-                                modifier = Modifier.width(76.dp),
-                                textAlign = TextAlign.End,
-                                maxLines = 1
-                            )
                         }
 
                         Spacer(modifier = Modifier.height(3.dp))
@@ -1002,7 +1098,12 @@ private fun InteractivePointsTableContainer(standings: List<TeamRankEntry>) {
 }
 
 @Composable
-private fun TeamStandingRowCard(entry: TeamRankEntry, isCurrentUserTeam: Boolean) {
+private fun TeamStandingRowCard(
+    entry: TeamRankEntry,
+    isCurrentUserTeam: Boolean,
+    isCsMode: Boolean = false
+) {
+    val isWinner = entry.rank == 1
     val rankColor = when (entry.rank) {
         1 -> Color(0xFFFFD700) // Gold
         2 -> Color(0xFFC0C0C0) // Silver
@@ -1015,7 +1116,7 @@ private fun TeamStandingRowCard(entry: TeamRankEntry, isCurrentUserTeam: Boolean
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
             .background(
-                if (entry.rank == 1) {
+                if (isWinner) {
                     Brush.verticalGradient(listOf(Color(0xFF1D2618), Color(0xFF0E170F)))
                 } else {
                     Brush.verticalGradient(listOf(Color(0xFF141924), Color(0xFF0C1018)))
@@ -1023,13 +1124,13 @@ private fun TeamStandingRowCard(entry: TeamRankEntry, isCurrentUserTeam: Boolean
             )
             .border(
                 1.dp,
-                if (entry.rank == 1) Color(0x66FFD700) else Color(0x22FFFFFF),
+                if (isWinner) Color(0x66FFD700) else Color(0x22FFFFFF),
                 RoundedCornerShape(14.dp)
             )
             .padding(horizontal = 14.dp, vertical = 12.dp)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            // Row 1: Rank Badge + Team Name + Booyah Tag + Prize (on the right)
+            // Row 1: Rank Badge + Team Name + Booyah/Winner Tag + Prize (on the right)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -1050,7 +1151,7 @@ private fun TeamStandingRowCard(entry: TeamRankEntry, isCurrentUserTeam: Boolean
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "#${entry.rank}",
+                            text = if (isCsMode && isWinner) "W" else if (isCsMode) "L" else "#${entry.rank}",
                             color = rankColor,
                             fontWeight = FontWeight.Black,
                             fontSize = 11.sp
@@ -1066,7 +1167,22 @@ private fun TeamStandingRowCard(entry: TeamRankEntry, isCurrentUserTeam: Boolean
                         overflow = TextOverflow.Ellipsis
                     )
 
-                    if (entry.booyahs > 0) {
+                    if (isCsMode) {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(if (isWinner) Color(0xFF00E676).copy(alpha = 0.2f) else Color(0xFF334155))
+                                .border(0.8.dp, if (isWinner) Color(0xFF00E676) else Color(0xFF64748B), RoundedCornerShape(6.dp))
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                if (isWinner) "VICTORY" else "DEFEAT",
+                                color = if (isWinner) Color(0xFF00E676) else Color(0xFFCBD5E1),
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Black
+                            )
+                        }
+                    } else if (entry.booyahs > 0) {
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(6.dp))
@@ -1103,78 +1219,132 @@ private fun TeamStandingRowCard(entry: TeamRankEntry, isCurrentUserTeam: Boolean
                 }
             }
 
-            // Row 2: Stats Breakdown Pills (Booyahs, Kills, Place Points, Total Points)
+            // Row 2: Stats Breakdown Pills
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                // Booyah Pill
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(if (entry.booyahs > 0) Color(0xFFFFD700).copy(alpha = 0.18f) else Color(0xFF1E2638))
-                        .border(0.5.dp, if (entry.booyahs > 0) Color(0xFFFFD700).copy(alpha = 0.5f) else Color(0x33FFFFFF), RoundedCornerShape(6.dp))
-                        .padding(horizontal = 7.dp, vertical = 3.dp)
-                ) {
-                    Text(
-                        text = "BOOYAH: ${entry.booyahs}",
-                        color = if (entry.booyahs > 0) Color(0xFFFFD700) else Color(0xFF94A3B8),
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-
-                // Kills Pill
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(Color(0xFF1E2638))
-                        .border(0.5.dp, Color(0x33FFFFFF), RoundedCornerShape(6.dp))
-                        .padding(horizontal = 7.dp, vertical = 3.dp)
-                ) {
-                    Text(
-                        text = "KILLS: ${entry.killPoints}",
-                        color = Color(0xFFCBD5E1),
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-
-                // Place Pts Pill
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(Color(0xFF1E2638))
-                        .border(0.5.dp, Color(0x33FFFFFF), RoundedCornerShape(6.dp))
-                        .padding(horizontal = 7.dp, vertical = 3.dp)
-                ) {
-                    Text(
-                        text = "PLACE: ${entry.placePoints}",
-                        color = Color(0xFFCBD5E1),
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-
-                // Total Points Pill (Highlighted Neon)
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(
-                            Brush.horizontalGradient(
-                                listOf(Color(0xFF00E676).copy(alpha = 0.25f), Color(0xFF00B0FF).copy(alpha = 0.25f))
-                            )
+                if (isCsMode) {
+                    // CS Mode Pills
+                    // Status Pill
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(if (isWinner) Color(0xFFFFD700).copy(alpha = 0.18f) else Color(0xFF1E2638))
+                            .border(0.5.dp, if (isWinner) Color(0xFFFFD700).copy(alpha = 0.5f) else Color(0x33FFFFFF), RoundedCornerShape(6.dp))
+                            .padding(horizontal = 8.dp, vertical = 3.dp)
+                    ) {
+                        Text(
+                            text = if (isWinner) "MATCH WINNER" else "RUNNER UP",
+                            color = if (isWinner) Color(0xFFFFD700) else Color(0xFF94A3B8),
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold
                         )
-                        .border(0.8.dp, Color(0xFF00E676).copy(alpha = 0.6f), RoundedCornerShape(6.dp))
-                        .padding(horizontal = 8.dp, vertical = 3.dp)
-                ) {
-                    Text(
-                        text = "TOTAL: ${entry.totalPoints} PTS",
-                        color = Color(0xFF00E676),
-                        fontSize = 10.5.sp,
-                        fontWeight = FontWeight.Black
-                    )
+                    }
+
+                    // Kills Pill
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(Color(0xFF1E2638))
+                            .border(0.5.dp, Color(0x33FFFFFF), RoundedCornerShape(6.dp))
+                            .padding(horizontal = 8.dp, vertical = 3.dp)
+                    ) {
+                        Text(
+                            text = "TOTAL KILLS: ${entry.killPoints}",
+                            color = Color(0xFFCBD5E1),
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    if (entry.prize.isNotBlank()) {
+                        // Prize Tag
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(Color(0xFF00E676).copy(alpha = 0.15f))
+                                .border(0.8.dp, Color(0xFF00E676).copy(alpha = 0.5f), RoundedCornerShape(6.dp))
+                                .padding(horizontal = 8.dp, vertical = 3.dp)
+                        ) {
+                            Text(
+                                text = "PRIZE: ${entry.prize}",
+                                color = Color(0xFF00E676),
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Black
+                            )
+                        }
+                    }
+                } else {
+                    // BR Mode Pills
+                    // Booyah Pill
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(if (entry.booyahs > 0) Color(0xFFFFD700).copy(alpha = 0.18f) else Color(0xFF1E2638))
+                            .border(0.5.dp, if (entry.booyahs > 0) Color(0xFFFFD700).copy(alpha = 0.5f) else Color(0x33FFFFFF), RoundedCornerShape(6.dp))
+                            .padding(horizontal = 7.dp, vertical = 3.dp)
+                    ) {
+                        Text(
+                            text = "BOOYAH: ${entry.booyahs}",
+                            color = if (entry.booyahs > 0) Color(0xFFFFD700) else Color(0xFF94A3B8),
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    // Kills Pill
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(Color(0xFF1E2638))
+                            .border(0.5.dp, Color(0x33FFFFFF), RoundedCornerShape(6.dp))
+                            .padding(horizontal = 7.dp, vertical = 3.dp)
+                    ) {
+                        Text(
+                            text = "KILLS: ${entry.killPoints}",
+                            color = Color(0xFFCBD5E1),
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    // Place Pts Pill
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(Color(0xFF1E2638))
+                            .border(0.5.dp, Color(0x33FFFFFF), RoundedCornerShape(6.dp))
+                            .padding(horizontal = 7.dp, vertical = 3.dp)
+                    ) {
+                        Text(
+                            text = "PLACE: ${entry.placePoints}",
+                            color = Color(0xFFCBD5E1),
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    // Total Points Pill (Highlighted Neon)
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(
+                                Brush.horizontalGradient(
+                                    listOf(Color(0xFF00E676).copy(alpha = 0.25f), Color(0xFF00B0FF).copy(alpha = 0.25f))
+                                )
+                            )
+                            .border(0.8.dp, Color(0xFF00E676).copy(alpha = 0.6f), RoundedCornerShape(6.dp))
+                            .padding(horizontal = 8.dp, vertical = 3.dp)
+                    ) {
+                        Text(
+                            text = "TOTAL: ${entry.totalPoints} PTS",
+                            color = Color(0xFF00E676),
+                            fontSize = 10.5.sp,
+                            fontWeight = FontWeight.Black
+                        )
+                    }
                 }
             }
         }
@@ -1542,6 +1712,8 @@ private fun createScorecardBitmap(
     canvas.drawText("MAP: ${match.map.uppercase()}  |  MODE: ${match.mode.uppercase()}  |  PRIZE: ${match.prize}", 60f, 240f, metaPaint)
     canvas.drawText("MATCH TIME: ${match.time}", 60f, 290f, metaPaint)
 
+    val isCsMode = match.mode.contains("CS", ignoreCase = true) || match.mode.contains("1v1", ignoreCase = true) || match.mode.contains("2v2", ignoreCase = true) || match.mode.contains("4v4", ignoreCase = true) || match.mode.contains("Clash", ignoreCase = true) || match.mode.contains("TDM", ignoreCase = true)
+
     // Table Header
     val tableHeaderBg = Paint().apply {
         color = AndroidColor.parseColor("#151C28")
@@ -1561,13 +1733,22 @@ private fun createScorecardBitmap(
         typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
         isAntiAlias = true
     }
-    canvas.drawText("RANK", 60f, 410f, thPaint)
-    canvas.drawText("TEAM / PLAYER", 155f, 410f, thPaint)
-    canvas.drawText("BOOYAH", 490f, 410f, thBooyahPaint)
-    canvas.drawText("KILL PTS", 615f, 410f, thPaint)
-    canvas.drawText("PLACE", 740f, 410f, thPaint)
-    canvas.drawText("TOTAL", 845f, 410f, thPaint)
-    canvas.drawText("PRIZE", 950f, 410f, thPaint)
+
+    if (isCsMode) {
+        canvas.drawText("RESULT", 60f, 410f, thPaint)
+        canvas.drawText("TEAM / PLAYER", 200f, 410f, thPaint)
+        canvas.drawText("STATUS", 620f, 410f, thBooyahPaint)
+        canvas.drawText("KILLS", 790f, 410f, thPaint)
+        canvas.drawText("PRIZE", 940f, 410f, thPaint)
+    } else {
+        canvas.drawText("RANK", 60f, 410f, thPaint)
+        canvas.drawText("TEAM / PLAYER", 155f, 410f, thPaint)
+        canvas.drawText("BOOYAH", 490f, 410f, thBooyahPaint)
+        canvas.drawText("KILL PTS", 615f, 410f, thPaint)
+        canvas.drawText("PLACE", 740f, 410f, thPaint)
+        canvas.drawText("TOTAL", 845f, 410f, thPaint)
+        canvas.drawText("PRIZE", 950f, 410f, thPaint)
+    }
 
     // Rows
     var curY = 460f
@@ -1627,19 +1808,32 @@ private fun createScorecardBitmap(
                 else -> AndroidColor.WHITE
             }
 
-            val rankPrefix = if (entry.rank == 1) "#1" else "#${entry.rank}"
-            canvas.drawText(rankPrefix, 60f, curY + 15f, rankTextPaint)
-            canvas.drawText(entry.teamName.take(16), 155f, curY + 15f, teamPaint)
-            
-            // Booyah count column
-            val booyahStr = if (entry.booyahs > 0) "${entry.booyahs}" else "0"
-            booyahTextPaint.color = if (entry.booyahs > 0) AndroidColor.parseColor("#FFD700") else AndroidColor.parseColor("#64748B")
-            canvas.drawText(booyahStr, 515f, curY + 15f, booyahTextPaint)
+            if (isCsMode) {
+                val resTag = if (entry.rank == 1) "WINNER" else "RUNNER"
+                rankTextPaint.color = if (entry.rank == 1) AndroidColor.parseColor("#00E676") else AndroidColor.parseColor("#94A3B8")
+                canvas.drawText(resTag, 60f, curY + 15f, rankTextPaint)
+                canvas.drawText(entry.teamName.take(24), 200f, curY + 15f, teamPaint)
+                
+                val statusText = if (entry.rank == 1) "VICTORY" else "DEFEAT"
+                booyahTextPaint.color = if (entry.rank == 1) AndroidColor.parseColor("#FFD700") else AndroidColor.parseColor("#64748B")
+                canvas.drawText(statusText, 620f, curY + 15f, booyahTextPaint)
+                canvas.drawText("${entry.killPoints}", 805f, curY + 15f, statPaint)
+                canvas.drawText(entry.prize.ifBlank { "-" }, 940f, curY + 15f, prizePaint)
+            } else {
+                val rankPrefix = if (entry.rank == 1) "#1" else "#${entry.rank}"
+                canvas.drawText(rankPrefix, 60f, curY + 15f, rankTextPaint)
+                canvas.drawText(entry.teamName.take(16), 155f, curY + 15f, teamPaint)
+                
+                // Booyah count column
+                val booyahStr = if (entry.booyahs > 0) "${entry.booyahs}" else "0"
+                booyahTextPaint.color = if (entry.booyahs > 0) AndroidColor.parseColor("#FFD700") else AndroidColor.parseColor("#64748B")
+                canvas.drawText(booyahStr, 515f, curY + 15f, booyahTextPaint)
 
-            canvas.drawText("${entry.killPoints}", 635f, curY + 15f, statPaint)
-            canvas.drawText("${entry.placePoints}", 755f, curY + 15f, statPaint)
-            canvas.drawText("${entry.totalPoints}", 855f, curY + 15f, totalPtsPaint)
-            canvas.drawText(entry.prize.ifBlank { "-" }, 950f, curY + 15f, prizePaint)
+                canvas.drawText("${entry.killPoints}", 635f, curY + 15f, statPaint)
+                canvas.drawText("${entry.placePoints}", 755f, curY + 15f, statPaint)
+                canvas.drawText("${entry.totalPoints}", 855f, curY + 15f, totalPtsPaint)
+                canvas.drawText(entry.prize.ifBlank { "-" }, 950f, curY + 15f, prizePaint)
+            }
 
             curY += rowHeight
         }

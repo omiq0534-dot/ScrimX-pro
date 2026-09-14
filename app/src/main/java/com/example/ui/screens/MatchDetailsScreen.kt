@@ -158,7 +158,7 @@ fun MatchDetailsScreen(
                     Text(
                         "CONFIRM SLOT $selectedSlot",
                         fontWeight = FontWeight.Black,
-                        color = AppColors.TextPrimary,
+                        color = Color(0xFF0F172A),
                         fontSize = 17.sp,
                         letterSpacing = 0.5.sp
                     )
@@ -168,9 +168,9 @@ fun MatchDetailsScreen(
                 Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                     Text(
                         "Match: ${match.title} (${match.map})",
-                        color = Color(0xFF9E9EA8),
+                        color = Color(0xFF475569),
                         fontSize = 13.sp,
-                        fontWeight = FontWeight.Medium
+                        fontWeight = FontWeight.SemiBold
                     )
 
                     // Multi-Slot Selection Row (1 to 4 slots)
@@ -205,17 +205,18 @@ fun MatchDetailsScreen(
                         OutlinedTextField(
                             value = inputTeamName,
                             onValueChange = { inputTeamName = it },
-                            label = { Text("Team Name (Req. for 3-4 Slots)", color = Color(0xFF9E9EA8)) },
-                            placeholder = { Text("e.g. Team Toxic / GodLike", color = Color(0xFF555566)) },
+                            label = { Text("Team Name (Req. for 3-4 Slots)", color = Color(0xFF475569), fontWeight = FontWeight.SemiBold) },
+                            placeholder = { Text("e.g. Team Toxic / GodLike", color = Color(0xFF94A3B8)) },
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = Color(0xFFFFD700),
-                                unfocusedBorderColor = AppColors.BorderColor,
-                                focusedContainerColor = Color(0xFFF9FAFB),
-                                unfocusedContainerColor = Color(0xFFF9FAFB),
-                                focusedTextColor = AppColors.TextPrimary,
-                                unfocusedTextColor = AppColors.TextPrimary
+                                unfocusedBorderColor = Color(0xFFCBD5E1),
+                                focusedContainerColor = Color(0xFFF8FAFC),
+                                unfocusedContainerColor = Color(0xFFF8FAFC),
+                                focusedTextColor = Color(0xFF0F172A),
+                                unfocusedTextColor = Color(0xFF0F172A),
+                                cursorColor = Color(0xFF0F172A)
                             ),
                             singleLine = true
                         )
@@ -224,17 +225,18 @@ fun MatchDetailsScreen(
                     OutlinedTextField(
                         value = inputPlayerOrTeamName,
                         onValueChange = { inputPlayerOrTeamName = it },
-                        label = { Text("Leader / Player In-Game Name (IGN)", color = Color(0xFF9E9EA8)) },
-                        placeholder = { Text("e.g. ProSniper_99", color = Color(0xFF555566)) },
+                        label = { Text("Leader / Player In-Game Name (IGN)", color = Color(0xFF475569), fontWeight = FontWeight.SemiBold) },
+                        placeholder = { Text("e.g. ProSniper_99", color = Color(0xFF94A3B8)) },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color(0xFFFFD700),
-                            unfocusedBorderColor = AppColors.BorderColor,
-                            focusedContainerColor = Color(0xFFF9FAFB),
-                            unfocusedContainerColor = Color(0xFFF9FAFB),
-                            focusedTextColor = AppColors.TextPrimary,
-                            unfocusedTextColor = AppColors.TextPrimary
+                            unfocusedBorderColor = Color(0xFFCBD5E1),
+                            focusedContainerColor = Color(0xFFF8FAFC),
+                            unfocusedContainerColor = Color(0xFFF8FAFC),
+                            focusedTextColor = Color(0xFF0F172A),
+                            unfocusedTextColor = Color(0xFF0F172A),
+                            cursorColor = Color(0xFF0F172A)
                         ),
                         singleLine = true
                     )
@@ -242,17 +244,18 @@ fun MatchDetailsScreen(
                     OutlinedTextField(
                         value = inputInGameUid,
                         onValueChange = { inputInGameUid = it },
-                        label = { Text("Game In-Game UID", color = Color(0xFF9E9EA8)) },
-                        placeholder = { Text("e.g. 192847291", color = Color(0xFF555566)) },
+                        label = { Text("Game In-Game UID", color = Color(0xFF475569), fontWeight = FontWeight.SemiBold) },
+                        placeholder = { Text("e.g. 192847291", color = Color(0xFF94A3B8)) },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color(0xFFFFD700),
-                            unfocusedBorderColor = AppColors.BorderColor,
-                            focusedContainerColor = Color(0xFFF9FAFB),
-                            unfocusedContainerColor = Color(0xFFF9FAFB),
-                            focusedTextColor = AppColors.TextPrimary,
-                            unfocusedTextColor = AppColors.TextPrimary
+                            unfocusedBorderColor = Color(0xFFCBD5E1),
+                            focusedContainerColor = Color(0xFFF8FAFC),
+                            unfocusedContainerColor = Color(0xFFF8FAFC),
+                            focusedTextColor = Color(0xFF0F172A),
+                            unfocusedTextColor = Color(0xFF0F172A),
+                            cursorColor = Color(0xFF0F172A)
                         ),
                         singleLine = true
                     )
@@ -321,7 +324,7 @@ fun MatchDetailsScreen(
                                         Column {
                                             Text(
                                                 "Apply Coin Discount (-₹$maxDiscountRupees)",
-                                                color = AppColors.TextPrimary,
+                                                color = if (applyCoinDiscount) Color.White else Color(0xFF0F172A),
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 12.sp
                                             )
@@ -392,7 +395,12 @@ fun MatchDetailsScreen(
             },
             confirmButton = {
                 val slotToBook = selectedSlot ?: return@AlertDialog
-                val isFormValid = inputPlayerOrTeamName.isNotBlank()
+                val isFormValid = inputPlayerOrTeamName.isNotBlank() && (!requiresTeamName || inputTeamName.isNotBlank())
+                val effectiveDisplayName = if (requiresTeamName && inputTeamName.isNotBlank()) {
+                    "[${inputTeamName.trim()}] ${inputPlayerOrTeamName.trim()}"
+                } else {
+                    inputPlayerOrTeamName.trim()
+                }
 
                 val rawEntryFee = match.entry.replace(Regex("[^0-9]"), "").toIntOrNull() ?: 0
                 val userCoins = profile?.appMoney ?: 0
@@ -407,7 +415,8 @@ fun MatchDetailsScreen(
                     Button(
                         onClick = {
                             if (!isFormValid) {
-                                Toast.makeText(context, "Please enter Player In-Game Name first", Toast.LENGTH_SHORT).show()
+                                val msg = if (requiresTeamName && inputTeamName.isBlank()) "Please enter Team Name first" else "Please enter Player In-Game Name first"
+                                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
                             val activity = context as? Activity
@@ -430,7 +439,7 @@ fun MatchDetailsScreen(
                                         viewModel.bookSlot(
                                             matchId = match.id,
                                             slotNumber = slotToBook,
-                                            playerNameOrTeam = inputPlayerOrTeamName.trim(),
+                                            playerNameOrTeam = effectiveDisplayName,
                                             inGameUid = inputInGameUid.trim(),
                                             coinsDiscountUsed = 0,
                                             cashDiscountRupees = 0,
@@ -439,6 +448,7 @@ fun MatchDetailsScreen(
                                                 showBookingDialog = false
                                                 selectedSlot = null
                                                 adsWatchedForSlot = 0
+                                                inputTeamName = ""
                                                 inputPlayerOrTeamName = ""
                                                 inputInGameUid = ""
                                                 Toast.makeText(context, "Slot $slotToBook Booked Successfully via Free Ad Entry!", Toast.LENGTH_LONG).show()
@@ -482,7 +492,8 @@ fun MatchDetailsScreen(
                     Button(
                         onClick = {
                             if (!isFormValid) {
-                                Toast.makeText(context, "Please enter Player In-Game Name", Toast.LENGTH_SHORT).show()
+                                val msg = if (requiresTeamName && inputTeamName.isBlank()) "Please enter Team Name" else "Please enter Player In-Game Name"
+                                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
                             isBooking = true
@@ -490,7 +501,7 @@ fun MatchDetailsScreen(
                             viewModel.bookSlot(
                                 matchId = match.id,
                                 slotNumber = slotToBook,
-                                playerNameOrTeam = inputPlayerOrTeamName.trim(),
+                                playerNameOrTeam = effectiveDisplayName,
                                 inGameUid = inputInGameUid.trim(),
                                 coinsDiscountUsed = discountCoins,
                                 cashDiscountRupees = discountRupees,
@@ -500,6 +511,7 @@ fun MatchDetailsScreen(
                                     selectedSlot = null
                                     adsWatchedForSlot = 0
                                     applyCoinDiscount = false
+                                    inputTeamName = ""
                                     inputPlayerOrTeamName = ""
                                     inputInGameUid = ""
                                     Toast.makeText(context, "Slot $slotToBook Booked Successfully!", Toast.LENGTH_SHORT).show()
