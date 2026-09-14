@@ -49,7 +49,9 @@ class ToggleBalanceVisibilityAction : ActionCallback {
     ) {
         val prefs = context.getSharedPreferences("scrimx_widget_prefs", Context.MODE_PRIVATE)
         val currentHidden = prefs.getBoolean("widget_balance_hidden", false)
-        prefs.edit().putBoolean("widget_balance_hidden", !currentHidden).commit()
+        val newHidden = !currentHidden
+        prefs.edit().putBoolean("widget_balance_hidden", newHidden).commit()
+
         try {
             ScrimXGlanceWidget().update(context, glanceId)
         } catch (_: Exception) {}
@@ -146,7 +148,7 @@ class ScrimXGlanceWidget : GlanceAppWidget() {
                                 Spacer(modifier = GlanceModifier.width(4.dp))
                                 Box(
                                     modifier = GlanceModifier
-                                        .size(32.dp)
+                                        .size(40.dp)
                                         .clickable(actionRunCallback<ToggleBalanceVisibilityAction>()),
                                     contentAlignment = Alignment.Center
                                 ) {
@@ -155,7 +157,7 @@ class ScrimXGlanceWidget : GlanceAppWidget() {
                                             if (isHidden) R.drawable.ic_widget_eye_off else R.drawable.ic_widget_eye
                                         ),
                                         contentDescription = "Toggle Balance Visibility",
-                                        modifier = GlanceModifier.size(22.dp)
+                                        modifier = GlanceModifier.size(24.dp)
                                     )
                                 }
                             }

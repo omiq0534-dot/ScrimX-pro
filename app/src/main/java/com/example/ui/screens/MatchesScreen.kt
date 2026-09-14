@@ -108,19 +108,19 @@ fun MatchesScreen(
     }
 
     Scaffold(
-        containerColor = Color(0xFF090E14),
+        containerColor = Color(0xFFFAFAFA),
         topBar = {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFF090E14))
+                    .background(Color(0xFFFAFAFA))
                     .padding(top = 16.dp, start = 20.dp, end = 20.dp, bottom = 4.dp)
             ) {
                 Text(
                     "Tournaments & Scrims",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Black,
-                    color = Color.White
+                    color = Color(0xFF111827)
                 )
                 Spacer(modifier = Modifier.height(14.dp))
 
