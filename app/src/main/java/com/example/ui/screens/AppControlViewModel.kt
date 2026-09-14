@@ -39,6 +39,11 @@ data class AppControlConfig(
     val isWithdrawalsEnabled: Boolean = true,
     val isSpinWheelEnabled: Boolean = true,
     val isWatchAdsEnabled: Boolean = true,
+    val isYt100GoalUnlocked: Boolean = false,
+    val isCustomTaskEnabled: Boolean = false,
+    val customTaskTitle: String = "Follow Official Instagram",
+    val customTaskReward: Int = 100,
+    val customTaskUrl: String = "https://instagram.com/",
     val cacheBustTimestamp: Long = 0L
 )
 
@@ -124,6 +129,11 @@ class AppControlViewModel : ViewModel() {
             isWithdrawalsEnabled = doc.getBoolean("isWithdrawalsEnabled") ?: true,
             isSpinWheelEnabled = doc.getBoolean("isSpinWheelEnabled") ?: true,
             isWatchAdsEnabled = doc.getBoolean("isWatchAdsEnabled") ?: true,
+            isYt100GoalUnlocked = doc.getBoolean("isYt100GoalUnlocked") ?: false,
+            isCustomTaskEnabled = doc.getBoolean("isCustomTaskEnabled") ?: false,
+            customTaskTitle = doc.getString("customTaskTitle") ?: "Follow Official Instagram",
+            customTaskReward = doc.getLong("customTaskReward")?.toInt() ?: 100,
+            customTaskUrl = doc.getString("customTaskUrl") ?: "https://instagram.com/",
             cacheBustTimestamp = doc.getLong("cacheBustTimestamp") ?: 0L
         )
     }

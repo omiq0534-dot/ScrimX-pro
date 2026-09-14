@@ -119,7 +119,7 @@ fun ProfileScreen(navController: NavController, userViewModel: UserViewModel = v
             profile = profile,
             onDismiss = { showReferDialog = false },
             onClaimCode = { code ->
-                userViewModel.claimReferralCode(code, bonusCoins = 50) { success, msg ->
+                userViewModel.claimReferralCode(code, bonusCoins = 300) { success, msg ->
                     Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
                 }
             }
@@ -266,7 +266,7 @@ fun ReferBannerCard(referralCode: String, onClick: () -> Unit) {
                             .background(Color(0xFF00E676))
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
-                        Text("+50 COINS", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 9.sp)
+                        Text("+300 COINS", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 9.sp)
                     }
                 }
                 Spacer(modifier = Modifier.height(2.dp))
@@ -306,7 +306,7 @@ fun ReferAndEarnDialog(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    "Share your code with friends. Both you and your friend get +50 Free Coins instantly!",
+                    "Share your code with friends. Both you and your friend get +300 Free Coins instantly!",
                     color = Color(0xFF94A3B8),
                     fontSize = 12.sp
                 )
@@ -333,7 +333,7 @@ fun ReferAndEarnDialog(
 
                 // 1. BHEJNE WALA SECTION (Your Code & Download Link)
                 val downloadWebsiteUrl = "https://website-scrim-x-pro.vercel.app/"
-                val fullInviteText = "🔥 Play BGMI & Free Fire Esports Tournaments on ScrimX Pro!\n\n📥 Download App: $downloadWebsiteUrl\n🎁 Referral Code: $myReferCode\n\n(Enter this code in Profile to get +50 Free Bonus Coins instantly! 💰)"
+                val fullInviteText = "🔥 Play BGMI & Free Fire Esports Tournaments on ScrimX Pro!\n\n📥 Download App: $downloadWebsiteUrl\n🎁 Referral Code: $myReferCode\n\n(Enter this code in Profile to get +300 Free Bonus Coins instantly! 💰)"
 
                 Text("1. YOUR INVITE LINK & REFERRAL CODE", color = Color(0xFF00E5FF), fontWeight = FontWeight.Bold, fontSize = 12.sp)
                 Card(
@@ -500,7 +500,7 @@ fun ReferAndEarnDialog(
                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700)),
                                 shape = RoundedCornerShape(10.dp)
                             ) {
-                                Text("CLAIM +50 BONUS COINS", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 12.sp)
+                                Text("CLAIM +300 BONUS COINS", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 12.sp)
                             }
                         }
                     }
@@ -812,7 +812,7 @@ fun SettingsList(
             SettingsRow(icon = Icons.Default.Security, title = "Moderator HQ Panel", badge = "🛡️ Staff", onClick = onAdminClick)
             HorizontalDivider(color = Color(0xFFF3F4F6), modifier = Modifier.padding(horizontal = 12.dp))
         }
-        SettingsRow(icon = Icons.Default.CardGiftcard, title = "Refer & Earn", badge = "+50 🪙", onClick = onReferClick)
+        SettingsRow(icon = Icons.Default.CardGiftcard, title = "Refer & Earn", badge = "+300 🪙", onClick = onReferClick)
         HorizontalDivider(color = Color(0xFFF3F4F6), modifier = Modifier.padding(horizontal = 12.dp))
         SettingsRow(
             icon = if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,

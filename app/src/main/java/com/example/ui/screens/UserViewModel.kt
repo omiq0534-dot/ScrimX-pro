@@ -171,7 +171,7 @@ class UserViewModel : ViewModel() {
         getDb()?.collection("users")?.document(currentUser.uid)?.update("realMoney", FieldValue.increment(amount.toLong()))
     }
 
-    fun claimReferralCode(enteredCode: String, bonusCoins: Int = 50, onResult: (Boolean, String) -> Unit) {
+    fun claimReferralCode(enteredCode: String, bonusCoins: Int = 300, onResult: (Boolean, String) -> Unit) {
         val currentUser = getAuth()?.currentUser ?: run {
             onResult(false, "Please log in first")
             return

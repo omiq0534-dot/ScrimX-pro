@@ -11,6 +11,8 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -41,6 +43,8 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.nativeCanvas
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import com.example.utils.PresenceTracker
@@ -136,9 +140,52 @@ fun HomeScreen(
     var showWatchDialog by remember { mutableStateOf(false) }
     var isAdLoading by remember { mutableStateOf(false) }
 
+    var showTasksDialog by remember { mutableStateOf(false) }
+    val taskPrefs = remember { context.getSharedPreferences("task_preferences", android.content.Context.MODE_PRIVATE) }
+    val todayDate = remember { SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(Date()) }
+
+    // 12 AM Midnight Reset Logic
+    val lastTaskDate = taskPrefs.getString("last_task_date", "") ?: ""
+    LaunchedEffect(todayDate) {
+        if (lastTaskDate != todayDate) {
+            taskPrefs.edit()
+                .putString("last_task_date", todayDate)
+                .putBoolean("use_app_claimed", false)
+                .putInt("app_usage_seconds", 0)
+                .putBoolean("paid_match_claimed", false)
+                .putInt("ads_watched_today", 0)
+                .putBoolean("ads_task_claimed", false)
+                .apply()
+        }
+    }
+
+    // Task States
+    var useAppClaimed by remember { mutableStateOf(taskPrefs.getBoolean("use_app_claimed", false)) }
+    var appUsageSeconds by remember { mutableIntStateOf(taskPrefs.getInt("app_usage_seconds", 0)) }
+
+    // App Usage Time Tracker (5 Minutes = 300 Seconds)
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(1000L)
+            if (appUsageSeconds < 300 && !useAppClaimed) {
+                appUsageSeconds++
+                taskPrefs.edit().putInt("app_usage_seconds", appUsageSeconds).apply()
+            }
+        }
+    }
+
+    var paidMatchClaimed by remember { mutableStateOf(taskPrefs.getBoolean("paid_match_claimed", false)) }
+    var refer5Claimed by remember { mutableStateOf(taskPrefs.getBoolean("refer5_claimed", false)) }
+    val myReferralCount = profile?.referralCount ?: 0
+
+    var adsWatchedToday by remember { mutableIntStateOf(taskPrefs.getInt("ads_watched_today", 0)) }
+    var adsTaskClaimed by remember { mutableStateOf(taskPrefs.getBoolean("ads_task_claimed", false)) }
+
+    var ytSubClaimed by remember { mutableStateOf(taskPrefs.getBoolean("yt_sub_claimed", false)) }
+    var yt100GoalClaimed by remember { mutableStateOf(taskPrefs.getBoolean("yt_100_goal_claimed", false)) }
+
     var showDailyDialog by remember { mutableStateOf(false) }
     val dailyPrefs = remember { context.getSharedPreferences("daily_reward_prefs", android.content.Context.MODE_PRIVATE) }
-    val todayDate = remember { SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(Date()) }
     val lastDailyDate = dailyPrefs.getString("last_claim_date", "") ?: ""
     val savedStreak = dailyPrefs.getInt("streak_count", 0)
 
@@ -240,7 +287,9 @@ fun HomeScreen(
                                         isAdLoading = false
                                         val rewardAmount = appConfig.watchVideoCoins
                                         userViewModel.addAppMoney(rewardAmount)
-                                        Toast.makeText(context, "🎉 +$rewardAmount Coins Added to Wallet!", Toast.LENGTH_LONG).show()
+                                        adsWatchedToday++
+                                        taskPrefs.edit().putInt("ads_watched_today", adsWatchedToday).apply()
+                                        Toast.makeText(context, "+$rewardAmount Coins Added! ($adsWatchedToday/10 Ads Today)", Toast.LENGTH_LONG).show()
                                         showWatchDialog = false
                                     },
                                     onAdClosed = {
@@ -717,6 +766,220 @@ fun HomeScreen(
         )
     }
 
+    // 4. Task Center Dialog
+    if (showTasksDialog) {
+        AlertDialog(
+            containerColor = Color(0xFF111319),
+            shape = RoundedCornerShape(24.dp),
+            onDismissRequest = { showTasksDialog = false },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Assignment, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(24.dp))
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text("DAILY TASKS AND OFFERS", fontWeight = FontWeight.Black, color = Color.White, fontSize = 16.sp)
+                }
+            },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        "Complete daily tasks to earn Free Coins. Daily tasks reset at 12:00 AM midnight.",
+                        color = Color(0xFFCBD5E1),
+                        fontSize = 12.sp
+                    )
+
+                    // Task 1: Use App for 5 Minutes (+30 COINS)
+                    val appMins = appUsageSeconds / 60
+                    val appUsageDone = appUsageSeconds >= 300
+                    TaskRowItem(
+                        icon = Icons.Default.Timer,
+                        iconTint = Color(0xFF00E5FF),
+                        title = "Use App for 5 Minutes",
+                        reward = "+30 COINS",
+                        description = "Spend active time in app (Reset at 12 AM)",
+                        buttonText = when {
+                            useAppClaimed -> "CLAIMED"
+                            appUsageDone -> "CLAIM"
+                            else -> "PROGRESS $appMins/5m"
+                        },
+                        isClaimed = useAppClaimed,
+                        onClick = {
+                            if (!useAppClaimed && appUsageDone) {
+                                useAppClaimed = true
+                                taskPrefs.edit().putBoolean("use_app_claimed", true).apply()
+                                userViewModel.addAppMoney(30)
+                                Toast.makeText(context, "+30 Coins claimed for 5 min app usage!", Toast.LENGTH_SHORT).show()
+                            } else if (!useAppClaimed) {
+                                Toast.makeText(context, "Keep using app for 5 minutes! ($appMins/5 min completed)", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    )
+
+                    // Task 2: Join 1 Paid Tournament (+100 COINS)
+                    TaskRowItem(
+                        icon = Icons.Default.SportsEsports,
+                        iconTint = Color(0xFFFFD700),
+                        title = "Join Paid Tournament",
+                        reward = "+100 COINS",
+                        description = "Register for 1 paid match (Reset at 12 AM)",
+                        buttonText = if (paidMatchClaimed) "CLAIMED" else "JOIN MATCH",
+                        isClaimed = paidMatchClaimed,
+                        onClick = {
+                            if (!paidMatchClaimed) {
+                                showTasksDialog = false
+                                navController.navigate("matches")
+                            }
+                        }
+                    )
+
+                    // Task 3: Invite 5 Friends (+1500 COINS)
+                    val refDone = myReferralCount >= 5
+                    TaskRowItem(
+                        icon = Icons.Default.GroupAdd,
+                        iconTint = Color(0xFF00E676),
+                        title = "Invite 5 Gamer Friends",
+                        reward = "+1500 COINS",
+                        description = "Refer 5 friends to unlock mega bonus",
+                        buttonText = when {
+                            refer5Claimed -> "CLAIMED"
+                            refDone -> "CLAIM"
+                            else -> "PROGRESS $myReferralCount/5"
+                        },
+                        isClaimed = refer5Claimed,
+                        onClick = {
+                            if (!refer5Claimed && refDone) {
+                                refer5Claimed = true
+                                taskPrefs.edit().putBoolean("refer5_claimed", true).apply()
+                                userViewModel.addAppMoney(1500)
+                                Toast.makeText(context, "+1500 Mega Referral Bonus Coins Claimed!", Toast.LENGTH_LONG).show()
+                            } else if (!refer5Claimed) {
+                                showTasksDialog = false
+                                onNavigateToTab?.invoke("profile_tab")
+                            }
+                        }
+                    )
+
+                    // Task 4: Watch 10 Video Ads (+100 COINS)
+                    val adsDone = adsWatchedToday >= 10
+                    TaskRowItem(
+                        icon = Icons.Default.OndemandVideo,
+                        iconTint = Color(0xFF8B5CF6),
+                        title = "Watch 10 Video Ads",
+                        reward = "+100 COINS",
+                        description = "Watch 10 ads today (Reset at 12 AM)",
+                        buttonText = when {
+                            adsTaskClaimed -> "CLAIMED"
+                            adsDone -> "CLAIM"
+                            else -> "PROGRESS $adsWatchedToday/10"
+                        },
+                        isClaimed = adsTaskClaimed,
+                        onClick = {
+                            if (!adsTaskClaimed && adsDone) {
+                                adsTaskClaimed = true
+                                taskPrefs.edit().putBoolean("ads_task_claimed", true).apply()
+                                userViewModel.addAppMoney(100)
+                                Toast.makeText(context, "+100 Coins claimed for 10 Ads!", Toast.LENGTH_SHORT).show()
+                            } else if (!adsTaskClaimed) {
+                                showTasksDialog = false
+                                showWatchDialog = true
+                            }
+                        }
+                    )
+
+                    // Task 5: Subscribe YouTube Channel (+50 COINS)
+                    TaskRowItem(
+                        icon = Icons.Default.Subscriptions,
+                        iconTint = Color(0xFFFF5252),
+                        title = "Subscribe YouTube Channel",
+                        reward = "+50 COINS",
+                        description = "Subscribe to official YT channel for updates",
+                        buttonText = if (ytSubClaimed) "CLAIMED" else "SUBSCRIBE",
+                        isClaimed = ytSubClaimed,
+                        onClick = {
+                            if (!ytSubClaimed) {
+                                ytSubClaimed = true
+                                taskPrefs.edit().putBoolean("yt_sub_claimed", true).apply()
+                                userViewModel.addAppMoney(50)
+                                Toast.makeText(context, "+50 Coins added for subscribing!", Toast.LENGTH_SHORT).show()
+                                try {
+                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/@scrimxpro")).apply {
+                                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    }
+                                    context.startActivity(intent)
+                                } catch (_: Exception) {}
+                            }
+                        }
+                    )
+
+                    // Task 6: YouTube 100 Subscribers Goal (+200 COINS - Admin Goal Check)
+                    val ytGoalUnlocked = appConfig.isYt100GoalUnlocked
+                    TaskRowItem(
+                        icon = Icons.Default.MilitaryTech,
+                        iconTint = Color(0xFFFFD700),
+                        title = "YouTube 100 Subscribers Goal",
+                        reward = "+200 COINS",
+                        description = if (ytGoalUnlocked) "100 Subs Goal Reached! Claim your bonus." else "Reward unlocks when channel hits 100 subscribers",
+                        buttonText = when {
+                            yt100GoalClaimed -> "CLAIMED"
+                            ytGoalUnlocked -> "CLAIM"
+                            else -> "IN PROGRESS"
+                        },
+                        isClaimed = yt100GoalClaimed,
+                        onClick = {
+                            if (!yt100GoalClaimed) {
+                                if (ytGoalUnlocked) {
+                                    yt100GoalClaimed = true
+                                    taskPrefs.edit().putBoolean("yt_100_goal_claimed", true).apply()
+                                    userViewModel.addAppMoney(200)
+                                    Toast.makeText(context, "+200 YouTube 100 Subs Goal Reward Claimed!", Toast.LENGTH_LONG).show()
+                                } else {
+                                    Toast.makeText(context, "Community goal in progress! Reward unlocks when channel hits 100 subscribers.", Toast.LENGTH_LONG).show()
+                                }
+                            }
+                        }
+                    )
+
+                    // Task 7: Dynamic Custom Offer (Configured by Admin)
+                    if (appConfig.isCustomTaskEnabled) {
+                        var customTaskClaimed by remember { mutableStateOf(taskPrefs.getBoolean("custom_task_claimed", false)) }
+                        TaskRowItem(
+                            icon = Icons.Default.Star,
+                            iconTint = Color(0xFF00E5FF),
+                            title = appConfig.customTaskTitle.ifBlank { "Special Sponsor Task" },
+                            reward = "+${appConfig.customTaskReward} COINS",
+                            description = "Complete special offer & claim bonus",
+                            buttonText = if (customTaskClaimed) "CLAIMED" else "GO & CLAIM",
+                            isClaimed = customTaskClaimed,
+                            onClick = {
+                                if (!customTaskClaimed) {
+                                    customTaskClaimed = true
+                                    taskPrefs.edit().putBoolean("custom_task_claimed", true).apply()
+                                    userViewModel.addAppMoney(appConfig.customTaskReward)
+                                    Toast.makeText(context, "+${appConfig.customTaskReward} Coins Claimed for completing offer!", Toast.LENGTH_SHORT).show()
+                                    if (appConfig.customTaskUrl.isNotBlank()) {
+                                        try {
+                                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(appConfig.customTaskUrl)).apply {
+                                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                            }
+                                            context.startActivity(intent)
+                                        } catch (_: Exception) {}
+                                    }
+                                }
+                            }
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showTasksDialog = false }) {
+                    Text("Close", color = Color(0xFF94A3B8), fontWeight = FontWeight.Bold)
+                }
+            }
+        )
+    }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -766,7 +1029,8 @@ fun HomeScreen(
                     } else {
                         Toast.makeText(context, "Video rewards are temporarily paused by Admin", Toast.LENGTH_SHORT).show()
                     }
-                }
+                },
+                onTasksClick = { showTasksDialog = true }
             ) 
         }
         item {
@@ -946,37 +1210,58 @@ fun TopWalletBar(
 fun EarningZone(
     onDailyClick: () -> Unit = {},
     onSpinClick: () -> Unit = {},
-    onWatchClick: () -> Unit = {}
+    onWatchClick: () -> Unit = {},
+    onTasksClick: () -> Unit = {}
 ) {
     Column {
-        Text("Earning Zone", fontSize = 22.sp, fontWeight = FontWeight.Black, color = Color.Black)
-        Spacer(modifier = Modifier.height(16.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text("Earning Zone", fontSize = 22.sp, fontWeight = FontWeight.Black, color = Color.Black)
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color(0xFFFFD700).copy(alpha = 0.2f))
+                    .border(1.dp, Color(0xFFFFD700), RoundedCornerShape(8.dp))
+                    .padding(horizontal = 8.dp, vertical = 3.dp)
+            ) {
+                Text("FREE COINS 🪙", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 10.sp)
+            }
+        }
+        Spacer(modifier = Modifier.height(14.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             EarnCard(
                 title = "Daily",
                 modifier = Modifier.weight(1f),
                 onClick = onDailyClick
             ) {
-                Icon(Icons.Default.CardGiftcard, contentDescription = "Daily", tint = AppColors.TextPrimary, modifier = Modifier.size(28.dp))
+                Icon(Icons.Default.CardGiftcard, contentDescription = "Daily", tint = AppColors.TextPrimary, modifier = Modifier.size(26.dp))
             }
-            Spacer(modifier = Modifier.width(12.dp))
             EarnCard(
                 title = "Spin",
                 modifier = Modifier.weight(1f),
                 onClick = onSpinClick
             ) {
-                SpinWheelIcon(modifier = Modifier.size(32.dp))
+                SpinWheelIcon(modifier = Modifier.size(28.dp))
             }
-            Spacer(modifier = Modifier.width(12.dp))
             EarnCard(
                 title = "Video",
                 modifier = Modifier.weight(1f),
                 onClick = onWatchClick
             ) {
-                Icon(Icons.Default.PlayArrow, contentDescription = "Watch", tint = AppColors.TextPrimary, modifier = Modifier.size(28.dp))
+                Icon(Icons.Default.PlayArrow, contentDescription = "Watch", tint = AppColors.TextPrimary, modifier = Modifier.size(26.dp))
+            }
+            EarnCard(
+                title = "Tasks",
+                modifier = Modifier.weight(1f),
+                onClick = onTasksClick
+            ) {
+                Icon(Icons.Default.Assignment, contentDescription = "Tasks", tint = Color(0xFFFFD700), modifier = Modifier.size(26.dp))
             }
         }
     }
@@ -1294,6 +1579,72 @@ fun HomeRewardsStoreBanner(onClick: () -> Unit) {
             ) {
                 Icon(Icons.Default.ChevronRight, contentDescription = "Open Store", tint = Color(0xFFFFD700), modifier = Modifier.size(18.dp))
             }
+        }
+    }
+}
+
+@Composable
+fun TaskRowItem(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    iconTint: Color,
+    title: String,
+    reward: String,
+    description: String,
+    buttonText: String,
+    isClaimed: Boolean,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(Color(0xFF1B2030))
+            .border(1.dp, if (isClaimed) Color(0xFF00E676).copy(alpha = 0.3f) else Color(0xFF2E354D), RoundedCornerShape(14.dp))
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Row(
+            modifier = Modifier.weight(1f),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(38.dp)
+                    .clip(CircleShape)
+                    .background(iconTint.copy(alpha = 0.15f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(20.dp))
+            }
+            Spacer(modifier = Modifier.width(10.dp))
+            Column {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(title, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(reward, color = Color(0xFFFFD700), fontWeight = FontWeight.Black, fontSize = 11.sp)
+                }
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(description, color = Color(0xFF94A3B8), fontSize = 10.5.sp, maxLines = 1)
+            }
+        }
+        Spacer(modifier = Modifier.width(6.dp))
+        Button(
+            onClick = onClick,
+            enabled = !isClaimed,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFFFFD700),
+                disabledContainerColor = Color(0xFF28324A)
+            ),
+            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+            shape = RoundedCornerShape(8.dp)
+        ) {
+            Text(
+                buttonText,
+                color = if (isClaimed) Color(0xFF00E676) else Color.Black,
+                fontWeight = FontWeight.Black,
+                fontSize = 11.sp
+            )
         }
     }
 }

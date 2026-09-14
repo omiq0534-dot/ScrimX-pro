@@ -66,6 +66,11 @@ fun AdminAppUpdateScreen(navController: NavController) {
     var isWithdrawalsEnabled by remember { mutableStateOf(true) }
     var isSpinWheelEnabled by remember { mutableStateOf(true) }
     var isWatchAdsEnabled by remember { mutableStateOf(true) }
+    var isYt100GoalUnlocked by remember { mutableStateOf(false) }
+    var isCustomTaskEnabled by remember { mutableStateOf(false) }
+    var customTaskTitle by remember { mutableStateOf("Follow Official Instagram") }
+    var customTaskReward by remember { mutableStateOf("100") }
+    var customTaskUrl by remember { mutableStateOf("https://instagram.com/") }
     var cacheBustTimestamp by remember { mutableStateOf(System.currentTimeMillis()) }
 
     var isLoading by remember { mutableStateOf(true) }
@@ -109,6 +114,11 @@ fun AdminAppUpdateScreen(navController: NavController) {
         isWithdrawalsEnabled = doc.getBoolean("isWithdrawalsEnabled") ?: true
         isSpinWheelEnabled = doc.getBoolean("isSpinWheelEnabled") ?: true
         isWatchAdsEnabled = doc.getBoolean("isWatchAdsEnabled") ?: true
+        isYt100GoalUnlocked = doc.getBoolean("isYt100GoalUnlocked") ?: false
+        isCustomTaskEnabled = doc.getBoolean("isCustomTaskEnabled") ?: false
+        customTaskTitle = doc.getString("customTaskTitle") ?: "Follow Official Instagram"
+        customTaskReward = doc.getLong("customTaskReward")?.toString() ?: "100"
+        customTaskUrl = doc.getString("customTaskUrl") ?: "https://instagram.com/"
         cacheBustTimestamp = doc.getLong("cacheBustTimestamp") ?: System.currentTimeMillis()
     }
 
@@ -188,6 +198,11 @@ fun AdminAppUpdateScreen(navController: NavController) {
             "isWithdrawalsEnabled" to isWithdrawalsEnabled,
             "isSpinWheelEnabled" to isSpinWheelEnabled,
             "isWatchAdsEnabled" to isWatchAdsEnabled,
+            "isYt100GoalUnlocked" to isYt100GoalUnlocked,
+            "isCustomTaskEnabled" to isCustomTaskEnabled,
+            "customTaskTitle" to customTaskTitle.trim(),
+            "customTaskReward" to (customTaskReward.toIntOrNull() ?: 100),
+            "customTaskUrl" to customTaskUrl.trim(),
             "cacheBustTimestamp" to cacheBustTimestamp,
             "updatedAt" to com.google.firebase.Timestamp.now()
         )
@@ -657,6 +672,76 @@ fun AdminAppUpdateScreen(navController: NavController) {
                             activeColor = Color(0xFF00E676),
                             activeContainerColor = Color(0xFF0D2818)
                         )
+                    }
+                }
+
+                // CARD 5: DAILY TASKS & DYNAMIC OFFERS CONTROL
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Color(0xFF141722))
+                        .border(1.dp, Color(0xFF23293A), RoundedCornerShape(16.dp))
+                        .padding(16.dp)
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                        AdminCardHeader(
+                            icon = Icons.Default.Assignment,
+                            iconTint = Color(0xFFFFD700),
+                            title = "5. DAILY TASKS & DYNAMIC OFFERS CONTROL",
+                            subtitle = "Manage player daily tasks, unlock 100 subs milestone & create dynamic custom offers"
+                        )
+
+                        HorizontalDivider(color = Color(0xFF23293A))
+
+                        AdminSwitchRow(
+                            title = "Unlock YouTube 100 Subs Goal (+200 Coins)",
+                            subtitle = if (isYt100GoalUnlocked) "Unlocked: Active! Players can now claim the 100 Subs Reward." else "Locked: Goal in progress. Reward claim is disabled until unlocked.",
+                            checked = isYt100GoalUnlocked,
+                            onCheckedChange = { isYt100GoalUnlocked = it },
+                            activeColor = Color(0xFFFFD700),
+                            activeContainerColor = Color(0xFF332B08)
+                        )
+
+                        HorizontalDivider(color = Color(0xFF23293A))
+
+                        AdminSwitchRow(
+                            title = "Enable Custom Dynamic Task",
+                            subtitle = if (isCustomTaskEnabled) "Active: Custom task is visible to all players in Task Center." else "Hidden: Custom task disabled.",
+                            checked = isCustomTaskEnabled,
+                            onCheckedChange = { isCustomTaskEnabled = it },
+                            activeColor = Color(0xFF00E5FF),
+                            activeContainerColor = Color(0xFF082D33)
+                        )
+
+                        if (isCustomTaskEnabled) {
+                            OutlinedTextField(
+                                value = customTaskTitle,
+                                onValueChange = { customTaskTitle = it },
+                                label = { Text("Task Title (e.g., Follow Official Instagram)") },
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = adminTextFieldColors()
+                            )
+
+                            OutlinedTextField(
+                                value = customTaskReward,
+                                onValueChange = { customTaskReward = it },
+                                label = { Text("Reward Coins (e.g., 100)") },
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = adminTextFieldColors()
+                            )
+
+                            OutlinedTextField(
+                                value = customTaskUrl,
+                                onValueChange = { customTaskUrl = it },
+                                label = { Text("Target Link URL (e.g., https://instagram.com/your_page)") },
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = adminTextFieldColors()
+                            )
+                        }
                     }
                 }
 
