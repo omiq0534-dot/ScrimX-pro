@@ -26,6 +26,7 @@ import androidx.glance.layout.Box
 import androidx.glance.layout.Column
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
+import androidx.glance.layout.fillMaxHeight
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
@@ -47,7 +48,7 @@ class ToggleBalanceVisibilityAction : ActionCallback {
     ) {
         val prefs = context.getSharedPreferences("scrimx_widget_prefs", Context.MODE_PRIVATE)
         val currentHidden = prefs.getBoolean("widget_balance_hidden", false)
-        prefs.edit().putBoolean("widget_balance_hidden", !currentHidden).apply()
+        prefs.edit().putBoolean("widget_balance_hidden", !currentHidden).commit()
         ScrimXGlanceWidget().updateAll(context)
     }
 }
@@ -84,26 +85,26 @@ class ScrimXGlanceWidget : GlanceAppWidget() {
                     modifier = GlanceModifier
                         .fillMaxSize()
                         .background(ImageProvider(R.drawable.bg_famx_widget_card))
-                        .cornerRadius(24.dp)
-                        .padding(start = 20.dp, top = 18.dp, end = 16.dp, bottom = 18.dp)
+                        .cornerRadius(22.dp)
+                        .padding(start = 14.dp, top = 12.dp, end = 14.dp, bottom = 12.dp)
                 ) {
                     Row(
                         modifier = GlanceModifier.fillMaxSize(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // LEFT SECTION: Clean Flame Logo + Balance Info (Clean FamX layout)
+                        // LEFT SECTION: Flame Logo + Balance Info
                         Column(
                             modifier = GlanceModifier
                                 .defaultWeight()
-                                .fillMaxSize(),
+                                .fillMaxHeight(),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // Exact Green Outline Flame Logo - tap opens Home
+                            // Green Outline Flame Logo - tap opens Home
                             Image(
                                 provider = ImageProvider(R.drawable.ic_flame_outline_green),
                                 contentDescription = "SCRIMX Flame Logo",
                                 modifier = GlanceModifier
-                                    .size(38.dp)
+                                    .size(32.dp)
                                     .clickable(actionRunCallback<NavigateToAction>(actionParametersOf(TargetKey to "home_tab")))
                             )
 
@@ -113,13 +114,13 @@ class ScrimXGlanceWidget : GlanceAppWidget() {
                                 text = "SCRIMX balance",
                                 style = TextStyle(
                                     color = ColorProvider(Color(0xFF94A3B8)),
-                                    fontSize = 13.sp,
+                                    fontSize = 11.sp,
                                     fontWeight = FontWeight.Medium
                                 ),
                                 modifier = GlanceModifier.clickable(actionRunCallback<NavigateToAction>(actionParametersOf(TargetKey to "wallet_tab")))
                             )
 
-                            Spacer(modifier = GlanceModifier.height(3.dp))
+                            Spacer(modifier = GlanceModifier.height(2.dp))
 
                             // Balance + Working Eye toggle button
                             Row(
@@ -129,120 +130,115 @@ class ScrimXGlanceWidget : GlanceAppWidget() {
                                     text = if (isHidden) "₹••••••" else "₹$realMoney.00",
                                     style = TextStyle(
                                         color = ColorProvider(Color.White),
-                                        fontSize = 21.sp,
+                                        fontSize = 18.sp,
                                         fontWeight = FontWeight.Bold
                                     ),
                                     modifier = GlanceModifier.clickable(actionRunCallback<NavigateToAction>(actionParametersOf(TargetKey to "wallet_tab")))
                                 )
-                                Spacer(modifier = GlanceModifier.width(4.dp))
-                                Box(
+                                Spacer(modifier = GlanceModifier.width(6.dp))
+                                Image(
+                                    provider = ImageProvider(
+                                        if (isHidden) R.drawable.ic_widget_eye_off else R.drawable.ic_widget_eye
+                                    ),
+                                    contentDescription = "Toggle Balance Visibility",
                                     modifier = GlanceModifier
+                                        .size(24.dp)
                                         .clickable(actionRunCallback<ToggleBalanceVisibilityAction>())
-                                        .padding(4.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Image(
-                                        provider = ImageProvider(
-                                            if (isHidden) R.drawable.ic_widget_eye_off else R.drawable.ic_widget_eye
-                                        ),
-                                        contentDescription = "Toggle Balance Visibility",
-                                        modifier = GlanceModifier.size(22.dp)
-                                    )
-                                }
+                                )
                             }
                         }
 
-                        Spacer(modifier = GlanceModifier.width(12.dp))
+                        Spacer(modifier = GlanceModifier.width(10.dp))
 
                         // RIGHT SECTION: 3D FamX Style Action Buttons
                         Column(
                             modifier = GlanceModifier
                                 .defaultWeight()
-                                .fillMaxSize(),
+                                .fillMaxHeight(),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             // 1. Add Money 3D Green Pill Button
                             Box(
                                 modifier = GlanceModifier
                                     .fillMaxWidth()
-                                    .height(38.dp)
+                                    .height(34.dp)
                                     .background(ImageProvider(R.drawable.bg_widget_3d_btn_green))
                                     .clickable(actionRunCallback<NavigateToAction>(actionParametersOf(TargetKey to "wallet_tab")))
-                                    .padding(horizontal = 10.dp),
+                                    .padding(horizontal = 8.dp),
                                 contentAlignment = Alignment.CenterStart
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Image(
                                         provider = ImageProvider(R.drawable.ic_widget_add),
                                         contentDescription = "Add Money",
-                                        modifier = GlanceModifier.size(16.dp)
+                                        modifier = GlanceModifier.size(14.dp)
                                     )
-                                    Spacer(modifier = GlanceModifier.width(8.dp))
+                                    Spacer(modifier = GlanceModifier.width(6.dp))
                                     Text(
                                         text = "Add Money",
                                         style = TextStyle(
                                             color = ColorProvider(Color.Black),
-                                            fontSize = 13.sp,
+                                            fontSize = 11.sp,
                                             fontWeight = FontWeight.Bold
                                         )
                                     )
                                 }
                             }
 
-                            Spacer(modifier = GlanceModifier.height(6.dp))
+                            Spacer(modifier = GlanceModifier.height(5.dp))
 
                             // 2. Tournaments 3D Dark Pill Button
                             Box(
                                 modifier = GlanceModifier
                                     .fillMaxWidth()
-                                    .height(38.dp)
+                                    .height(34.dp)
                                     .background(ImageProvider(R.drawable.bg_widget_3d_btn_dark))
                                     .clickable(actionRunCallback<NavigateToAction>(actionParametersOf(TargetKey to "matches_tab")))
-                                    .padding(horizontal = 10.dp),
+                                    .padding(horizontal = 8.dp),
                                 contentAlignment = Alignment.CenterStart
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Image(
                                         provider = ImageProvider(R.drawable.ic_widget_game),
                                         contentDescription = "Tournaments",
-                                        modifier = GlanceModifier.size(16.dp)
+                                        modifier = GlanceModifier.size(14.dp)
                                     )
-                                    Spacer(modifier = GlanceModifier.width(8.dp))
+                                    Spacer(modifier = GlanceModifier.width(6.dp))
                                     Text(
                                         text = "Tournaments",
                                         style = TextStyle(
                                             color = ColorProvider(Color.White),
-                                            fontSize = 13.sp,
+                                            fontSize = 11.sp,
                                             fontWeight = FontWeight.Bold
                                         )
                                     )
                                 }
                             }
 
-                            Spacer(modifier = GlanceModifier.height(6.dp))
+                            Spacer(modifier = GlanceModifier.height(5.dp))
 
                             // 3. My Wallet 3D Dark Pill Button
                             Box(
                                 modifier = GlanceModifier
                                     .fillMaxWidth()
-                                    .height(38.dp)
+                                    .height(34.dp)
                                     .background(ImageProvider(R.drawable.bg_widget_3d_btn_dark))
                                     .clickable(actionRunCallback<NavigateToAction>(actionParametersOf(TargetKey to "wallet_tab")))
-                                    .padding(horizontal = 10.dp),
+                                    .padding(horizontal = 8.dp),
                                 contentAlignment = Alignment.CenterStart
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Image(
                                         provider = ImageProvider(R.drawable.ic_widget_trophy),
                                         contentDescription = "My Wallet",
-                                        modifier = GlanceModifier.size(16.dp)
+                                        modifier = GlanceModifier.size(14.dp)
                                     )
-                                    Spacer(modifier = GlanceModifier.width(8.dp))
+                                    Spacer(modifier = GlanceModifier.width(6.dp))
                                     Text(
                                         text = "My Wallet",
                                         style = TextStyle(
                                             color = ColorProvider(Color.White),
-                                            fontSize = 13.sp,
+                                            fontSize = 11.sp,
                                             fontWeight = FontWeight.Bold
                                         )
                                     )
