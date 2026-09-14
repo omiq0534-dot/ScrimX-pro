@@ -23,6 +23,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.CompositionLocalProvider
 
 class MainActivity : ComponentActivity() {
+  override fun onNewIntent(intent: android.content.Intent) {
+    super.onNewIntent(intent)
+    setIntent(intent)
+  }
+
   // Force emulator refresh
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)

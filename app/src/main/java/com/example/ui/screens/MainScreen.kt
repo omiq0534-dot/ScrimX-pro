@@ -100,6 +100,20 @@ fun MainScreen(
         }
     }
 
+    // Handle Quick Navigation from Home Screen Widget
+    LaunchedEffect(Unit) {
+        val activity = context as? android.app.Activity
+        val navTarget = activity?.intent?.getStringExtra("navigate_to")
+        if (!navTarget.isNullOrBlank()) {
+            activity.intent.removeExtra("navigate_to")
+            bottomNavController.navigate(navTarget) {
+                popUpTo(bottomNavController.graph.findStartDestination().id) { saveState = true }
+                launchSingleTop = true
+                restoreState = true
+            }
+        }
+    }
+
     // Trigger Android System Notification when Room ID & Pass become Live
     LaunchedEffect(allMatches, userProfile?.uid, userProfile?.email) {
         if (userProfile != null) {

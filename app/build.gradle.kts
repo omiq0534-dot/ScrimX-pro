@@ -121,6 +121,8 @@ dependencies {
   implementation(libs.unity.ads)
   implementation(libs.haze)
   implementation(libs.haze.materials)
+  implementation(libs.androidx.glance.appwidget)
+  implementation(libs.androidx.glance.material3)
   testImplementation(libs.androidx.compose.ui.test.junit4)
   testImplementation(libs.androidx.core)
   testImplementation(libs.androidx.junit)

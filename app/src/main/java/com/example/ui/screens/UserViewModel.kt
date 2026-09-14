@@ -7,6 +7,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
 import com.example.FirebaseHelper
 import com.example.security.AppSecurityGuard
@@ -91,6 +92,18 @@ class UserViewModel : ViewModel() {
                                 docRef.update(updates)
                             }
                             _profile.value = p
+                            com.example.TournamentApp.getAppContext()?.let { ctx ->
+                                val prefs = ctx.getSharedPreferences("scrimx_widget_prefs", android.content.Context.MODE_PRIVATE)
+                                prefs.edit()
+                                    .putInt("widget_real_money", p.realMoney)
+                                    .putInt("widget_app_coins", p.appMoney)
+                                    .apply()
+                                kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+                                    try {
+                                        com.example.widget.ScrimXGlanceWidgetReceiver.updateWidget(ctx)
+                                    } catch (_: Exception) {}
+                                }
+                            }
                         }
                     } else {
                         val derivedName = when {
