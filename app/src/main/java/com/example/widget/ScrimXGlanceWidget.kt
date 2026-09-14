@@ -2,6 +2,7 @@ package com.example.widget
 
 import android.content.Context
 import android.content.Intent
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -84,12 +85,14 @@ class ScrimXGlanceWidget : GlanceAppWidget() {
             val realMoney = prefs.getInt("widget_real_money", 0)
             val isHidden = prefs.getBoolean("widget_balance_hidden", false)
 
+            val cardBgBitmap = remember { WidgetCardRenderer.generateCardBitmap() }
+
             GlanceTheme {
-                // Card Container with rounded corners and FamX green gradient background
+                // Outer Card Container (Bitmap background with 3D sheen, corner green glow, and cyber lines)
                 Box(
                     modifier = GlanceModifier
                         .fillMaxSize()
-                        .background(ImageProvider(R.drawable.bg_famx_widget_card))
+                        .background(ImageProvider(cardBgBitmap))
                         .cornerRadius(22.dp)
                         .padding(start = 14.dp, top = 12.dp, end = 14.dp, bottom = 12.dp)
                 ) {
@@ -167,12 +170,13 @@ class ScrimXGlanceWidget : GlanceAppWidget() {
                                 .fillMaxHeight(),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // 1. Add Money 3D Green Pill Button
+                            // 1. Add Money Green Button
                             Box(
                                 modifier = GlanceModifier
                                     .fillMaxWidth()
                                     .height(34.dp)
-                                    .background(ImageProvider(R.drawable.bg_widget_3d_btn_green))
+                                    .background(Color(0xFF00E676))
+                                    .cornerRadius(12.dp)
                                     .clickable(actionRunCallback<NavigateToAction>(actionParametersOf(TargetKey to "wallet_tab")))
                                     .padding(horizontal = 8.dp),
                                 contentAlignment = Alignment.CenterStart
@@ -197,12 +201,13 @@ class ScrimXGlanceWidget : GlanceAppWidget() {
 
                             Spacer(modifier = GlanceModifier.height(5.dp))
 
-                            // 2. Tournaments 3D Dark Pill Button
+                            // 2. Tournaments Dark Button
                             Box(
                                 modifier = GlanceModifier
                                     .fillMaxWidth()
                                     .height(34.dp)
-                                    .background(ImageProvider(R.drawable.bg_widget_3d_btn_dark))
+                                    .background(Color(0xFF16222F))
+                                    .cornerRadius(12.dp)
                                     .clickable(actionRunCallback<NavigateToAction>(actionParametersOf(TargetKey to "matches_tab")))
                                     .padding(horizontal = 8.dp),
                                 contentAlignment = Alignment.CenterStart
@@ -227,12 +232,13 @@ class ScrimXGlanceWidget : GlanceAppWidget() {
 
                             Spacer(modifier = GlanceModifier.height(5.dp))
 
-                            // 3. My Wallet 3D Dark Pill Button
+                            // 3. My Wallet Dark Button
                             Box(
                                 modifier = GlanceModifier
                                     .fillMaxWidth()
                                     .height(34.dp)
-                                    .background(ImageProvider(R.drawable.bg_widget_3d_btn_dark))
+                                    .background(Color(0xFF16222F))
+                                    .cornerRadius(12.dp)
                                     .clickable(actionRunCallback<NavigateToAction>(actionParametersOf(TargetKey to "wallet_tab")))
                                     .padding(horizontal = 8.dp),
                                 contentAlignment = Alignment.CenterStart

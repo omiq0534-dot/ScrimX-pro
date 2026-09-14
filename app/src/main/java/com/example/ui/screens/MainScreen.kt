@@ -187,7 +187,7 @@ fun MainScreen(
         return
     }
 
-    Scaffold(containerColor = Color(0xFFFAFAFA),
+    Scaffold(containerColor = Color(0xFF090E14),
         topBar = {
             // Admin VIP Status Indicator Bar when Maintenance or Updates are Active
             if (isAdmin && (appConfig.isMaintenanceMode || isAppOutdated)) {
@@ -291,9 +291,9 @@ fun AppBottomNav(navController: NavController) {
 
     val sweepBrush = androidx.compose.ui.graphics.Brush.sweepGradient(
         colors = listOf(
-            androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.1f),
-            androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.8f),
-            androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.1f)
+            Color(0xFF00E676).copy(alpha = 0.1f),
+            Color(0xFF00E676).copy(alpha = 0.6f),
+            Color(0xFF00E676).copy(alpha = 0.1f)
         )
     )
 
@@ -310,14 +310,14 @@ fun AppBottomNav(navController: NavController) {
                     )
                 }
             }
-            .padding(2.dp) // border thickness
+            .padding(1.5.dp) // border thickness
             .clip(RoundedCornerShape(26.dp))
-            .background(androidx.compose.ui.graphics.Color.White)
+            .background(Color(0xFF0D141C))
     ) {
         NavigationBar(
             modifier = Modifier.fillMaxWidth(),
-            containerColor = androidx.compose.ui.graphics.Color.Transparent,
-            contentColor = androidx.compose.ui.graphics.Color.Black,
+            containerColor = Color.Transparent,
+            contentColor = Color.White,
             tonalElevation = 0.dp
         ) {
             // Home
@@ -331,13 +331,13 @@ fun AppBottomNav(navController: NavController) {
                     }
                 },
                 icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
-                label = { Text("Home", fontWeight = FontWeight.Medium) },
+                label = { Text("Home", fontWeight = FontWeight.SemiBold) },
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = androidx.compose.ui.graphics.Color.Black,
-                    selectedTextColor = androidx.compose.ui.graphics.Color.Black,
-                    indicatorColor = androidx.compose.ui.graphics.Color(0xFFF5F5F5),
-                    unselectedIconColor = androidx.compose.ui.graphics.Color.Gray,
-                    unselectedTextColor = androidx.compose.ui.graphics.Color.Gray
+                    selectedIconColor = Color(0xFF00E676),
+                    selectedTextColor = Color(0xFF00E676),
+                    indicatorColor = Color(0xFF00E676).copy(alpha = 0.18f),
+                    unselectedIconColor = Color(0xFF7E8B9B),
+                    unselectedTextColor = Color(0xFF7E8B9B)
                 )
             )
 
@@ -352,13 +352,13 @@ fun AppBottomNav(navController: NavController) {
                     }
                 },
                 icon = { Icon(Icons.Default.SportsEsports, contentDescription = "Matches") },
-                label = { Text("Matches", fontWeight = FontWeight.Medium) },
+                label = { Text("Matches", fontWeight = FontWeight.SemiBold) },
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = androidx.compose.ui.graphics.Color.Black,
-                    selectedTextColor = androidx.compose.ui.graphics.Color.Black,
-                    indicatorColor = androidx.compose.ui.graphics.Color(0xFFF5F5F5),
-                    unselectedIconColor = androidx.compose.ui.graphics.Color.Gray,
-                    unselectedTextColor = androidx.compose.ui.graphics.Color.Gray
+                    selectedIconColor = Color(0xFF00E676),
+                    selectedTextColor = Color(0xFF00E676),
+                    indicatorColor = Color(0xFF00E676).copy(alpha = 0.18f),
+                    unselectedIconColor = Color(0xFF7E8B9B),
+                    unselectedTextColor = Color(0xFF7E8B9B)
                 )
             )
 
@@ -373,13 +373,13 @@ fun AppBottomNav(navController: NavController) {
                     }
                 },
                 icon = { Icon(Icons.Default.AccountBalanceWallet, contentDescription = "Wallet") },
-                label = { Text("Wallet", fontWeight = FontWeight.Medium) },
+                label = { Text("Wallet", fontWeight = FontWeight.SemiBold) },
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = androidx.compose.ui.graphics.Color.Black,
-                    selectedTextColor = androidx.compose.ui.graphics.Color.Black,
-                    indicatorColor = androidx.compose.ui.graphics.Color(0xFFF5F5F5),
-                    unselectedIconColor = androidx.compose.ui.graphics.Color.Gray,
-                    unselectedTextColor = androidx.compose.ui.graphics.Color.Gray
+                    selectedIconColor = Color(0xFF00E676),
+                    selectedTextColor = Color(0xFF00E676),
+                    indicatorColor = Color(0xFF00E676).copy(alpha = 0.18f),
+                    unselectedIconColor = Color(0xFF7E8B9B),
+                    unselectedTextColor = Color(0xFF7E8B9B)
                 )
             )
 
@@ -394,13 +394,13 @@ fun AppBottomNav(navController: NavController) {
                     }
                 },
                 icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
-                label = { Text("Profile", fontWeight = FontWeight.Medium) },
+                label = { Text("Profile", fontWeight = FontWeight.SemiBold) },
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = androidx.compose.ui.graphics.Color.Black,
-                    selectedTextColor = androidx.compose.ui.graphics.Color.Black,
-                    indicatorColor = androidx.compose.ui.graphics.Color(0xFFF5F5F5),
-                    unselectedIconColor = androidx.compose.ui.graphics.Color.Gray,
-                    unselectedTextColor = androidx.compose.ui.graphics.Color.Gray
+                    selectedIconColor = Color(0xFF00E676),
+                    selectedTextColor = Color(0xFF00E676),
+                    indicatorColor = Color(0xFF00E676).copy(alpha = 0.18f),
+                    unselectedIconColor = Color(0xFF7E8B9B),
+                    unselectedTextColor = Color(0xFF7E8B9B)
                 )
             )
         }

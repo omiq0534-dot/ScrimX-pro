@@ -544,7 +544,9 @@ fun PremiumMatchCard(
                             color = Color(0xFF8E92A4),
                             fontSize = 8.5.sp,
                             fontWeight = FontWeight.Black,
-                            letterSpacing = 1.1.sp
+                            letterSpacing = 0.5.sp,
+                            maxLines = 1,
+                            softWrap = false
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -559,7 +561,9 @@ fun PremiumMatchCard(
                                 if (cleanPrize.startsWith("₹")) cleanPrize else "₹$cleanPrize",
                                 color = Color.White,
                                 fontSize = 15.5.sp,
-                                fontWeight = FontWeight.Black
+                                fontWeight = FontWeight.Black,
+                                maxLines = 1,
+                                softWrap = false
                             )
                         }
                     }
@@ -571,7 +575,9 @@ fun PremiumMatchCard(
                             color = Color(0xFF8E92A4),
                             fontSize = 8.5.sp,
                             fontWeight = FontWeight.Black,
-                            letterSpacing = 1.1.sp
+                            letterSpacing = 0.5.sp,
+                            maxLines = 1,
+                            softWrap = false
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -586,7 +592,9 @@ fun PremiumMatchCard(
                                 if (cleanEntry.equals("FREE", ignoreCase = true)) "FREE" else if (cleanEntry.startsWith("₹")) cleanEntry else "₹$cleanEntry",
                                 color = if (cleanEntry.equals("FREE", ignoreCase = true)) Color(0xFF00E676) else Color.White,
                                 fontSize = 15.5.sp,
-                                fontWeight = FontWeight.Black
+                                fontWeight = FontWeight.Black,
+                                maxLines = 1,
+                                softWrap = false
                             )
                         }
                     }
