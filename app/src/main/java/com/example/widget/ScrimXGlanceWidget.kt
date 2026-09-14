@@ -49,7 +49,12 @@ class ToggleBalanceVisibilityAction : ActionCallback {
         val prefs = context.getSharedPreferences("scrimx_widget_prefs", Context.MODE_PRIVATE)
         val currentHidden = prefs.getBoolean("widget_balance_hidden", false)
         prefs.edit().putBoolean("widget_balance_hidden", !currentHidden).commit()
-        ScrimXGlanceWidget().updateAll(context)
+        try {
+            ScrimXGlanceWidget().update(context, glanceId)
+        } catch (_: Exception) {}
+        try {
+            ScrimXGlanceWidget().updateAll(context)
+        } catch (_: Exception) {}
     }
 }
 
@@ -135,16 +140,21 @@ class ScrimXGlanceWidget : GlanceAppWidget() {
                                     ),
                                     modifier = GlanceModifier.clickable(actionRunCallback<NavigateToAction>(actionParametersOf(TargetKey to "wallet_tab")))
                                 )
-                                Spacer(modifier = GlanceModifier.width(6.dp))
-                                Image(
-                                    provider = ImageProvider(
-                                        if (isHidden) R.drawable.ic_widget_eye_off else R.drawable.ic_widget_eye
-                                    ),
-                                    contentDescription = "Toggle Balance Visibility",
+                                Spacer(modifier = GlanceModifier.width(4.dp))
+                                Box(
                                     modifier = GlanceModifier
-                                        .size(24.dp)
-                                        .clickable(actionRunCallback<ToggleBalanceVisibilityAction>())
-                                )
+                                        .size(32.dp)
+                                        .clickable(actionRunCallback<ToggleBalanceVisibilityAction>()),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Image(
+                                        provider = ImageProvider(
+                                            if (isHidden) R.drawable.ic_widget_eye_off else R.drawable.ic_widget_eye
+                                        ),
+                                        contentDescription = "Toggle Balance Visibility",
+                                        modifier = GlanceModifier.size(22.dp)
+                                    )
+                                }
                             }
                         }
 

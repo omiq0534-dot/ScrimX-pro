@@ -1,24 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Bottom 3D Depth Shadow -->
+    <!-- Bottom 3D Depth Base Shadow -->
     <item>
         <shape android:shape="rectangle">
-            <corners android:radius="12dp" />
-            <solid android:color="#0A0F17" />
+            <corners android:radius="14dp" />
+            <solid android:color="#05080C" />
         </shape>
     </item>
-    <!-- Top 3D Raised Pill Surface -->
-    <item android:bottom="3dp">
+    <!-- Top 3D Raised Beveled Surface -->
+    <item android:bottom="4dp">
         <shape android:shape="rectangle">
-            <corners android:radius="12dp" />
+            <corners android:radius="14dp" />
             <gradient
                 android:angle="270"
-                android:startColor="#263445"
-                android:endColor="#151E2B"
+                android:startColor="#2D3E52"
+                android:centerColor="#1B2634"
+                android:endColor="#111822"
                 android:type="linear" />
             <stroke
-                android:width="1dp"
-                android:color="#405570" />
+                android:width="1.5dp"
+                android:color="#506E90" />
         </shape>
     </item>
 </layer-list>

@@ -4,33 +4,73 @@
     <item>
         <shape android:shape="rectangle">
             <corners android:radius="22dp" />
-            <solid android:color="#04070A" />
+            <solid android:color="#020406" />
         </shape>
     </item>
 
-    <!-- 2. Main Raised 3D Card Surface -->
+    <!-- 2. Main 3D Card Body Surface (Rich Dark Obsidian Black) -->
     <item android:bottom="4dp">
         <shape android:shape="rectangle">
             <corners android:radius="22dp" />
             <gradient
                 android:angle="270"
-                android:startColor="#182330"
-                android:centerColor="#0E1620"
-                android:endColor="#090E15"
+                android:startColor="#0D151E"
+                android:centerColor="#070C12"
+                android:endColor="#030508"
                 android:type="linear" />
             <stroke
-                android:width="1dp"
-                android:color="#405A78" />
+                android:width="1.2dp"
+                android:color="#28384A" />
         </shape>
     </item>
 
-    <!-- 3. Bottom Soft Green Glow Accent (Subtle, non-intrusive) -->
-    <item android:top="60dp" android:bottom="4dp">
+    <!-- 3. BOTTOM-RIGHT CORNER NEON GREEN GLOW (Strictly Bottom Right Corner) -->
+    <item android:top="55dp" android:left="110dp" android:bottom="4dp" android:right="0dp">
         <shape android:shape="rectangle">
-            <corners android:bottomLeftRadius="22dp" android:bottomRightRadius="22dp" />
+            <corners android:bottomRightRadius="22dp" />
             <gradient
-                android:angle="90"
-                android:startColor="#3000E676"
+                android:angle="315"
+                android:startColor="#6500E676"
+                android:centerColor="#2000E676"
+                android:endColor="#0000E676"
+                android:type="linear" />
+        </shape>
+    </item>
+
+    <!-- 4. TOP 3D TILTED BEVEL GLASS SHEEN -->
+    <item android:bottom="100dp" android:left="4dp" android:right="4dp" android:top="2dp">
+        <shape android:shape="rectangle">
+            <corners android:topLeftRadius="20dp" android:topRightRadius="20dp" />
+            <gradient
+                android:angle="270"
+                android:startColor="#35FFFFFF"
+                android:centerColor="#0DFFFFFF"
+                android:endColor="#00FFFFFF"
+                android:type="linear" />
+        </shape>
+    </item>
+
+    <!-- 5. INSIDE CARD CYBER MATRIX LINE 1 (Top Inside Line) -->
+    <item android:top="36dp" android:left="16dp" android:right="16dp" android:bottom="108dp">
+        <shape android:shape="rectangle">
+            <corners android:radius="1dp" />
+            <gradient
+                android:angle="0"
+                android:startColor="#0000E676"
+                android:centerColor="#7000E676"
+                android:endColor="#0000E676"
+                android:type="linear" />
+        </shape>
+    </item>
+
+    <!-- 6. INSIDE CARD CYBER MATRIX LINE 2 (Bottom Inside Line) -->
+    <item android:top="108dp" android:left="16dp" android:right="16dp" android:bottom="36dp">
+        <shape android:shape="rectangle">
+            <corners android:radius="1dp" />
+            <gradient
+                android:angle="0"
+                android:startColor="#0000E676"
+                android:centerColor="#7000E676"
                 android:endColor="#0000E676"
                 android:type="linear" />
         </shape>

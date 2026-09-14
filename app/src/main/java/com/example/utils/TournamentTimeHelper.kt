@@ -10,22 +10,27 @@ object TournamentTimeHelper {
     fun parseTimeToMillis(timeStr: String?): Long? {
         if (timeStr.isNullOrBlank()) return null
         val clean = timeStr.trim().replace(",", "")
+        val now = Calendar.getInstance()
 
         val fullDateFormats = listOf(
+            "dd MMM yyyy hh:mm a",
+            "dd MMM yyyy h:mm a",
+            "dd MMM yyyy HH:mm",
+            "dd MMM yyyy H:mm",
+            "dd/MM/yyyy hh:mm a",
+            "dd/MM/yyyy h:mm a",
+            "dd/MM/yyyy HH:mm",
+            "dd-MM-yyyy hh:mm a",
+            "dd-MM-yyyy h:mm a",
             "yyyy-MM-dd HH:mm",
             "yyyy-MM-dd hh:mm a",
             "yyyy-MM-dd h:mm a",
-            "dd MMM yyyy hh:mm a",
-            "dd MMM yyyy h:mm a",
             "dd MMM hh:mm a",
             "dd MMM h:mm a",
-            "dd/MM/yyyy HH:mm",
-            "dd/MM/yyyy hh:mm a",
-            "dd/MM/yyyy h:mm a",
-            "dd-MM-yyyy hh:mm a",
-            "dd-MM-yyyy h:mm a",
             "dd/MM hh:mm a",
-            "dd/MM h:mm a"
+            "dd/MM h:mm a",
+            "dd-MM hh:mm a",
+            "dd-MM h:mm a"
         )
 
         for (pattern in fullDateFormats) {
@@ -34,9 +39,16 @@ object TournamentTimeHelper {
                 sdf.isLenient = true
                 val date = sdf.parse(clean) ?: continue
                 val calParsed = Calendar.getInstance().apply { time = date }
-                if (calParsed.get(Calendar.YEAR) > 1970) {
-                    return date.time
+
+                // If year was not specified in string (e.g. "15 Sep 08:30 PM"), default to current year 2026
+                if (calParsed.get(Calendar.YEAR) <= 1970) {
+                    calParsed.set(Calendar.YEAR, now.get(Calendar.YEAR))
+                    // If target date in current year is far in the past (> 30 days), assume next year
+                    if (calParsed.timeInMillis < now.timeInMillis - (30L * 24 * 3600 * 1000L)) {
+                        calParsed.add(Calendar.YEAR, 1)
+                    }
                 }
+                return calParsed.timeInMillis
             } catch (_: Exception) { }
         }
 
@@ -57,7 +69,6 @@ object TournamentTimeHelper {
                 val date = sdf.parse(clean) ?: continue
 
                 val calParsed = Calendar.getInstance().apply { time = date }
-                val now = Calendar.getInstance()
 
                 val targetToday = Calendar.getInstance().apply {
                     set(Calendar.HOUR_OF_DAY, calParsed.get(Calendar.HOUR_OF_DAY))
@@ -118,21 +129,21 @@ object TournamentTimeHelper {
      * Format milliseconds delta into concise MM:SS or HH:MM:SS
      */
     fun formatDuration(diffMillis: Long): String {
-        if (diffMillis <= 0) return "00:00"
+        if (diffMillis <= 0) return "00m 00s"
         val totalSecs = diffMillis / 1000
         val hours = totalSecs / 3600
         val mins = (totalSecs % 3600) / 60
         val secs = totalSecs % 60
 
         return if (hours > 0) {
-            String.format(Locale.ENGLISH, "%02dh %02dm", hours, mins)
+            String.format(Locale.ENGLISH, "%02dh %02dm %02ds", hours, mins, secs)
         } else {
             String.format(Locale.ENGLISH, "%02dm %02ds", mins, secs)
         }
     }
 
     fun formatDurationWithSecs(diffMillis: Long): String {
-        if (diffMillis <= 0) return "00:00"
+        if (diffMillis <= 0) return "00m 00s"
         val totalSecs = diffMillis / 1000
         val hours = totalSecs / 3600
         val mins = (totalSecs % 3600) / 60

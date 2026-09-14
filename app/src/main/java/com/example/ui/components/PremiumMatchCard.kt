@@ -54,10 +54,22 @@ fun PremiumMatchCard(
     val isCompleted = status.equals("Completed", ignoreCase = true)
     val isFull = slotsBooked >= totalSlots && totalSlots > 0
 
-    // Check if results are ready or declared
-    val isResultReady = TournamentTimeHelper.isResultReady(resultTime, isResultDeclared, status)
-    // Check if joining is still locked/pending
-    val isJoinPending = !isResultReady && !isLive && !isCompleted && TournamentTimeHelper.isJoinPending(joinTime)
+    // Real-time ticking state to drive accurate countdowns and status switches
+    var nowMillis by remember { mutableStateOf(System.currentTimeMillis()) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(1000L)
+            nowMillis = System.currentTimeMillis()
+        }
+    }
+
+    val joinTimeMillis = remember(joinTime) { TournamentTimeHelper.parseTimeToMillis(joinTime) }
+    val resultTimeMillis = remember(resultTime) { TournamentTimeHelper.parseTimeToMillis(resultTime) }
+
+    // Check if results are ready or declared (Updates dynamically when nowMillis passes resultTimeMillis)
+    val isResultReady = isResultDeclared || isCompleted || (resultTimeMillis != null && nowMillis >= resultTimeMillis)
+    // Check if joining is still locked/pending (Updates dynamically when nowMillis passes joinTimeMillis)
+    val isJoinPending = !isResultReady && !isLive && !isCompleted && (joinTimeMillis != null && nowMillis < joinTimeMillis)
     val joinCountdown = rememberJoinCountdown(joinTime)
     val resultCountdown = rememberResultCountdown(resultTime, isResultDeclared)
 
@@ -802,7 +814,7 @@ private fun rememberLiveCountdown(timeStr: String, isLive: Boolean, isCompleted:
                 val seconds = (diff / 1000) % 60
 
                 countdown = if (hours > 0) {
-                    String.format(Locale.ENGLISH, "In %02dh %02dm", hours, minutes)
+                    String.format(Locale.ENGLISH, "In %02dh %02dm %02ds", hours, minutes, seconds)
                 } else {
                     String.format(Locale.ENGLISH, "In %02dm %02ds", minutes, seconds)
                 }
