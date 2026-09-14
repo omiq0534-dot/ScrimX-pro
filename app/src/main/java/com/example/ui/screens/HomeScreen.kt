@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.firebase.firestore.FirebaseFirestore
+import com.example.ui.components.ShimmerMatchCard
 import com.example.ui.components.XBadge
 import com.example.ui.components.XBadgeSize
 import com.example.ui.components.AdminMasterBadge
@@ -1066,6 +1067,7 @@ fun EarnCard(
 @Composable
 fun UpcomingMatches(navController: NavController, viewModel: MatchesViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
     val matches by viewModel.matches.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
     var selectedFilter by remember { mutableStateOf("ALL") }
 
     // Dynamic Filter Counts
@@ -1120,16 +1122,22 @@ fun UpcomingMatches(navController: NavController, viewModel: MatchesViewModel = 
         }
         Spacer(modifier = Modifier.height(10.dp))
 
-        if (matches.isNotEmpty()) {
-            com.example.ui.components.GlassFilterPills(
-                filters = filterList,
-                selectedFilterId = selectedFilter,
-                onFilterSelected = { selectedFilter = it }
-            )
-            Spacer(modifier = Modifier.height(14.dp))
-        }
-        
-        if (matches.isEmpty()) {
+        if (isLoading) {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                ShimmerMatchCard()
+                ShimmerMatchCard()
+            }
+        } else {
+            if (matches.isNotEmpty()) {
+                com.example.ui.components.GlassFilterPills(
+                    filters = filterList,
+                    selectedFilterId = selectedFilter,
+                    onFilterSelected = { selectedFilter = it }
+                )
+                Spacer(modifier = Modifier.height(14.dp))
+            }
+            
+            if (matches.isEmpty()) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1195,6 +1203,7 @@ fun UpcomingMatches(navController: NavController, viewModel: MatchesViewModel = 
             }
         }
     }
+}
 }
 
 @Composable

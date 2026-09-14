@@ -51,6 +51,9 @@ class MatchesViewModel : ViewModel() {
     
     private val _matches = MutableStateFlow<List<MatchData>>(emptyList())
     val matches: StateFlow<List<MatchData>> = _matches
+
+    private val _isLoading = MutableStateFlow<Boolean>(true)
+    val isLoading: StateFlow<Boolean> = _isLoading
     
     private val _currentMatch = MutableStateFlow<MatchData?>(null)
     val currentMatch: StateFlow<MatchData?> = _currentMatch
@@ -64,8 +67,12 @@ class MatchesViewModel : ViewModel() {
     
     private fun listenToMatches() {
         try {
-            val currentDb = getDb() ?: return
+            val currentDb = getDb() ?: run {
+                _isLoading.value = false
+                return
+            }
             matchesListener = currentDb.collection("matches").addSnapshotListener { snapshot, e ->
+                _isLoading.value = false
                 if (e != null || snapshot == null) return@addSnapshotListener
                 try {
                     val list = snapshot.documents.mapNotNull { it.toObject(MatchData::class.java)?.copy(id = it.id) }
@@ -75,7 +82,7 @@ class MatchesViewModel : ViewModel() {
                 }
             }
         } catch (e: Exception) {
-            // Safe
+            _isLoading.value = false
         }
     }
     

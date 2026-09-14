@@ -41,6 +41,7 @@ import androidx.navigation.NavController
 import com.example.ui.components.FilterItem
 import com.example.ui.components.GlassFilterPills
 import com.example.ui.components.PremiumMatchCard
+import com.example.ui.components.ShimmerMatchCard
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
@@ -49,6 +50,7 @@ fun MatchesScreen(
     viewModel: MatchesViewModel = viewModel()
 ) {
     val matches by viewModel.matches.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
     val auth = FirebaseAuth.getInstance()
     val currentUserId = auth.currentUser?.uid ?: ""
     val currentUserEmail = auth.currentUser?.email ?: ""
@@ -271,7 +273,11 @@ fun MatchesScreen(
 
             if (selectedTab == 0) {
                 // ALL SCRIMS
-                if (matches.isEmpty()) {
+                if (isLoading) {
+                    items(3) {
+                        ShimmerMatchCard()
+                    }
+                } else if (matches.isEmpty()) {
                     item {
                         EmptyMatchesCard(
                             icon = Icons.Default.SportsEsports,
