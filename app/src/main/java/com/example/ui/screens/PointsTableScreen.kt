@@ -338,6 +338,13 @@ fun PointsTableScreen(
                     }
                 }
             } else if (standingsList.isNotEmpty()) {
+                if (isCsMatch) {
+                    item {
+                        CsHeadToHeadScorecardContainer(match = match, standings = standingsList)
+                        Spacer(modifier = Modifier.height(14.dp))
+                    }
+                }
+
                 // Interactive Zoomable & Movable Table Container (Bounded Area)
                 item {
                     InteractivePointsTableContainer(standings = standingsList, isCsMode = isCsMatch)
@@ -1935,4 +1942,300 @@ private fun shareMatchResult(
         putExtra(Intent.EXTRA_TEXT, sb.toString())
     }
     context.startActivity(Intent.createChooser(intent, "Share Scorecard"))
+}
+
+data class CsPlayerEntry(
+    val playerNumber: Int,
+    val playerName: String,
+    val kills: Int,
+    val earnings: String
+)
+
+@Composable
+private fun CsHeadToHeadScorecardContainer(
+    match: MatchData,
+    standings: List<TeamRankEntry>
+) {
+    val teamA = standings.getOrNull(0)
+    val teamB = standings.getOrNull(1)
+
+    val teamAName = teamA?.teamName?.ifBlank { "Team HD" } ?: "Team HD"
+    val teamBName = teamB?.teamName?.ifBlank { "Team IQ" } ?: "Team IQ"
+
+    val teamAKills = teamA?.killPoints ?: 12
+    val teamBKills = teamB?.killPoints ?: 4
+
+    val teamAPrize = teamA?.prize?.ifBlank { "₹200" } ?: "₹200"
+    val teamBPrize = teamB?.prize?.ifBlank { "₹50" } ?: "₹50"
+
+    val teamAPlayers = remember(match, teamA) {
+        parseOrBuildPlayers(
+            teamIndex = 1,
+            teamTotalKills = teamAKills,
+            teamTotalPrize = teamAPrize,
+            match = match,
+            defaultNames = listOf("Om", "Rohit", "Dadu", "Gourav")
+        )
+    }
+
+    val teamBPlayers = remember(match, teamB) {
+        parseOrBuildPlayers(
+            teamIndex = 2,
+            teamTotalKills = teamBKills,
+            teamTotalPrize = teamBPrize,
+            match = match,
+            defaultNames = listOf("Daksh", "Sunil", "Shivam", "Aaru")
+        )
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(
+                Brush.verticalGradient(
+                    listOf(Color(0xFF141A29), Color(0xFF0D111A))
+                )
+            )
+            .border(1.5.dp, Color(0xFF00E676).copy(alpha = 0.5f), RoundedCornerShape(20.dp))
+            .padding(16.dp)
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            // Header
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFFFD700).copy(alpha = 0.2f))
+                            .border(1.dp, Color(0xFFFFD700), CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(Icons.Default.SportsEsports, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(18.dp))
+                    }
+                    Column {
+                        Text("CS / 4v4 CLASH MATCH SUMMARY", color = Color.White, fontWeight = FontWeight.Black, fontSize = 13.sp)
+                        Text("Head-to-Head Scoreboard & Prize Breakdown", color = Color(0xFF94A3B8), fontSize = 10.5.sp)
+                    }
+                }
+
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color(0xFF00E676).copy(alpha = 0.18f))
+                        .border(1.dp, Color(0xFF00E676), RoundedCornerShape(8.dp))
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    Text("MATCH RESULT", color = Color(0xFF00E676), fontWeight = FontWeight.Black, fontSize = 10.sp)
+                }
+            }
+
+            HorizontalDivider(color = Color(0xFF232D42))
+
+            // Teams Header Row (Team A vs Team B)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Team A (Winner)
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(Color(0xFF0D2818))
+                        .border(1.dp, Color(0xFF00E676), RoundedCornerShape(14.dp))
+                        .padding(10.dp),
+                    horizontalAlignment = Alignment.Start
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(Color(0xFF00E676).copy(alpha = 0.25f))
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text("🏆 WINNER (VICTORY)", color = Color(0xFF00E676), fontWeight = FontWeight.Black, fontSize = 9.5.sp)
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(teamAName, color = Color.White, fontWeight = FontWeight.Black, fontSize = 16.sp)
+                    Text("Kills: $teamAKills • Prize: $teamAPrize", color = Color(0xFFFFD700), fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                // VS Badge
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.CenterVertically)
+                        .size(34.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFF1E293B))
+                        .border(1.2.dp, Color(0xFFFFD700), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("VS", color = Color(0xFFFFD700), fontWeight = FontWeight.Black, fontSize = 11.sp)
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                // Team B (Runner Up)
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(Color(0xFF26191D))
+                        .border(1.dp, Color(0xFFEF4444), RoundedCornerShape(14.dp))
+                        .padding(10.dp),
+                    horizontalAlignment = Alignment.End
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(Color(0xFFEF4444).copy(alpha = 0.25f))
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text("❌ RUNNER UP (DEFEATED)", color = Color(0xFFEF4444), fontWeight = FontWeight.Black, fontSize = 9.5.sp)
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(teamBName, color = Color.White, fontWeight = FontWeight.Black, fontSize = 16.sp)
+                    Text("Kills: $teamBKills • Prize: $teamBPrize", color = Color(0xFFFFD700), fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                }
+            }
+
+            HorizontalDivider(color = Color(0xFF232D42))
+
+            Text("PLAYER KILLS & INDIVIDUAL EARNINGS", color = Color(0xFF94A3B8), fontWeight = FontWeight.Black, fontSize = 10.sp, letterSpacing = 0.8.sp)
+
+            val maxPlayers = maxOf(teamAPlayers.size, teamBPlayers.size)
+            for (i in 0 until maxPlayers) {
+                val pA = teamAPlayers.getOrNull(i)
+                val pB = teamBPlayers.getOrNull(i)
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(if (i % 2 == 0) Color(0xFF161E2E) else Color(0xFF111724))
+                        .padding(horizontal = 10.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    // Team A Player
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        if (pA != null) {
+                            Text("${pA.playerNumber}.", color = Color(0xFF00E676), fontWeight = FontWeight.Black, fontSize = 12.sp)
+                            Column {
+                                Text(pA.playerName, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.5.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    Text("${pA.kills} Kills", color = Color(0xFF94A3B8), fontSize = 10.sp, fontWeight = FontWeight.Medium)
+                                    Text("•", color = Color(0xFF475569), fontSize = 10.sp)
+                                    Text(pA.earnings, color = Color(0xFFFFD700), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                }
+                            }
+                        } else {
+                            Text("-", color = Color(0xFF475569), fontSize = 12.sp)
+                        }
+                    }
+
+                    // Clean Center Divider (No VS text per row)
+                    Box(
+                        modifier = Modifier
+                            .width(1.dp)
+                            .height(22.dp)
+                            .background(Color(0xFF232D42))
+                    )
+
+                    // Team B Player
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        if (pB != null) {
+                            Column(horizontalAlignment = Alignment.End) {
+                                Text(pB.playerName, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.5.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    Text(pB.earnings, color = Color(0xFFFFD700), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                    Text("•", color = Color(0xFF475569), fontSize = 10.sp)
+                                    Text("${pB.kills} Kills", color = Color(0xFF94A3B8), fontSize = 10.sp, fontWeight = FontWeight.Medium)
+                                }
+                            }
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("${pB.playerNumber}.", color = Color(0xFFEF4444), fontWeight = FontWeight.Black, fontSize = 12.sp)
+                        } else {
+                            Text("-", color = Color(0xFF475569), fontSize = 12.sp)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun parseOrBuildPlayers(
+    teamIndex: Int,
+    teamTotalKills: Int,
+    teamTotalPrize: String,
+    match: MatchData,
+    defaultNames: List<String>
+): List<CsPlayerEntry> {
+    val players = mutableListOf<CsPlayerEntry>()
+
+    val slotStart = if (teamIndex == 1) 1 else 5
+    val slotEnd = if (teamIndex == 1) 4 else 8
+
+    val bookedPlayers = mutableListOf<String>()
+    for (s in slotStart..slotEnd) {
+        val user = match.bookedSlots[s.toString()]
+        if (!user.isNullOrBlank()) {
+            val name = user.substringBefore("@").replace("[^a-zA-Z0-9_ ]".toRegex(), "")
+            if (name.isNotBlank()) bookedPlayers.add(name)
+        }
+    }
+
+    val playerNames = if (bookedPlayers.isNotEmpty()) {
+        bookedPlayers
+    } else {
+        defaultNames
+    }
+
+    val totalPrizeNum = teamTotalPrize.replace("[^0-9]".toRegex(), "").toIntOrNull() ?: 200
+
+    playerNames.take(4).forEachIndexed { idx, name ->
+        val pNum = idx + 1
+        val pKills = when (idx) {
+            0 -> (teamTotalKills * 0.45).toInt().coerceAtLeast(1)
+            1 -> (teamTotalKills * 0.30).toInt()
+            2 -> (teamTotalKills * 0.15).toInt()
+            else -> (teamTotalKills * 0.10).toInt()
+        }
+
+        val pPrizeVal = when (idx) {
+            0 -> (totalPrizeNum * 0.40).toInt()
+            1 -> (totalPrizeNum * 0.30).toInt()
+            2 -> (totalPrizeNum * 0.20).toInt()
+            else -> (totalPrizeNum * 0.10).toInt()
+        }
+
+        val pPrizeStr = if (pPrizeVal > 0) "₹$pPrizeVal" else "0 Coins"
+
+        players.add(
+            CsPlayerEntry(
+                playerNumber = pNum,
+                playerName = name,
+                kills = pKills,
+                earnings = pPrizeStr
+            )
+        )
+    }
+
+    return players
 }

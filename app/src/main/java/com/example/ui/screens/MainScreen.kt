@@ -187,7 +187,8 @@ fun MainScreen(
         return
     }
 
-    Scaffold(containerColor = Color(0xFFFAFAFA),
+    Scaffold(
+        containerColor = Color(0xFFFAFAFA),
         topBar = {
             // Admin VIP Status Indicator Bar when Maintenance or Updates are Active
             if (isAdmin && (appConfig.isMaintenanceMode || isAppOutdated)) {
@@ -299,8 +300,9 @@ fun AppBottomNav(navController: NavController) {
 
     Box(
         modifier = Modifier
-            .padding(start = 24.dp, end = 24.dp, bottom = 12.dp)
-            .clip(RoundedCornerShape(28.dp))
+            .navigationBarsPadding()
+            .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 6.dp)
+            .clip(RoundedCornerShape(24.dp))
             .drawBehind {
                 rotate(angle) {
                     drawCircle(
@@ -311,13 +313,16 @@ fun AppBottomNav(navController: NavController) {
                 }
             }
             .padding(1.5.dp) // border thickness
-            .clip(RoundedCornerShape(26.dp))
+            .clip(RoundedCornerShape(22.dp))
             .background(Color(0xFF0D141C))
     ) {
         NavigationBar(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(60.dp),
             containerColor = Color.Transparent,
             contentColor = Color.White,
+            windowInsets = WindowInsets(0, 0, 0, 0),
             tonalElevation = 0.dp
         ) {
             // Home
