@@ -23,14 +23,24 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.CompositionLocalProvider
 
 class MainActivity : ComponentActivity() {
+  companion object {
+    val widgetNavTarget = kotlinx.coroutines.flow.MutableStateFlow<String?>(null)
+  }
+
   override fun onNewIntent(intent: android.content.Intent) {
     super.onNewIntent(intent)
     setIntent(intent)
+    intent.getStringExtra("navigate_to")?.let { target ->
+      widgetNavTarget.value = target
+    }
   }
 
   // Force emulator refresh
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    intent.getStringExtra("navigate_to")?.let { target ->
+      widgetNavTarget.value = target
+    }
     FirebaseHelper.init(this)
     com.example.ads.UnityAdsManager.syncFromFirestore(this)
     com.example.utils.NotificationHelper.initNotificationChannels(this)

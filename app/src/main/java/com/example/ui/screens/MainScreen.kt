@@ -101,12 +101,12 @@ fun MainScreen(
     }
 
     // Handle Quick Navigation from Home Screen Widget
-    LaunchedEffect(Unit) {
-        val activity = context as? android.app.Activity
-        val navTarget = activity?.intent?.getStringExtra("navigate_to")
-        if (!navTarget.isNullOrBlank()) {
-            activity.intent.removeExtra("navigate_to")
-            bottomNavController.navigate(navTarget) {
+    val liveWidgetTarget by com.example.MainActivity.widgetNavTarget.collectAsState()
+    LaunchedEffect(liveWidgetTarget) {
+        val target = liveWidgetTarget
+        if (!target.isNullOrBlank()) {
+            com.example.MainActivity.widgetNavTarget.value = null
+            bottomNavController.navigate(target) {
                 popUpTo(bottomNavController.graph.findStartDestination().id) { saveState = true }
                 launchSingleTop = true
                 restoreState = true

@@ -97,6 +97,8 @@ class UserViewModel : ViewModel() {
                                 prefs.edit()
                                     .putInt("widget_real_money", p.realMoney)
                                     .putInt("widget_app_coins", p.appMoney)
+                                    .putString("widget_player_name", p.name.ifBlank { "Gamer" })
+                                    .putInt("widget_total_wins", p.totalWins)
                                     .apply()
                                 kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
                                     try {
