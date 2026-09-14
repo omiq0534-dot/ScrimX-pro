@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Bottom 3D Depth Shadow -->
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="12dp" />
+            <solid android:color="#0A0F17" />
+        </shape>
+    </item>
+    <!-- Top 3D Raised Pill Surface -->
+    <item android:bottom="3dp">
+        <shape android:shape="rectangle">
+            <corners android:radius="12dp" />
+            <gradient
+                android:angle="270"
+                android:startColor="#263445"
+                android:endColor="#151E2B"
+                android:type="linear" />
+            <stroke
+                android:width="1dp"
+                android:color="#405570" />
+        </shape>
+    </item>
+</layer-list>

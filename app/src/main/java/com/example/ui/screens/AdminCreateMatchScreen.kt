@@ -274,7 +274,7 @@ fun AdminCreateMatchScreen(navController: NavController) {
                         value = time,
                         onValueChange = { time = it },
                         label = "Match Start Time",
-                        placeholder = "e.g. 08:30 PM"
+                        placeholder = "e.g. 15 Sep 08:30 PM or 08:30 PM"
                     )
                 }
                 Box(modifier = Modifier.weight(1f)) {
@@ -284,6 +284,29 @@ fun AdminCreateMatchScreen(navController: NavController) {
                         label = "Total Slots / Players",
                         placeholder = "2, 8, 12, 48"
                     )
+                }
+            }
+
+            // Quick Date Format Helper Chips
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                listOf("Today 08:30 PM" to "08:30 PM", "15 Sep 08:30 PM" to "15 Sep 08:30 PM", "15/09/2026 08:30 PM" to "15/09/2026 08:30 PM").forEach { (label, dateVal) ->
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color(0xFF141722))
+                            .border(1.dp, Color(0xFF23293A), RoundedCornerShape(8.dp))
+                            .clickable {
+                                time = dateVal
+                                if (joinTime.isBlank()) joinTime = dateVal.replace("08:30", "08:00")
+                                if (resultTime.isBlank()) resultTime = dateVal.replace("08:30", "09:30")
+                            }
+                            .padding(horizontal = 8.dp, vertical = 5.dp)
+                    ) {
+                        Text(label, color = Color(0xFF00E676), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    }
                 }
             }
 
@@ -297,7 +320,7 @@ fun AdminCreateMatchScreen(navController: NavController) {
                         value = joinTime,
                         onValueChange = { joinTime = it },
                         label = "Join Start Time (Timer)",
-                        placeholder = "e.g. 08:00 PM"
+                        placeholder = "e.g. 15 Sep 08:00 PM"
                     )
                 }
                 Box(modifier = Modifier.weight(1f)) {
@@ -305,7 +328,7 @@ fun AdminCreateMatchScreen(navController: NavController) {
                         value = resultTime,
                         onValueChange = { resultTime = it },
                         label = "Result Time (Switch)",
-                        placeholder = "e.g. 09:30 PM"
+                        placeholder = "e.g. 15 Sep 09:30 PM"
                     )
                 }
             }

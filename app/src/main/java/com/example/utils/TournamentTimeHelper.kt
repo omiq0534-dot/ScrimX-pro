@@ -9,7 +9,7 @@ object TournamentTimeHelper {
 
     fun parseTimeToMillis(timeStr: String?): Long? {
         if (timeStr.isNullOrBlank()) return null
-        val clean = timeStr.trim()
+        val clean = timeStr.trim().replace(",", "")
 
         val fullDateFormats = listOf(
             "yyyy-MM-dd HH:mm",
@@ -21,7 +21,11 @@ object TournamentTimeHelper {
             "dd MMM h:mm a",
             "dd/MM/yyyy HH:mm",
             "dd/MM/yyyy hh:mm a",
-            "dd/MM/yyyy h:mm a"
+            "dd/MM/yyyy h:mm a",
+            "dd-MM-yyyy hh:mm a",
+            "dd-MM-yyyy h:mm a",
+            "dd/MM hh:mm a",
+            "dd/MM h:mm a"
         )
 
         for (pattern in fullDateFormats) {
@@ -60,12 +64,6 @@ object TournamentTimeHelper {
                     set(Calendar.MINUTE, calParsed.get(Calendar.MINUTE))
                     set(Calendar.SECOND, 0)
                     set(Calendar.MILLISECOND, 0)
-                }
-
-                // If target time today is in the past by more than 15 minutes, assume it's scheduled for tomorrow!
-                // (This avoids premature triggering when admin sets e.g. 8:39 AM for next morning or 8:39 PM)
-                if (targetToday.timeInMillis < now.timeInMillis - (15 * 60 * 1000L)) {
-                    targetToday.add(Calendar.DAY_OF_YEAR, 1)
                 }
 
                 return targetToday.timeInMillis
