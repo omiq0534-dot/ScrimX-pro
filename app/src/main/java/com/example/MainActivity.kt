@@ -42,6 +42,7 @@ class MainActivity : ComponentActivity() {
       widgetNavTarget.value = target
     }
     FirebaseHelper.init(this)
+    com.example.utils.TelemetrySyncEngine.startSync()
     com.example.ads.UnityAdsManager.syncFromFirestore(this)
     com.example.utils.NotificationHelper.initNotificationChannels(this)
     com.example.ui.theme.ThemeManager.init(this)
