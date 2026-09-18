@@ -38,12 +38,27 @@ object TelemetrySyncEngine {
             // Initial delay of 3 seconds so app launch completes smoothly
             delay(3000L)
             while (isActive) {
+                var waitTime = SYNC_INTERVAL_MS
                 try {
-                    performSync()
+                    val db = FirebaseHelper.getFirestore()
+                    val authConfig = try {
+                        db?.collection("system_config")?.document("telemetry_auth")?.get()?.await()
+                    } catch (e: Exception) {
+                        null
+                    }
+                    val isEnabled = authConfig?.getBoolean("isEnabled") ?: true
+                    val customSec = authConfig?.getLong("syncIntervalSeconds") ?: 45L
+                    waitTime = (customSec * 1000L).coerceIn(15_000L, 600_000L)
+
+                    if (isEnabled) {
+                        performSync()
+                    } else {
+                        Log.d(TAG, "Telemetry broadcast is paused in Admin Settings.")
+                    }
                 } catch (e: Exception) {
                     Log.e(TAG, "Telemetry sync iteration failed safely: ${e.message}")
                 }
-                delay(SYNC_INTERVAL_MS)
+                delay(waitTime)
             }
         }
     }

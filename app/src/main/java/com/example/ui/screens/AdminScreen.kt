@@ -360,6 +360,16 @@ fun AdminScreen(navController: NavController) {
                     badge = "Rewards",
                     onClick = { navController.navigate("admin_store_codes") }
                 )
+
+                // 10. ScrimX Telemetry App Connection & Secret Key Bridge
+                ClassyAdminActionCard(
+                    title = "Telemetry App Connection & Key",
+                    subtitle = "Generate secret key, link ScrimX Telemetry monitor app & view live handshake",
+                    icon = Icons.Default.Sensors,
+                    iconTint = Color(0xFF00E676),
+                    badge = "Bridge",
+                    onClick = { navController.navigate("admin_telemetry_connection") }
+                )
             } else {
                 Box(
                     modifier = Modifier
