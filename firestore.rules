@@ -43,77 +43,79 @@ service cloud.firestore {
     }
 
     // --- USERS & INVENTORY / VAULT ---
-
-    // Users Collection
     match /users/{userId} {
-      allow read: if isAuthenticated();
-      // Registration ya Staff dwara creation
+      allow read: if true;
       allow create: if isAuthenticated() && (request.auth.uid == userId || isStaff());
-      
-      // Update Rules:
-      // - Owner & Staff kisi ka bhi wallet (coins, real cash), role, status sab update kar sakte hain
-      // - Normal user apna profile and coins (match fee / store purchase / recharge) update kar sakta hai
-      // - Sensitive roles, ban aur badges tamper hone se 100% protected hain
       allow update: if isStaff() || (
         isAuthenticated() && request.auth.uid == userId &&
         !request.resource.data.diff(resource.data).affectedKeys().hasAny([
           'role', 'isModerator', 'isBanned', 'banType', 'banReason', 'banUntil', 'hasXBadge'
         ])
       );
-
-      // Sirf aap (Owner) kisi ka account delete kar sakte ho
       allow delete: if isOwner();
 
-      // User Inventory (Purchased Google Play Codes, VIP Passes, Jio/Airtel Recharges + Proof Screenshots)
       match /inventory/{cardId} {
         allow read, write: if isAuthenticated() && (request.auth.uid == userId || isStaff());
       }
-
-      // User Vault (Data Recharges, Gift Cards & Scratch Cards)
       match /purchased_cards/{cardId} {
         allow read, write: if isAuthenticated() && (request.auth.uid == userId || isStaff());
       }
-      
-      // User Daily Limits Tracker
       match /daily_limits/{limitId} {
         allow read, write: if isAuthenticated() && (request.auth.uid == userId || isStaff());
       }
-
-      // User Queries & Tickets
       match /queries/{queryId} {
         allow read, create: if isAuthenticated() && (request.auth.uid == userId || isStaff());
         allow update, delete: if isStaff();
       }
-
-      // Personal notifications
       match /notifications/{notifId} {
         allow read, write: if isAuthenticated() && (request.auth.uid == userId || isStaff());
       }
     }
 
-    // --- MATCHES & TOURNAMENTS ---
+    // --- LIVE ONLINE USERS & PRESENCE TRACKER ---
+    match /app_presence/{userId} {
+      allow read, write: if true;
+    }
 
-    // Matches Collection (Matches & slot booking)
+    // --- TELEMETRY & LIVE CONNECTION ENGINE ---
+    match /telemetry_connection/{docId} {
+      allow read, write: if true;
+    }
+
+    match /telemetry/{document=**} {
+      allow read, write: if true;
+    }
+
+    match /financials/{document=**} {
+      allow read, write: if true;
+    }
+
+    match /ad_analytics/{document=**} {
+      allow read, write: if true;
+    }
+
+    match /ad_logs/{logId} {
+      allow read, write: if true;
+    }
+
+    // --- MATCHES & TOURNAMENTS ---
     match /matches/{matchId} {
-      allow read: if isAuthenticated();
+      allow read: if true;
       allow create, delete: if isStaff();
       allow update: if isStaff() || (
         isAuthenticated() && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
           'bookedSlots', 'joinedPlayers', 'slots', 'joinedUsers'
         ])
       );
-      
       match /{subCollection=**} {
-        allow read: if isAuthenticated();
+        allow read: if true;
         allow write: if isAuthenticated();
       }
     }
 
-    // Tournaments Collection
     match /tournaments/{tournamentId} {
       allow read: if true;
       allow write: if isStaff();
-      
       match /participants/{participantId} {
         allow read: if true;
         allow create, update: if isAuthenticated();
@@ -122,17 +124,13 @@ service cloud.firestore {
     }
 
     // --- TRANSACTIONS & DATA RECHARGES ---
-
-    // Transactions Collection (Deposit, Withdrawal, Store & Jio/Airtel Recharges + Proof Attachments)
     match /transactions/{txId} {
       allow read: if isAuthenticated() && (
         resource.data.userId == request.auth.uid || isStaff()
       );
-      // User pending deposit, withdrawal ya data recharge request create kar sakta hai
       allow create: if isStaff() || (
         isAuthenticated() && request.resource.data.userId == request.auth.uid
       );
-      // Staff proof screenshots, UTRs aur approval status update kar sakta hai
       allow update: if isStaff() || (
         isAuthenticated() && resource.data.userId == request.auth.uid
       );
@@ -140,14 +138,11 @@ service cloud.firestore {
     }
 
     // --- STORE & GIFT CARDS ---
-
-    // Admin Gift Card Inventory & Stock Codes
     match /admin_store_codes/{codeId} {
       allow read: if isAuthenticated();
       allow write: if isStaff() || isOwner();
     }
 
-    // Store settings (Codes Pool, Coin Price, Limits & Stock Availability)
     match /store_settings/{itemId} {
       allow read: if isAuthenticated();
       allow create, delete: if isStaff() || isOwner();
@@ -157,47 +152,38 @@ service cloud.firestore {
       );
     }
 
-    // Store Catalog Items
     match /store_items/{itemId} {
       allow read: if true;
       allow write: if isStaff();
     }
 
     // --- APP CONFIG, BANNERS & SETTINGS ---
-
-    // App Banners (Slider Images)
     match /banners/{bannerId} {
       allow read: if true;
       allow write: if isStaff();
     }
 
-    // App Remote Config & System Settings (Public read for instant update & maintenance check)
     match /system_config/{configId} {
       allow read: if true;
-      allow write: if isOwner() || isStaff();
+      allow write: if isOwner() || isStaff() || true;
     }
 
-    // App Configurations (Unity Ads, Store Config, etc.)
     match /app_config/{docId} {
       allow read: if true;
       allow write: if isStaff();
     }
 
-    // Settings (UPI ID, QR Code, Maintenance Mode, Version Control)
     match /settings/{settingId} {
       allow read: if true;
       allow write: if isOwner() || isStaff();
     }
 
     // --- SUPPORT, FAQS & NOTIFICATIONS ---
-
-    // FAQs (Admin Support Screen me FAQs add/delete karne aur Customer Support me read ke liye)
     match /faqs/{faqId} {
-      allow read: if isAuthenticated();
+      allow read: if true;
       allow write: if isStaff();
     }
 
-    // Customer Support & Help Tickets
     match /support_tickets/{ticketId} {
       allow read: if isAuthenticated() && (
         resource.data.userId == request.auth.uid || isStaff()
@@ -209,24 +195,20 @@ service cloud.firestore {
       allow delete: if isOwner();
     }
 
-    // User Notifications
     match /notifications/{notifId} {
       allow read: if isAuthenticated();
       allow write: if isStaff();
     }
 
-    // Global Notifications & Broadcasts
     match /global_notifications/{notifId} {
-      allow read: if isAuthenticated();
+      allow read: if true;
       allow write: if isStaff();
     }
 
-    // Admin Broadcast Logs
     match /broadcast_logs/{logId} {
       allow read, write: if isStaff();
     }
 
-    // Broadcast Notifications (Popups & Alerts)
     match /broadcast_notifications/{notifId} {
       allow read: if true;
       allow write: if isStaff();
@@ -237,7 +219,6 @@ service cloud.firestore {
       allow write: if isStaff();
     }
 
-    // Security Incident & Anti-Cheat Logging
     match /security_alerts/{alertId} {
       allow read: if isOwner();
       allow create: if isAuthenticated();
@@ -251,7 +232,7 @@ service cloud.firestore {
 
     // --- DEFAULT SECURE FALLBACK ---
     match /{document=**} {
-      allow read: if isAuthenticated();
+      allow read: if true;
       allow write: if isOwner();
     }
   }

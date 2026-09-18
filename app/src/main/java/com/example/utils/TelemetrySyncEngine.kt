@@ -75,20 +75,32 @@ object TelemetrySyncEngine {
             }
             val totalUsers = usersSnapshot?.size() ?: 0
 
-            // 2. Fetch Real Online Users from app_presence (active in last 3 minutes)
+            // 2. Fetch Real Online Users from app_presence (active in last 5 minutes)
             val presenceSnapshot = try {
                 db.collection("app_presence").get().await()
             } catch (e: Exception) {
                 null
             }
-            val cutoff = System.currentTimeMillis() - 180_000L
-            var onlineUsers = 0
+            val cutoff = System.currentTimeMillis() - 300_000L // 5 minutes window
+            val activeSet = mutableSetOf<String>()
             presenceSnapshot?.documents?.forEach { doc ->
                 val lastSeen = doc.getLong("lastSeenTimestamp") ?: 0L
-                if (lastSeen >= cutoff) onlineUsers++
+                if (lastSeen >= cutoff) {
+                    activeSet.add(doc.id)
+                }
             }
-            // If current user is logged in, at least 1 is online
-            if (FirebaseAuth.getInstance().currentUser != null && onlineUsers == 0) {
+
+            // Also check users collection for recently active accounts
+            usersSnapshot?.documents?.forEach { doc ->
+                val lastSeen = doc.getLong("lastSeenTimestamp") ?: 0L
+                if (lastSeen >= cutoff) {
+                    activeSet.add(doc.id)
+                }
+            }
+
+            var onlineUsers = activeSet.size
+            // If current user is logged in or active, ensure at least 1
+            if (onlineUsers == 0) {
                 onlineUsers = 1
             }
             val offlineUsers = (totalUsers - onlineUsers).coerceAtLeast(0)
@@ -152,12 +164,54 @@ object TelemetrySyncEngine {
             val projectedGross = grossRevenue * 1.25 + 500
             val projectedNetProfit = netProfit * 1.20 + 200
 
-            // 5. Ad Analytics
-            val adViews = totalUsers * 3 + (onlineUsers * 2)
-            val adRevenue = String.format("%.2f", (adViews * 0.40)).toDoubleOrNull() ?: 0.0
-            val effectiveCpm = if (adViews > 0) String.format("%.2f", (adRevenue / adViews) * 1000).toDoubleOrNull() ?: 0.0 else 0.0
-            val rewardedCount = (adViews * 0.75).toInt()
-            val interstitialCount = (adViews * 0.25).toInt()
+            // 5. Ad Analytics (Fetch real accumulated counts & revenue)
+            val existingAdDoc = try {
+                db.collection("ad_analytics").document("overview").get().await()
+            } catch (e: Exception) {
+                null
+            }
+
+            // Real ad logs count
+            val adLogsSnapshot = try {
+                db.collection("ad_logs").get().await()
+            } catch (e: Exception) {
+                null
+            }
+            val realAdLogsCount = adLogsSnapshot?.size() ?: 0
+
+            // Real ad reward transactions count
+            var adRewardTxCount = 0
+            txSnapshot?.documents?.forEach { doc ->
+                val type = doc.getString("type") ?: ""
+                if (type.contains("AD", ignoreCase = true)) {
+                    adRewardTxCount++
+                }
+            }
+
+            val savedTotalAds = existingAdDoc?.getLong("totalAdsWatched")
+                ?: existingAdDoc?.getLong("adImpressions")
+                ?: (realAdLogsCount.coerceAtLeast(adRewardTxCount)).toLong()
+
+            val savedRewardedCount = existingAdDoc?.getLong("rewardedVideoCount")
+                ?: (realAdLogsCount.coerceAtLeast(adRewardTxCount)).toLong()
+
+            val savedInterstitialCount = existingAdDoc?.getLong("interstitialCount") ?: 0L
+            val savedBannerCount = existingAdDoc?.getLong("bannerCount") ?: 0L
+
+            val finalTotalAds = savedTotalAds.coerceAtLeast(realAdLogsCount.toLong()).coerceAtLeast(adRewardTxCount.toLong())
+
+            val savedAdRevenueInr = existingAdDoc?.getDouble("adRevenueInr")
+                ?: existingAdDoc?.getDouble("adRevenue")
+                ?: (finalTotalAds * 0.85)
+
+            val finalAdRevenueInr = String.format("%.2f", savedAdRevenueInr).toDoubleOrNull() ?: (finalTotalAds * 0.85)
+            val finalAdRevenueUsd = String.format("%.4f", finalAdRevenueInr / 86.50).toDoubleOrNull() ?: 0.0
+
+            val effectiveCpm = if (finalTotalAds > 0) {
+                String.format("%.2f", (finalAdRevenueInr / finalTotalAds) * 1000.0).toDoubleOrNull() ?: 850.0
+            } else {
+                850.0
+            }
 
             val now = System.currentTimeMillis()
 
@@ -169,6 +223,9 @@ object TelemetrySyncEngine {
                 "activeMatches" to activeMatches,
                 "totalMatches" to totalMatches,
                 "completedMatches" to completedMatches,
+                "totalAdsWatched" to finalTotalAds,
+                "adImpressions" to finalTotalAds,
+                "adRevenue" to finalAdRevenueInr,
                 "retentionD1" to 68.5,
                 "retentionD7" to 44.0,
                 "retentionD30" to 28.5,
@@ -185,6 +242,7 @@ object TelemetrySyncEngine {
                 "netProfit" to netProfit,
                 "netMargin" to netMargin,
                 "totalPayouts" to totalPayouts,
+                "adRevenue" to finalAdRevenueInr,
                 "arpu" to arpu,
                 "projectedGross" to projectedGross,
                 "projectedNetProfit" to projectedNetProfit,
@@ -195,14 +253,18 @@ object TelemetrySyncEngine {
 
             // Prepare Ad Analytics Payload
             val adAnalyticsData = hashMapOf<String, Any>(
-                "adImpressions" to adViews,
-                "adsPerPlayer" to (if (onlineUsers > 0) String.format("%.1f", adViews.toDouble() / onlineUsers.coerceAtLeast(1)).toDoubleOrNull() ?: 0.0 else 0.0),
-                "adRevenue" to adRevenue,
+                "totalAdsWatched" to finalTotalAds,
+                "adImpressions" to finalTotalAds,
+                "adsPerPlayer" to (if (onlineUsers > 0) String.format("%.1f", finalTotalAds.toDouble() / onlineUsers.coerceAtLeast(1)).toDoubleOrNull() ?: 0.0 else 0.0),
+                "adRevenue" to finalAdRevenueInr,
+                "adRevenueInr" to finalAdRevenueInr,
+                "adRevenueUsd" to finalAdRevenueUsd,
                 "effectiveCpm" to effectiveCpm,
-                "rewardedVideoCount" to rewardedCount,
-                "interstitialCount" to interstitialCount,
-                "rewardedPercent" to 75,
-                "interstitialPercent" to 25,
+                "rewardedVideoCount" to savedRewardedCount,
+                "interstitialCount" to savedInterstitialCount,
+                "bannerCount" to savedBannerCount,
+                "rewardedPercent" to if (finalTotalAds > 0) ((savedRewardedCount.toDouble() / finalTotalAds) * 100).toInt() else 80,
+                "interstitialPercent" to if (finalTotalAds > 0) ((savedInterstitialCount.toDouble() / finalTotalAds) * 100).toInt() else 20,
                 "lastUpdated" to FieldValue.serverTimestamp(),
                 "lastUpdatedTimestamp" to now
             )

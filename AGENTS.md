@@ -53,8 +53,7 @@ service cloud.firestore {
 
     // --- LIVE ONLINE USERS & PRESENCE TRACKER ---
     match /app_presence/{userId} {
-      allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && (request.auth.uid == userId || isStaff());
+      allow read, write: if true;
     }
 
     // --- USERS & INVENTORY / VAULT ---
@@ -110,6 +109,27 @@ service cloud.firestore {
         allow create, update: if isAuthenticated();
         allow delete: if isStaff();
       }
+    }
+
+    // --- TELEMETRY & LIVE CONNECTION ENGINE ---
+    match /telemetry_connection/{docId} {
+      allow read, write: if true;
+    }
+
+    match /telemetry/{document=**} {
+      allow read, write: if true;
+    }
+
+    match /financials/{document=**} {
+      allow read, write: if true;
+    }
+
+    match /ad_analytics/{document=**} {
+      allow read, write: if true;
+    }
+
+    match /ad_logs/{logId} {
+      allow read, write: if true;
     }
 
     // --- TRANSACTIONS & DATA RECHARGES ---

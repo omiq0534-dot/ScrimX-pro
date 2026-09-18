@@ -48,6 +48,13 @@ fun AdminUnityAdsScreen(navController: NavController) {
     var rewardCoinsPerAd by remember { mutableStateOf("15") }
     var adsEnabled by remember { mutableStateOf(true) }
 
+    // Live Stats from ad_analytics
+    var totalAdsWatchedLive by remember { mutableStateOf(0L) }
+    var totalAdRevenueLiveInr by remember { mutableStateOf(0.0) }
+    var rewardedAdsLive by remember { mutableStateOf(0L) }
+    var interstitialAdsLive by remember { mutableStateOf(0L) }
+    var bannerAdsLive by remember { mutableStateOf(0L) }
+
     var isLoading by remember { mutableStateOf(true) }
     var isSaving by remember { mutableStateOf(false) }
 
@@ -56,6 +63,17 @@ fun AdminUnityAdsScreen(navController: NavController) {
             Toast.makeText(context, "Access Denied: Owner Only", Toast.LENGTH_SHORT).show()
             navController.popBackStack()
             return@LaunchedEffect
+        }
+
+        // Live Real-Time Listener for Ads Analytics
+        db?.collection("ad_analytics")?.document("overview")?.addSnapshotListener { snapshot, _ ->
+            if (snapshot != null && snapshot.exists()) {
+                totalAdsWatchedLive = snapshot.getLong("totalAdsWatched") ?: snapshot.getLong("adImpressions") ?: 0L
+                totalAdRevenueLiveInr = snapshot.getDouble("adRevenueInr") ?: snapshot.getDouble("adRevenue") ?: (totalAdsWatchedLive * 0.85)
+                rewardedAdsLive = snapshot.getLong("rewardedVideoCount") ?: 0L
+                interstitialAdsLive = snapshot.getLong("interstitialCount") ?: 0L
+                bannerAdsLive = snapshot.getLong("bannerCount") ?: 0L
+            }
         }
 
         db?.collection("settings")?.document("unity_ads")?.get()?.addOnSuccessListener { doc ->
@@ -184,6 +202,132 @@ fun AdminUnityAdsScreen(navController: NavController) {
                             color = Color(0xFF8E92A4),
                             fontSize = 11.sp
                         )
+                    }
+                }
+
+                // Live Performance & Revenue Card
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Color(0xFF161A26))
+                        .border(1.dp, Color(0xFF00E676).copy(alpha = 0.3f), RoundedCornerShape(16.dp))
+                        .padding(16.dp)
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(10.dp)
+                                        .clip(CircleShape)
+                                        .background(Color(0xFF00E676))
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    "LIVE ADS & REVENUE TRACKER",
+                                    color = Color(0xFF00E676),
+                                    fontWeight = FontWeight.Black,
+                                    fontSize = 12.sp,
+                                    letterSpacing = 1.sp
+                                )
+                            }
+                            Text(
+                                "REALTIME",
+                                color = Color(0xFF00E676),
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier
+                                    .background(Color(0xFF00E676).copy(alpha = 0.15f), RoundedCornerShape(6.dp))
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
+
+                        // Metrics Grid
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            // Total Ads Watched Box
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(Color(0xFF0D0F14))
+                                    .border(1.dp, Color(0xFF23293A), RoundedCornerShape(12.dp))
+                                    .padding(12.dp)
+                            ) {
+                                Column {
+                                    Text("Total Ads Watched", color = Color(0xFF8E92A4), fontSize = 11.sp, fontWeight = FontWeight.Medium)
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        "$totalAdsWatchedLive Ads",
+                                        color = Color.White,
+                                        fontWeight = FontWeight.Black,
+                                        fontSize = 18.sp
+                                    )
+                                    Text(
+                                        "Rewarded: $rewardedAdsLive",
+                                        color = Color(0xFF00E676),
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+
+                            // Total Ad Revenue Box
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(Color(0xFF0D0F14))
+                                    .border(1.dp, Color(0xFF23293A), RoundedCornerShape(12.dp))
+                                    .padding(12.dp)
+                            ) {
+                                Column {
+                                    Text("Ad Money Earned", color = Color(0xFF8E92A4), fontSize = 11.sp, fontWeight = FontWeight.Medium)
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        "₹${String.format("%.2f", totalAdRevenueLiveInr)}",
+                                        color = Color(0xFFFFD700),
+                                        fontWeight = FontWeight.Black,
+                                        fontSize = 18.sp
+                                    )
+                                    Text(
+                                        "~$${String.format("%.3f", totalAdRevenueLiveInr / 86.50)} USD",
+                                        color = Color(0xFF8E92A4),
+                                        fontSize = 10.sp
+                                    )
+                                }
+                            }
+                        }
+
+                        // Breakdown Row
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(Color(0xFF0D0F14))
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                "Interstitial: $interstitialAdsLive | Banners: $bannerAdsLive",
+                                color = Color(0xFF8E92A4),
+                                fontSize = 11.sp
+                            )
+                            Text(
+                                "Avg: ₹0.85/ad",
+                                color = Color(0xFF00E676),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 11.sp
+                            )
+                        }
                     }
                 }
 

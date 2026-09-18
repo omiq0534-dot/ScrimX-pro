@@ -12,7 +12,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.FirebaseHelper
+import com.example.utils.TelemetrySyncEngine
 import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.SetOptions
 import com.unity3d.ads.IUnityAdsInitializationListener
 import com.unity3d.ads.IUnityAdsLoadListener
 import com.unity3d.ads.IUnityAdsShowListener
@@ -41,6 +43,112 @@ object UnityAdsManager {
 
     private var isAdShowing = false
     private var isInitializing = false
+
+    /**
+     * Record real-time ad view & estimated revenue to Firestore for Telemetry Dashboard
+     */
+    fun recordAdTelemetryEvent(
+        adType: String, // "REWARDED", "INTERSTITIAL", "BANNER"
+        placementId: String,
+        rewardCoins: Double = 0.0
+    ) {
+        val db = FirebaseHelper.getFirestore() ?: return
+        val auth = FirebaseHelper.getAuth()
+        val currentUser = auth?.currentUser
+        val uid = currentUser?.uid ?: "anonymous"
+        val userEmail = currentUser?.email ?: "guest@scrimx.app"
+        val now = System.currentTimeMillis()
+
+        // Real estimated revenue calculation per ad type:
+        // Rewarded: ~₹0.85 per completion (eCPM ~$10-$12)
+        // Interstitial: ~₹0.45 per view (eCPM ~$5-$6)
+        // Banner: ~₹0.08 per impression (eCPM ~$1)
+        val revenueInr = when (adType.uppercase()) {
+            "REWARDED" -> 0.85
+            "INTERSTITIAL" -> 0.45
+            "BANNER" -> 0.08
+            else -> 0.40
+        }
+        val revenueUsd = revenueInr / 86.50
+
+        try {
+            // 1. Add detailed log entry to ad_logs
+            val logEntry = hashMapOf<String, Any>(
+                "userId" to uid,
+                "userEmail" to userEmail,
+                "adType" to adType.uppercase(),
+                "placementId" to placementId,
+                "rewardCoins" to rewardCoins,
+                "revenueInr" to revenueInr,
+                "revenueUsd" to revenueUsd,
+                "timestamp" to now,
+                "createdAt" to FieldValue.serverTimestamp()
+            )
+            db.collection("ad_logs").add(logEntry)
+
+            // 2. Prepare atomic increment updates for ad_analytics
+            val adAnalyticsUpdates = hashMapOf<String, Any>(
+                "totalAdsWatched" to FieldValue.increment(1),
+                "adImpressions" to FieldValue.increment(1),
+                "adRevenue" to FieldValue.increment(revenueInr),
+                "adRevenueInr" to FieldValue.increment(revenueInr),
+                "adRevenueUsd" to FieldValue.increment(revenueUsd),
+                "lastAdWatchedAt" to FieldValue.serverTimestamp(),
+                "lastAdWatchedTimestamp" to now,
+                "lastAdType" to adType.uppercase(),
+                "lastPlacementId" to placementId,
+                "lastUserEmail" to userEmail
+            )
+
+            when (adType.uppercase()) {
+                "REWARDED" -> adAnalyticsUpdates["rewardedVideoCount"] = FieldValue.increment(1)
+                "INTERSTITIAL" -> adAnalyticsUpdates["interstitialCount"] = FieldValue.increment(1)
+                "BANNER" -> adAnalyticsUpdates["bannerCount"] = FieldValue.increment(1)
+            }
+
+            val docKeys = listOf("overview", "live", "realtime", "summary", "metrics")
+            for (key in docKeys) {
+                db.collection("ad_analytics").document(key).set(adAnalyticsUpdates, SetOptions.merge())
+
+                // Also reflect in telemetry & financials immediately
+                db.collection("telemetry").document(key).set(
+                    mapOf(
+                        "totalAdsWatched" to FieldValue.increment(1),
+                        "adImpressions" to FieldValue.increment(1),
+                        "adRevenue" to FieldValue.increment(revenueInr),
+                        "lastUpdated" to FieldValue.serverTimestamp(),
+                        "lastUpdatedTimestamp" to now
+                    ),
+                    SetOptions.merge()
+                )
+
+                db.collection("financials").document(key).set(
+                    mapOf(
+                        "adRevenue" to FieldValue.increment(revenueInr),
+                        "grossRevenue" to FieldValue.increment(revenueInr),
+                        "lastUpdated" to FieldValue.serverTimestamp(),
+                        "lastUpdatedTimestamp" to now
+                    ),
+                    SetOptions.merge()
+                )
+            }
+
+            // 3. Increment User's profile stats if authenticated
+            if (uid.isNotBlank() && uid != "anonymous") {
+                db.collection("users").document(uid).update(
+                    mapOf(
+                        "adsWatchedCount" to FieldValue.increment(1),
+                        "totalAdRewardsEarned" to FieldValue.increment(rewardCoins),
+                        "lastAdWatchTime" to now
+                    )
+                )
+            }
+
+            Log.d(TAG, "Ad telemetry recorded successfully: type=$adType, revenue=₹$revenueInr, user=$userEmail")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to record ad telemetry: ${e.message}")
+        }
+    }
 
     fun syncFromFirestore(context: Context) {
         val db = FirebaseHelper.getFirestore() ?: return
@@ -201,6 +309,7 @@ object UnityAdsManager {
                 isAdShowing = false
                 Log.d(TAG, "Unity Ads Show Complete: $placementId, State: $state")
                 if (state == UnityAds.UnityAdsShowCompletionState.COMPLETED) {
+                    recordAdTelemetryEvent("REWARDED", placementId, rewardCoins = 15.0)
                     onRewardEarned()
                 } else {
                     onAdSkipped()
@@ -282,6 +391,9 @@ object UnityAdsManager {
 
             override fun onUnityAdsShowComplete(placementId: String, state: UnityAds.UnityAdsShowCompletionState) {
                 isAdShowing = false
+                if (state == UnityAds.UnityAdsShowCompletionState.COMPLETED) {
+                    recordAdTelemetryEvent("INTERSTITIAL", placementId)
+                }
                 onAdClosed()
                 loadInterstitialAd(placementId)
             }
@@ -373,6 +485,7 @@ fun UnityBannerAd(
 
                         override fun onBannerShown(bannerAdView: BannerView?) {
                             Log.d("UnityAds", "Banner shown")
+                            UnityAdsManager.recordAdTelemetryEvent("BANNER", placementId)
                         }
 
                         override fun onBannerClick(bannerAdView: BannerView?) {
