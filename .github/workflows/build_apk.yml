@@ -21,8 +21,8 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
 
-    - name: Setup Android SDK
-      uses: android-actions/setup-android@v3
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v4
 
     - name: Prepare Keystore and Environment
       run: |
@@ -40,8 +40,12 @@ jobs:
         # Ensure gradlew has executable permission
         chmod +x gradlew || true
 
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v4
+        # Accept Android SDK licenses if sdkmanager exists
+        if command -v sdkmanager >/dev/null 2>&1; then
+          yes | sdkmanager --licenses || true
+        elif [ -f "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" ]; then
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses || true
+        fi
 
     - name: Build Debug APK
       run: |
